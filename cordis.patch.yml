@@ -1,0 +1,6 @@
+# dsh-think-translate bundle patch — inserts the plugin row into a profile's
+# composition. The row references the package by name so Node resolution finds
+# the installed code (installed via `dsh plugin add` or pnpm).
+- insert:
+    - id: dsh-think-translate
+      name: dsh-think-translate

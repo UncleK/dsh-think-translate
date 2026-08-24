@@ -10,8 +10,13 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "lib"
+    "lib",
+    "cordis.patch.yml"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UncleK/dsh-think-translate.git"
+  },
   "dsh": {
     "client": {
       "platform": "web",
@@ -19,6 +24,9 @@
       "inject": [
         "@deepseek-ai/dsh-client-runtime"
       ]
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
     }
   },
   "license": "MIT"
