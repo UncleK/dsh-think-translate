@@ -1,0 +1,25 @@
+{
+  "name": "dsh-think-translate",
+  "description": "Display-layer translation for the DSH web app: thinking chain, task cards, and optional answer text, in 8 target languages (local Ollama / Google / Bing, fail-open)",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib"
+  ],
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ]
+    }
+  },
+  "license": "MIT"
+}
