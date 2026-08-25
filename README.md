@@ -1,69 +1,77 @@
-# dsh-think-translate
+# 🐋 dsh-think-translate
 
-**思考链翻译** — 为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI 提供显示层翻译：把界面上的**思考链（Think 行）、任务卡片、回答正文**翻译为你选择的目标语言，原文完整保留在会话记录中。
+**Languages:** [English](README.md) · [中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Русский](README.ru.md)
 
-## 特性
+---
 
-- **8 种目标语言**：中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
-- **单一语言 UI**：设置面板、思考行、任务卡片全部跟随目标语言（不混中英），语言选择持久化
-- **本地模型为主力**：优先使用本地 Ollama 模型（qwen 等），隐私离线免费；**首次选择本地模型时自动触发下载**，带实时进度条，完成后自动配置启用
-- **Google / Bing 兜底**：本地模型不可用时自动切换（google 通过 Node CONNECT 隧道走系统代理，绕过反爬）
-- **代码工件自动跳过**：文件路径、命令、URL、正则、纯代码行不翻译
-- **句子分批翻译**：长思考链按句子分批串行翻译，本地小模型也能保持质量
-- **流式输出**：思考过程中译文逐批出现，展开 Think 行可对照原文
-- **失败韧性**：host 请求 3 次退避重试 + 浏览器直连兜底，失败结果不缓存
+Display-layer translation for the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI. The **thinking chain (Think row), task cards and answer text** are displayed in your chosen target language — while the originals stay intact in the transcript.
 
-## 安装
+[![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
+[![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
+[![dsh](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
+
+## ✨ Features
+
+- **8 target languages** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
+- **Single-language UI** — settings panel, thinking rows and task cards all follow the target language (no mixed zh/en); your choice persists across reloads
+- **Local model first** — uses your local Ollama model (qwen, etc.): private, offline, free. First local-model selection **auto-triggers the download** with a live progress bar; the model is configured and enabled automatically when done
+- **Google / Bing fallback** — automatic switch when the local model is unavailable (google goes through a Node CONNECT tunnel using the system proxy, bypassing anti-bot blocks)
+- **Code artifacts skipped** — file paths, commands, URLs, regexes and pure-code lines are never translated
+- **Sentence-batched translation** — long thinking chains are translated in small sentence batches so local small models keep quality
+- **Streaming output** — translations appear batch by batch while thinking; expand the Think row to compare with the original
+- **Resilient** — host requests retry with backoff (3×), browser-direct fallback, failed results are never cached
+
+## 📦 Installation
 
 ```bash
-# 方式一：从 npm 安装（推荐）
+# Option 1: npm (recommended)
 dsh plugin --profile web add dsh-think-translate
-# 然后重启 web
+# then restart web
 
-# 方式二：从 GitHub 安装
+# Option 2: GitHub
 dsh plugin --profile web add github:UncleK/dsh-think-translate
 
-# 方式三：手动（junction + patch）
-# 1. 链接包到 profile 的 node_modules
+# Option 3: manual (junction + patch)
+#  1. link the package into the profile's node_modules
 New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-translate" `
-  -Target "<此仓库路径>"
-# 2. 在 "$HOME\.dsh\profiles\web\cordis.patch.yml" 加入：
+  -Target "<repo path>"
+#  2. add to "$HOME\.dsh\profiles\web\cordis.patch.yml":
 # - insert:
 #     - id: dsh-think-translate
 #       name: dsh-think-translate
-# 3. 重启 web
+#  3. restart web
 ```
 
-## 使用
+## 🚀 Usage
 
-1. 打开 **设置 → 思考链翻译**
-2. 选择**目标语言**（比如日本語）——设置面板/思考链/任务卡片全部切换为该语言
-3. 选择**首选提供方**：
-   - **本地部署模型（Ollama）**：首次选择时显示下载按钮（qwen2.5:7b / 14b 或自定义），下载完成后自动启用；模型下拉旁 "+" 可随时下载更多
-   - **google gtx / bing**：开箱即用（自动走系统代理/VPN）
-4. 发消息让模型思考，展开 Think 行查看译文
+1. Open **Settings → Think Translation**
+2. Pick the **target language** (e.g. 日本語) — the settings panel, thinking rows and task cards all switch to it
+3. Pick the **preferred provider**:
+   - **Local model (Ollama)** — on first selection a download prompt appears (qwen2.5:7b / 14b or custom); it auto-enables when finished. The "+" button next to the model picker downloads more models anytime
+   - **google gtx / bing** — works out of the box (auto system proxy / VPN)
+4. Send a message and expand the Think row to see the translation
 
-## 工作原理
+## ⚙️ How it works
 
 ```
-浏览器 → POST /_xlate/translate（同源，无 CORS）
-  → host 供应商链（fail-open）：
-      openai 兼容（本地 Ollama，Node fetch 直连回环）
-      → google gtx（Node https + CONNECT 隧道走系统代理）
-      → bing（curl form）
-  → 失败回退浏览器直连
+browser → POST /_xlate/translate (same-origin, no CORS)
+  → host provider chain (fail-open):
+      openai-compatible (local Ollama, Node fetch to loopback)
+      → google gtx (Node https + CONNECT tunnel through system proxy)
+      → bing (curl form)
+  → browser-direct fallback
 ```
 
-- **host 半边**（`lib/index.js`）：供应商适配器、API Key、缓存（LRU 600）、`/_xlate/models` 模型列表、`/_xlate/model/pull` + `pull-status` 模型下载管理（完成后自动配置启用）
-- **client 半边**（`lib/client.js`）：8 语言 UI、句子分批翻译、流式 Think 行、localStorage 持久化
-- 纯显示层：原文完整保留在会话日志与模型上下文中
+- **Host half** (`lib/index.js`): provider adapters, LRU cache (600), `/_xlate/models` listing, `/_xlate/model/pull` + `pull-status` model download management (auto-configures on completion)
+- **Client half** (`lib/client.js`): 8-language UI, sentence-batched translation, streaming Think rows, localStorage persistence
+- Pure display layer: originals remain in the transcript and model context
 
-## 开发
+## 🛠 Development
 
-- 无需构建：`lib/client.js` 是浏览器 bundle（源码即产物），`lib/index.js` 是 host ESM
-- 修改 client 后刷新页面即生效；修改 host 后需重启 web
-- 更新 8 语言文案：编辑 `lib/client.js` 中的 `UI_TEXT` 字典
+- No build step: `lib/client.js` is the browser bundle (source = artifact), `lib/index.js` is the host ESM
+- Client changes apply on page refresh; host changes need a web restart
+- The 8-language strings live in the `UI_TEXT` dictionary in `lib/client.js`
 
-## License
+## 📄 License
 
 MIT
