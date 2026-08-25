@@ -16,11 +16,14 @@
 ## 安装
 
 ```bash
-# 方式一：从 GitHub 安装（推荐）
-dsh plugin --profile web add https://github.com/<your-name>/dsh-think-translate
+# 方式一：从 npm 安装（推荐）
+dsh plugin --profile web add dsh-think-translate
 # 然后重启 web
 
-# 方式二：手动（junction + patch）
+# 方式二：从 GitHub 安装
+dsh plugin --profile web add github:UncleK/dsh-think-translate
+
+# 方式三：手动（junction + patch）
 # 1. 链接包到 profile 的 node_modules
 New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-translate" `
   -Target "<此仓库路径>"
