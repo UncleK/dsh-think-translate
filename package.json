@@ -17,6 +17,9 @@
     "type": "git",
     "url": "git+https://github.com/UncleK/dsh-think-translate.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dsh": {
     "client": {
       "platform": "web",
