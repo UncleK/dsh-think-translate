@@ -12,7 +12,8 @@
   "files": [
     "lib/index.js",
     "lib/client.js",
-    "cordis.patch.yml"
+    "cordis.patch.yml",
+    "demo"
   ],
   "repository": {
     "type": "git",

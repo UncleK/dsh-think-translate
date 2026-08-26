@@ -58,7 +58,9 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 
 ## 🎬 Demo
 
-<!-- TODO: animierte Demo aufnehmen (englische Gedankenkette → Streaming-Übersetzung, Originale erhalten) und als docs/demo.gif ablegen -->
+![dsh-think-translate demo](demo/demo.gif)
+
+![dsh-think-translate demo 2](demo/demo2.gif)
 
 ## ⚙️ Funktionsweise
 
