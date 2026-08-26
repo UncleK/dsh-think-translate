@@ -4,7 +4,7 @@
 
 ---
 
-Traducción en la capa de visualización para la interfaz web de [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness): la **cadena de pensamiento (fila Think), las tarjetas de tareas y el texto de respuesta** se muestran en el idioma de destino elegido, mientras los originales permanecen intactos en la transcripción.
+Traducción en la capa de visualización para la interfaz web de [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness): la **cadena de pensamiento (fila Think), las tarjetas de tareas y el texto de respuesta** se muestran en el idioma de destino elegido, mientras los originales permanecen intactos en la transcripción y el texto traducido **nunca entra en el contexto del modelo**.
 
 [![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
 [![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
@@ -12,12 +12,16 @@ Traducción en la capa de visualización para la interfaz web de [DeepSeek Harne
 
 ## ✨ Características
 
+Los modelos de la familia DeepSeek suelen razonar en chino — o en el idioma en que les da por pensar. dsh-think-translate muestra la fila Think, las tarjetas de tareas y la respuesta en *tu* idioma mientras miras, como subtítulos del pensamiento del modelo.
+
 - **8 idiomas de destino** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
 - **Interfaz en un solo idioma** — panel de ajustes, filas de pensamiento y tarjetas de tareas siguen el idioma de destino (sin mezclar zh/en); la elección persiste
 - **Modelo local primero** — usa tu modelo local de Ollama (qwen, etc.): privado, sin conexión, gratis. La primera selección **activa la descarga automática** con barra de progreso; el modelo se configura y habilita al terminar
+- **🧠 Coste de contexto cero** — capa de visualización pura: el modelo sigue viendo el texto original y el texto traducido nunca consume la ventana de contexto
 - **Respaldo Google / Bing** — cambio automático si el modelo local no está disponible (google usa un túnel CONNECT de Node con el proxy del sistema)
 - **Artefactos de código omitidos** — rutas, comandos, URL, regex y líneas de código puro nunca se traducen
 - **Traducción por lotes de frases** — las cadenas largas se traducen en lotes pequeños para mantener la calidad en modelos locales pequeños
+- **🧩 Fragmentación por párrafos y frases** — las cadenas largas se dividen por líneas en blanco (se conserva la estructura de párrafos) y luego por frases, para que un modelo local pequeño mantenga la calidad
 - **Salida en streaming** — las traducciones aparecen lote a lote mientras piensa; expande la fila Think para comparar con el original
 - **Resistente** — reintentos con backoff (3×), respaldo directo del navegador, los fallos nunca se cachean
 
@@ -50,6 +54,10 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
    - **Modelo local (Ollama)** — al elegirlo por primera vez aparece el botón de descarga (qwen2.5:7b / 14b o personalizado); se habilita solo al terminar. El botón "+" junto al selector descarga más modelos
    - **google gtx / bing** — funciona directamente (proxy del sistema / VPN automáticos)
 4. Envía un mensaje y expande la fila Think para ver la traducción
+
+## 🎬 Demo
+
+<!-- TODO: graba una demo animada (cadena de pensamiento en inglés → traducción en streaming, originales preservados) y añádela como docs/demo.gif -->
 
 ## ⚙️ Cómo funciona
 

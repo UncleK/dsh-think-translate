@@ -4,7 +4,7 @@
 
 ---
 
-[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI の**表示層翻訳**プラグイン：**思考チェーン（Think 行）、タスクカード、回答本文**を選択した対象言語で表示します。原文は会話履歴に完全に残ります。
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI の**表示層翻訳**プラグイン：**思考チェーン（Think 行）、タスクカード、回答本文**を選択した対象言語で表示します。原文は会話履歴に完全に残り、訳文は**モデルコンテキストに一切入りません**。
 
 [![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
 [![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
@@ -12,12 +12,16 @@
 
 ## ✨ 特徴
 
+DeepSeek 系モデルは中国語で考えることが多く、あるいはたまたま思考に使う言語で考えます。dsh-think-translate は、モデルの思考に字幕を付けるように、Think 行・タスクカード・回答を*あなたの*言語でリアルタイム表示します。
+
 - **8 つの対象言語** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
 - **単一言語 UI** — 設定パネル・思考行・タスクカードがすべて対象言語に追従（中英混在なし）、選択は永続化
 - **ローカルモデル優先** — ローカル Ollama モデル（qwen など）を優先：プライベート・オフライン・無料。初回選択時に**自動ダウンロード**（リアルタイム進捗バー）、完了後自動で設定・有効化
+- **🧠 コンテキスト消費ゼロ** — 純表示層：モデルは原文のまま見ており、訳文はコンテキストウィンドウを一切消費しません
 - **Google / Bing フォールバック** — ローカルモデルが使えないとき自動切替（google は Node CONNECT トンネルでシステムプロキシ経由、アンチボット回避）
 - **コード類は自動スキップ** — ファイルパス・コマンド・URL・正規表現・純コード行は翻訳しない
 - **文単位バッチ翻訳** — 長い思考チェーンを短文バッチで逐次翻訳し、ローカル小モデルでも品質を維持
+- **🧩 段落・文単位のチャンク分割** — 長い思考チェーンを空行で分割（段落構造を保持）し、さらに文単位でバッチ化。ローカル小モデルでも品質を維持
 - **ストリーミング出力** — 思考中に訳文がバッチ単位で表示され、Think 行を開いて原文と比較可能
 - **耐障害性** — host リクエストはバックオフ付き 3 回リトライ、ブラウザ直接フォールバック、失敗結果はキャッシュしない
 
@@ -50,6 +54,10 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
    - **ローカルモデル（Ollama）**：初回選択時にダウンロードボタンが表示（qwen2.5:7b / 14b またはカスタム）、完了後自動有効化。モデル選択の横の「＋」でいつでも追加ダウンロード
    - **google gtx / bing**：そのまま使える（システムプロキシ / VPN を自動利用）
 4. メッセージを送信し、Think 行を展開して訳文を確認
+
+## 🎬 デモ
+
+<!-- TODO：アニメーション付きデモ（英語の思考チェーン → ストリーミング日本語/中文訳、原文保持）を docs/demo.gif に配置 -->
 
 ## ⚙️ 仕組み
 

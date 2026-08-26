@@ -4,7 +4,7 @@
 
 ---
 
-为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI 提供**显示层翻译**：把界面上的**思考链（Think 行）、任务卡片、回答正文**翻译为你选择的目标语言，原文完整保留在会话记录中。
+为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI 提供**显示层翻译**：把界面上的**思考链（Think 行）、任务卡片、回答正文**翻译为你选择的目标语言，原文完整保留在会话记录中，译文**绝不进入模型上下文**。
 
 [![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
 [![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
@@ -12,12 +12,16 @@
 
 ## ✨ 特性
 
+DeepSeek 系模型经常用中文思考——或者用它们碰巧习惯的语言。dsh-think-translate 在你观看时把 Think 行、任务卡片和回答渲染成*你的*语言，就像给模型的思考配上字幕。
+
 - **8 种目标语言** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
 - **单一语言界面** — 设置面板、思考行、任务卡片全部跟随目标语言（不混中英），选择持久化
 - **本地模型为主力** — 优先使用本地 Ollama 模型（qwen 等），隐私离线免费；首次选择本地模型时**自动触发下载**（实时进度条），完成后自动配置启用
+- **🧠 零上下文成本** — 纯显示层：模型看到的仍是原文，译文绝不占用上下文窗口
 - **Google / Bing 兜底** — 本地模型不可用时自动切换（google 通过 Node CONNECT 隧道走系统代理，绕过反爬）
 - **代码工件自动跳过** — 文件路径、命令、URL、正则、纯代码行不翻译
 - **句子分批翻译** — 长思考链按句子分批串行翻译，本地小模型也能保持质量
+- **🧩 段落与句子感知切分** — 长思考链按空行切分（保留段落结构）再按句分批，本地小模型也能保持质量
 - **流式输出** — 思考过程中译文逐批出现，展开 Think 行可对照原文
 - **失败韧性** — host 请求 3 次退避重试 + 浏览器直连兜底，失败结果不缓存
 
@@ -51,6 +55,10 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
    - **google gtx / bing**：开箱即用（自动走系统代理/VPN）
 4. 发消息让模型思考，展开 Think 行查看译文
 
+## 🎬 演示
+
+<!-- TODO：录制动画演示（英文思考链 → 流式中文/日文译文、原文保留）并放到 docs/demo.gif -->
+
 ## ⚙️ 工作原理
 
 ```
@@ -63,7 +71,7 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 ```
 
 - **host 半边**（`lib/index.js`）：供应商适配器、LRU 缓存（600）、`/_xlate/models` 模型列表、`/_xlate/model/pull` + `pull-status` 模型下载管理（完成后自动配置启用）
-- **client 半边**（`lib/client.js`）：8 语言 UI、句子分批翻译、流式 Think 行、localStorage 持久化
+- **client 半边**（`lib/client.js`）：8 语言 UI、段落/句子分批翻译、流式 Think 行、设置与译文缓存持久化（localStorage）
 - 纯显示层：原文完整保留在会话日志与模型上下文中
 
 ## 🛠 开发

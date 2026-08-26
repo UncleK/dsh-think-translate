@@ -4,22 +4,24 @@
 
 ---
 
-Display-layer translation for the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI. The **thinking chain (Think row), task cards and answer text** are displayed in your chosen target language — while the originals stay intact in the transcript.
+Translate the **reasoning / thinking chain (chain-of-thought), task cards and answers** of the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI into one of **8 target languages** — in real time, on the display layer only. The originals stay untouched in the transcript, and the translated text **never enters the model context**.
 
 [![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
 [![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
 [![dsh](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
 
-## ✨ Features
+## ✨ Why dsh-think-translate
 
-- **8 target languages** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
-- **Single-language UI** — settings panel, thinking rows and task cards all follow the target language (no mixed zh/en); your choice persists across reloads
-- **Local model first** — uses your local Ollama model (qwen, etc.): private, offline, free. First local-model selection **auto-triggers the download** with a live progress bar; the model is configured and enabled automatically when done
-- **Google / Bing fallback** — automatic switch when the local model is unavailable (google goes through a Node CONNECT tunnel using the system proxy, bypassing anti-bot blocks)
-- **Code artifacts skipped** — file paths, commands, URLs, regexes and pure-code lines are never translated
-- **Sentence-batched translation** — long thinking chains are translated in small sentence batches so local small models keep quality
-- **Streaming output** — translations appear batch by batch while thinking; expand the Think row to compare with the original
-- **Resilient** — host requests retry with backoff (3×), browser-direct fallback, failed results are never cached
+DeepSeek-class models often reason in Chinese — or in whatever language they happen to think in. dsh-think-translate renders the **Think row, task cards and answer** in *your* language while you watch, like subtitles for the model's thinking.
+
+- **🕵️ Read any thinking chain** — reasoning, chain-of-thought, task cards and answers translated in real time, streamed batch by batch
+- **🌍 8 languages, one consistent UI** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский; the settings panel, thinking rows and task cards all follow your choice, and it persists across reloads
+- **🔒 Private & offline-first** — local Ollama (qwen2.5:7b / 14b or custom) is the default provider: free, unlimited, nothing leaves your machine. First local-model selection **auto-downloads** the model with a live progress bar and enables it when done
+- **🧠 Zero context cost** — pure display layer: the model still sees the original text, and translated text never consumes the context window
+- **☁️ Google / Bing fallback** — automatic switch when the local model is unavailable (google goes through a Node CONNECT tunnel using the system proxy, bypassing anti-bot blocks)
+- **🛡️ Code-safe** — file paths, commands, URLs, regexes and pure-code lines are never translated
+- **🧩 Paragraph & sentence-aware chunking** — long thinking chains are split on blank lines (paragraph structure preserved) and further batched by sentence, so even a small local model keeps quality
+- **⏱️ Resilient** — 3× backoff retries, browser-direct fallback, failed results never cached
 
 ## 📦 Installation
 
@@ -49,7 +51,11 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 3. Pick the **preferred provider**:
    - **Local model (Ollama)** — on first selection a download prompt appears (qwen2.5:7b / 14b or custom); it auto-enables when finished. The "+" button next to the model picker downloads more models anytime
    - **google gtx / bing** — works out of the box (auto system proxy / VPN)
-4. Send a message and expand the Think row to see the translation
+4. Send a message that makes the model think, then expand the **Think row** to read the translation and compare with the original
+
+## 🎬 Demo
+
+<!-- TODO: record an animated demo (English thinking chain → streaming 日本語/中文 translation, originals preserved) and drop it here as docs/demo.gif -->
 
 ## ⚙️ How it works
 
@@ -63,7 +69,7 @@ browser → POST /_xlate/translate (same-origin, no CORS)
 ```
 
 - **Host half** (`lib/index.js`): provider adapters, LRU cache (600), `/_xlate/models` listing, `/_xlate/model/pull` + `pull-status` model download management (auto-configures on completion)
-- **Client half** (`lib/client.js`): 8-language UI, sentence-batched translation, streaming Think rows, localStorage persistence
+- **Client half** (`lib/client.js`): 8-language UI, sentence/paragraph-batched translation, streaming Think rows, localStorage persistence (settings + translation cache)
 - Pure display layer: originals remain in the transcript and model context
 
 ## 🛠 Development

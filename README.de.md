@@ -4,7 +4,7 @@
 
 ---
 
-Übersetzung auf Anzeigeebene für die Web-Oberfläche von [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness): Die **Gedankenkette (Think-Zeile), Aufgabenkarten und der Antworttext** werden in der gewählten Zielsprache angezeigt, während die Originale im Verlauf unverändert bleiben.
+Übersetzung auf Anzeigeebene für die Web-Oberfläche von [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness): Die **Gedankenkette (Think-Zeile), Aufgabenkarten und der Antworttext** werden in der gewählten Zielsprache angezeigt, während die Originale im Verlauf unverändert bleiben und der übersetzte Text **nie in den Modellkontext gelangt**.
 
 [![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
 [![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
@@ -12,12 +12,16 @@
 
 ## ✨ Funktionen
 
+Modelle der DeepSeek-Familie denken oft auf Chinesisch — oder in der Sprache, in der sie gerade denken. dsh-think-translate zeigt die Think-Zeile, Aufgabenkarten und die Antwort live in *Ihrer* Sprache an, wie Untertitel für das Denken des Modells.
+
 - **8 Zielsprachen** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
 - **Einsprachige Oberfläche** — Einstellungsbereich, Denkzeilen und Aufgabenkarten folgen der Zielsprache (kein zh/en-Gemisch); die Auswahl bleibt erhalten
 - **Lokales Modell zuerst** — nutzt Ihr lokales Ollama-Modell (qwen usw.): privat, offline, kostenlos. Die erste Auswahl **startet den Download automatisch** mit Fortschrittsbalken; das Modell wird danach automatisch konfiguriert und aktiviert
+- **🧠 Null Kontextkosten** — reine Anzeigeschicht: das Modell sieht weiterhin den Originaltext, und übersetzter Text verbraucht niemals das Kontextfenster
 - **Google / Bing-Fallback** — automatische Umschaltung, wenn das lokale Modell nicht verfügbar ist (google nutzt einen Node-CONNECT-Tunnel über den Systemproxy)
 - **Code-Artefakte übersprungen** — Pfade, Befehle, URLs, Regexes und reine Codezeilen werden nie übersetzt
 - **Satzweise Batch-Übersetzung** — lange Denkketten werden in kleinen Sätzen übersetzt, damit lokale kleine Modelle Qualität behalten
+- **🧩 Absatz- und satzweise Zerlegung** — lange Denkketten werden an Leerzeilen geteilt (Absatzstruktur bleibt erhalten) und zusätzlich satzweise gebündelt, damit kleine lokale Modelle Qualität behalten
 - **Streaming-Ausgabe** — Übersetzungen erscheinen während des Denkens batchweise; Think-Zeile aufklappen zum Vergleich mit dem Original
 - **Robust** — Host-Anfragen mit Backoff (3×), Browser-Direkt-Fallback, Fehlschläge werden nie gecacht
 
@@ -50,6 +54,10 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
    - **Lokales Modell (Ollama)** — bei der ersten Auswahl erscheint ein Download-Button (qwen2.5:7b / 14b oder benutzerdefiniert); es aktiviert sich automatisch am Ende. Der "+"-Button neben der Auswahl lädt weitere Modelle
    - **google gtx / bing** — funktioniert sofort (Systemproxy / VPN automatisch)
 4. Nachricht senden und die Think-Zeile aufklappen, um die Übersetzung zu sehen
+
+## 🎬 Demo
+
+<!-- TODO: animierte Demo aufnehmen (englische Gedankenkette → Streaming-Übersetzung, Originale erhalten) und als docs/demo.gif ablegen -->
 
 ## ⚙️ Funktionsweise
 
