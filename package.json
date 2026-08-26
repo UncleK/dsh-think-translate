@@ -1,7 +1,7 @@
 {
   "name": "dsh-think-translate",
   "description": "Display-layer translation for the DSH web app: thinking chain, task cards, and optional answer text, in 8 target languages (local Ollama / Google / Bing, fail-open)",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
