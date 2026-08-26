@@ -24,6 +24,7 @@ Modelle der DeepSeek-Familie denken oft auf Chinesisch — oder in der Sprache, 
 - **🧩 Absatz- und satzweise Zerlegung** — lange Denkketten werden an Leerzeilen geteilt (Absatzstruktur bleibt erhalten) und zusätzlich satzweise gebündelt, damit kleine lokale Modelle Qualität behalten
 - **Streaming-Ausgabe** — Übersetzungen erscheinen während des Denkens batchweise; Think-Zeile aufklappen zum Vergleich mit dem Original
 - **Robust** — Host-Anfragen mit Backoff (3×), Browser-Direkt-Fallback, Fehlschläge werden nie gecacht
+- **🎚️ Einstellbarer Übersetzungszeitpunkt** — alles vorübersetzen / alte Ketten lazy laden (Standard) / nur beim Aufklappen
 
 ## 📦 Installation
 

@@ -24,6 +24,7 @@ Los modelos de la familia DeepSeek suelen razonar en chino — o en el idioma en
 - **🧩 Fragmentación por párrafos y frases** — las cadenas largas se dividen por líneas en blanco (se conserva la estructura de párrafos) y luego por frases, para que un modelo local pequeño mantenga la calidad
 - **Salida en streaming** — las traducciones aparecen lote a lote mientras piensa; expande la fila Think para comparar con el original
 - **Resistente** — reintentos con backoff (3×), respaldo directo del navegador, los fallos nunca se cachean
+- **🎚️ Momento de traducción ajustable** — pre-traducir todo / carga diferida de cadenas antiguas (por defecto) / solo al expandir
 
 ## 📦 Instalación
 

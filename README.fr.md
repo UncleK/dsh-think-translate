@@ -24,6 +24,7 @@ Les modèles de la famille DeepSeek raisonnent souvent en chinois — ou dans la
 - **🧩 Découpage par paragraphes et phrases** — les longues chaînes sont découpées sur les lignes vides (structure de paragraphes préservée) puis par phrases, pour garder la qualité sur un petit modèle local
 - **Sortie en streaming** — les traductions apparaissent lot par lot pendant la réflexion ; dépliez la ligne Think pour comparer avec l'original
 - **Résilient** — nouvelles tentatives avec backoff (3×), repli direct navigateur, échecs jamais mis en cache
+- **🎚️ Moment de traduction réglable** — tout pré-traduire / chargement différé des anciennes chaînes (défaut) / uniquement à l'ouverture
 
 ## 📦 Installation
 

@@ -22,6 +22,7 @@ DeepSeek-class models often reason in Chinese — or in whatever language they h
 - **🛡️ Code-safe** — file paths, commands, URLs, regexes and pure-code lines are never translated
 - **🧩 Paragraph & sentence-aware chunking** — long thinking chains are split on blank lines (paragraph structure preserved) and further batched by sentence, so even a small local model keeps quality
 - **⏱️ Resilient** — 3× backoff retries, browser-direct fallback, failed results never cached
+- **🎚️ Adjustable translation timing** — pre-translate everything, lazy-load historical chains (default), or translate only the expanded chain
 
 ## 📦 Installation
 
