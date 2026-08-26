@@ -27,6 +27,9 @@
       "immediately": true,
       "inject": [
         "@deepseek-ai/dsh-client-runtime"
+      ],
+      "external": [
+        "@deepseek-ai/dsh-client-ui-primitives"
       ]
     },
     "bundle": {
