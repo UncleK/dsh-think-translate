@@ -1,14 +1,21 @@
+<div align="center">
+
 # 🐋 dsh-think-translate
 
 **Idiomas:** [English](README.md) · [中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Русский](README.ru.md)
 
----
-
-Traducción en la capa de visualización para la interfaz web de [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness): la **cadena de pensamiento (fila Think), las tarjetas de tareas y el texto de respuesta** se muestran en el idioma de destino elegido, mientras los originales permanecen intactos en la transcripción y el texto traducido **nunca entra en el contexto del modelo**.
-
 [![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
 [![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
 [![dsh](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
+
+<img src="demo/demo.gif" width="46%" alt="dsh-think-translate demo" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
+<img src="demo/demo2.gif" width="46%" alt="dsh-think-translate demo 2" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
+
+</div>
+
+---
+
+Traducción en la capa de visualización para la interfaz web de [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness): la **cadena de pensamiento (fila Think), las tarjetas de tareas y el texto de respuesta** se muestran en el idioma de destino elegido, mientras los originales permanecen intactos en la transcripción y el texto traducido **nunca entra en el contexto del modelo**.
 
 ## ✨ Características
 
@@ -55,12 +62,6 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
    - **Modelo local (Ollama)** — al elegirlo por primera vez aparece el botón de descarga (qwen2.5:7b / 14b o personalizado); se habilita solo al terminar. El botón "+" junto al selector descarga más modelos
    - **google gtx / bing** — funciona directamente (proxy del sistema / VPN automáticos)
 4. Envía un mensaje y expande la fila Think para ver la traducción
-
-## 🎬 Demo
-
-![dsh-think-translate demo](demo/demo.gif)
-
-![dsh-think-translate demo 2](demo/demo2.gif)
 
 ## ⚙️ Cómo funciona
 

@@ -1,14 +1,21 @@
+<div align="center">
+
 # 🐋 dsh-think-translate
 
 **언어:** [English](README.md) · [中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Русский](README.ru.md)
 
----
-
-[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI용 **표시 계층 번역** 플러그인: **사고 체인(Think 행), 작업 카드, 답변 본문**을 선택한 대상 언어로 표시합니다. 원문은 대화 기록에 완전히 보존되며, 번역문은 **모델 컨텍스트에 전혀 들어가지 않습니다**.
-
 [![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
 [![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
 [![dsh](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
+
+<img src="demo/demo.gif" width="46%" alt="dsh-think-translate demo" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
+<img src="demo/demo2.gif" width="46%" alt="dsh-think-translate demo 2" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
+
+</div>
+
+---
+
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI용 **표시 계층 번역** 플러그인: **사고 체인(Think 행), 작업 카드, 답변 본문**을 선택한 대상 언어로 표시합니다. 원문은 대화 기록에 완전히 보존되며, 번역문은 **모델 컨텍스트에 전혀 들어가지 않습니다**.
 
 ## ✨ 기능
 
@@ -55,12 +62,6 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
    - **로컬 모델(Ollama)** — 첫 선택 시 다운로드 버튼 표시(qwen2.5:7b / 14b 또는 커스텀), 완료 후 자동 활성화. 모델 선택 옆 "+"로 언제든 추가 다운로드
    - **google gtx / bing** — 바로 사용 가능(시스템 프록시/VPN 자동 이용)
 4. 메시지를 보내고 Think 행을 펼쳐 번역 확인
-
-## 🎬 데모
-
-![dsh-think-translate demo](demo/demo.gif)
-
-![dsh-think-translate demo 2](demo/demo2.gif)
 
 ## ⚙️ 작동 원리
 

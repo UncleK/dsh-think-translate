@@ -1,14 +1,21 @@
+<div align="center">
+
 # 🐋 dsh-think-translate
 
 **语言：** [English](README.md) · [中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Русский](README.ru.md)
 
----
-
-为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI 提供**显示层翻译**：把界面上的**思考链（Think 行）、任务卡片、回答正文**翻译为你选择的目标语言，原文完整保留在会话记录中，译文**绝不进入模型上下文**。
-
 [![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
 [![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
 [![dsh](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
+
+<img src="demo/demo.gif" width="46%" alt="dsh-think-translate demo" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
+<img src="demo/demo2.gif" width="46%" alt="dsh-think-translate demo 2" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
+
+</div>
+
+---
+
+为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI 提供**显示层翻译**：把界面上的**思考链（Think 行）、任务卡片、回答正文**翻译为你选择的目标语言，原文完整保留在会话记录中，译文**绝不进入模型上下文**。
 
 ## ✨ 特性
 
@@ -55,12 +62,6 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
    - **本地部署模型（Ollama）**：首次选择时显示下载按钮（qwen2.5:7b / 14b 或自定义），下载完成后自动启用；模型下拉旁 "+" 可随时下载更多
    - **google gtx / bing**：开箱即用（自动走系统代理/VPN）
 4. 发消息让模型思考，展开 Think 行查看译文
-
-## 🎬 演示
-
-![dsh-think-translate demo](demo/demo.gif)
-
-![dsh-think-translate demo 2](demo/demo2.gif)
 
 ## ⚙️ 工作原理
 

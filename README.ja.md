@@ -1,14 +1,21 @@
+<div align="center">
+
 # 🐋 dsh-think-translate
 
 **言語：** [English](README.md) · [中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Русский](README.ru.md)
 
----
-
-[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI の**表示層翻訳**プラグイン：**思考チェーン（Think 行）、タスクカード、回答本文**を選択した対象言語で表示します。原文は会話履歴に完全に残り、訳文は**モデルコンテキストに一切入りません**。
-
 [![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
 [![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
 [![dsh](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
+
+<img src="demo/demo.gif" width="46%" alt="dsh-think-translate demo" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
+<img src="demo/demo2.gif" width="46%" alt="dsh-think-translate demo 2" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
+
+</div>
+
+---
+
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI の**表示層翻訳**プラグイン：**思考チェーン（Think 行）、タスクカード、回答本文**を選択した対象言語で表示します。原文は会話履歴に完全に残り、訳文は**モデルコンテキストに一切入りません**。
 
 ## ✨ 特徴
 
@@ -55,12 +62,6 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
    - **ローカルモデル（Ollama）**：初回選択時にダウンロードボタンが表示（qwen2.5:7b / 14b またはカスタム）、完了後自動有効化。モデル選択の横の「＋」でいつでも追加ダウンロード
    - **google gtx / bing**：そのまま使える（システムプロキシ / VPN を自動利用）
 4. メッセージを送信し、Think 行を展開して訳文を確認
-
-## 🎬 デモ
-
-![dsh-think-translate demo](demo/demo.gif)
-
-![dsh-think-translate demo 2](demo/demo2.gif)
 
 ## ⚙️ 仕組み
 
