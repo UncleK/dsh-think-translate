@@ -7,7 +7,7 @@
 //
 // Run with: node --test test/host.test.mjs
 
-import { describe, it } from 'node:test'
+import { describe, it, after } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   buildChainFromPriority,
@@ -25,6 +25,7 @@ import {
   fnv,
   deepMerge,
   structuredCloneSafe,
+  ADAPTERS,
 } from '../lib/index.js'
 
 // ---------------------------------------------------------------------------
@@ -201,20 +202,20 @@ describe('normalizeConfigPatch', function () {
     assert.equal(result._fullProviders.google.enabled, true)
   })
 
+  // Shared fixture: same as `live` but with openai disabled. Used by the two
+  // enabled-inheritance tests below. normalizeConfigPatch never mutates its
+  // live argument, so one instance is safe to share.
+  const liveWithDisabled = {
+    ...live,
+    providers: { ...live.providers, openai: { ...live.providers.openai, enabled: false } },
+  }
+
   it('enabled inheritance: partial patch without enabled keeps live state', function () {
-    const liveWithDisabled = {
-      ...live,
-      providers: { ...live.providers, openai: { ...live.providers.openai, enabled: false } },
-    }
     const result = normalizeConfigPatch({ providers: { openai: { model: 'gpt-4' } } }, liveWithDisabled)
     assert.equal(result.providers.openai.enabled, false) // inherited from live
   })
 
   it('enabled inheritance: explicit enabled overrides', function () {
-    const liveWithDisabled = {
-      ...live,
-      providers: { ...live.providers, openai: { ...live.providers.openai, enabled: false } },
-    }
     const result = normalizeConfigPatch({ providers: { openai: { enabled: true } } }, liveWithDisabled)
     assert.equal(result.providers.openai.enabled, true)
   })
@@ -461,6 +462,19 @@ describe('chunkText', function () {
   it('returns the whole text for empty input', function () {
     assert.deepEqual(chunkText(''), [''])
   })
+
+  it('splits at blank-line paragraph boundaries instead of hard-cutting at 1200', function () {
+    // Two paragraphs separated by a blank line. The first is long enough to
+    // be split on sentence boundaries; the second stays short. A naive
+    // hard cut at 1200 chars would truncate the tail paragraph, so its
+    // survival whole proves the blank-line boundary is respected.
+    const longPara = 'First sentence. Second sentence. Third sentence. '.repeat(40) // 1960 chars
+    const tail = 'Tail paragraph with a real sentence.'
+    const chunks = chunkText(longPara + '\n\n' + tail)
+    assert.equal(chunks[chunks.length - 1], tail) // tail survives whole
+    for (const c of chunks) assert.ok(c.length <= 1200)
+    assert.ok(chunks.length >= 2) // long paragraph was split, tail is separate
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -468,17 +482,19 @@ describe('chunkText', function () {
 // ---------------------------------------------------------------------------
 
 describe('fnv', function () {
-  it('is deterministic', function () {
+  it('is deterministic — same input hashes identically across calls', function () {
     assert.equal(fnv('hello world'), fnv('hello world'))
+    assert.equal(fnv(''), fnv(''))
   })
 
-  it('embeds the input length in the output', function () {
-    const h = fnv('abc')
-    assert.ok(h.endsWith('.3'))
-  })
-
-  it('produces distinct hashes for distinct inputs', function () {
+  it('produces distinct hashes for distinct inputs of the same length', function () {
+    assert.notEqual(fnv('aaaa'), fnv('aaab'))
     assert.notEqual(fnv('one'), fnv('two'))
+  })
+
+  it('produces distinct hashes for inputs of different lengths', function () {
+    assert.notEqual(fnv('a'), fnv('aa'))
+    assert.notEqual(fnv('one'), fnv('one!'))
   })
 })
 
@@ -569,6 +585,12 @@ describe('runChainFor', function () {
 })
 
 describe('translateViaChain', function () {
+  // Safety net: remove mock adapters even if a test fails mid-way.
+  after(function () {
+    delete ADAPTERS['__mock_a']
+    delete ADAPTERS['__mock_b']
+  })
+
   it('fails when primary and fallback chains have no usable provider', async function () {
     const cfg = {
       chain: ['ghost'],
@@ -582,13 +604,50 @@ describe('translateViaChain', function () {
   })
 
   it('does not try the fallback when it is disabled', async function () {
-    const cfg = {
-      chain: ['ghost'],
-      fallback: { enabled: false, chain: ['ghost'] },
-      providers: { ghost: { type: 'ghost', enabled: true } },
+    // Mock adapters that would succeed if called. The fallback adapter
+    // returns 'fallback ok', so a buggy implementation that ignored
+    // enabled: false and tried the fallback would return ok: true and
+    // fail this assertion — a genuine discriminator.
+    ADAPTERS['__mock_a'] = async function () { throw new Error('primary failed') }
+    ADAPTERS['__mock_b'] = async function () { return 'fallback ok' }
+    try {
+      const cfg = {
+        chain: ['__mock_a'],
+        fallback: { enabled: false, chain: ['__mock_b'] },
+        providers: {
+          __mock_a: { type: '__mock_a', enabled: true },
+          __mock_b: { type: '__mock_b', enabled: true },
+        },
+      }
+      const result = await translateViaChain('hello', 'zh-CN', cfg)
+      assert.equal(result.ok, false)
+      assert.equal(result.error, 'primary failed')
+    } finally {
+      delete ADAPTERS['__mock_a']
+      delete ADAPTERS['__mock_b']
     }
-    const result = await translateViaChain('hello', 'zh-CN', cfg)
-    assert.equal(result.ok, false)
+  })
+
+  it('tries the fallback when the primary fails and the fallback is enabled', async function () {
+    // Positive control: with fallback enabled, the fallback adapter IS used.
+    ADAPTERS['__mock_a'] = async function () { throw new Error('primary failed') }
+    ADAPTERS['__mock_b'] = async function () { return 'fallback ok' }
+    try {
+      const cfg = {
+        chain: ['__mock_a'],
+        fallback: { enabled: true, chain: ['__mock_b'] },
+        providers: {
+          __mock_a: { type: '__mock_a', enabled: true },
+          __mock_b: { type: '__mock_b', enabled: true },
+        },
+      }
+      const result = await translateViaChain('hello', 'zh-CN', cfg)
+      assert.equal(result.ok, true)
+      assert.equal(result.text, 'fallback ok')
+    } finally {
+      delete ADAPTERS['__mock_a']
+      delete ADAPTERS['__mock_b']
+    }
   })
 
   it('fails when the chain is missing entirely', async function () {
