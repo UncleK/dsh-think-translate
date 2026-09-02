@@ -23,12 +23,15 @@ DeepSeek-class models often reason in Chinese — or in whatever language they h
 
 - **🕵️ Read any thinking chain** — reasoning, chain-of-thought, task cards and answers translated in real time, streamed batch by batch
 - **🌍 8 languages, one consistent UI** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский; the settings panel, thinking rows and task cards all follow your choice, and it persists across reloads
-- **🔒 Private & offline-first** — local Ollama (qwen2.5:7b / 14b or custom) is the default provider: free, unlimited, nothing leaves your machine. First local-model selection **auto-downloads** the model with a live progress bar and enables it when done
+- **🔗 Dynamic provider chain** — order providers by drag-and-drop, enable/disable each one, and set an independent fallback chain. Built-ins (google gtx, bing, local Ollama) plus any number of custom providers
+- **🔌 Custom providers (OpenAI & Anthropic)** — add arbitrary OpenAI-compatible endpoints (any `/v1/chat/completions` gateway) or native **Anthropic Messages API** endpoints (Claude) from the settings panel: name, type, base URL, API key, model
+- **🪄 DSH provider discovery** — providers already configured in DSH's `settings.yaml` (`llm-pi-ai.providers`, e.g. linuxdo-hub, coding-hub) are auto-discovered and appear in the chain as read-only "DSH" entries; keys are resolved from `.credentials.yaml` at runtime and never written to the plugin's config
+- **🔒 Private & offline-first** — local Ollama (qwen2.5:7b / 14b or custom) is a first-class provider: free, unlimited, nothing leaves your machine. First local-model selection **auto-downloads** the model with a live progress bar and enables it when done
 - **🧠 Zero context cost** — pure display layer: the model still sees the original text, and translated text never consumes the context window
-- **☁️ Google / Bing fallback** — automatic switch when the local model is unavailable (google goes through a Node CONNECT tunnel using the system proxy, bypassing anti-bot blocks)
+- **☁️ Google / Bing fallback** — automatic switch when other providers are unavailable (google goes through a Node CONNECT tunnel using the system proxy, bypassing anti-bot blocks)
 - **🛡️ Code-safe** — file paths, commands, URLs, regexes and pure-code lines are never translated
 - **🧩 Paragraph & sentence-aware chunking** — long thinking chains are split on blank lines (paragraph structure preserved) and further batched by sentence, so even a small local model keeps quality
-- **⏱️ Resilient** — 3× backoff retries, browser-direct fallback, failed results never cached
+- **⏱️ Resilient** — 3× backoff retries, per-provider test buttons, failed results never cached
 - **🎚️ Adjustable translation timing** — pre-translate everything, lazy-load historical chains (default), or translate only the expanded chain
 
 ## 📦 Installation
@@ -56,24 +59,32 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 
 1. Open **Settings → Think Translation**
 2. Pick the **target language** (e.g. 日本語) — the settings panel, thinking rows and task cards all switch to it
-3. Pick the **preferred provider**:
-   - **Local model (Ollama)** — on first selection a download prompt appears (qwen2.5:7b / 14b or custom); it auto-enables when finished. The "+" button next to the model picker downloads more models anytime
-   - **google gtx / bing** — works out of the box (auto system proxy / VPN)
+3. **Manage the provider chain** (drag to reorder):
+   - Built-ins: **google gtx / bing** (free, works out of the box via system proxy) and **local Ollama** — on first local-model selection a download prompt appears (qwen2.5:7b / 14b or custom); it auto-enables when finished
+   - **DSH providers**: endpoints already configured in DSH (`llm-pi-ai.providers`) appear automatically as read-only entries (badge "DSH"); enable them to route translation through your existing gateway accounts
+   - **Custom providers**: click "Add custom provider" to register any OpenAI-compatible endpoint or a native Anthropic Messages endpoint (base URL, API key, model); each row has a **test** button to verify it live
+   - Use the **fallback chain** toggle to keep a backup set (e.g. google/bing) when the primary chain fails
 4. Send a message that makes the model think, then expand the **Think row** to read the translation and compare with the original
 
 ## ⚙️ How it works
 
 ```
 browser → POST /_xlate/translate (same-origin, no CORS)
-  → host provider chain (fail-open):
-      openai-compatible (local Ollama, Node fetch to loopback)
-      → google gtx (Node https + CONNECT tunnel through system proxy)
-      → bing (curl form)
+  → host provider chain (fail-open, user-ordered):
+      chain: [provider1, provider2, ...]   ← drag-reordered in settings
+        each provider is one of:
+          google   (gtx via Node CONNECT tunnel / curl through system proxy)
+          bing     (ttranslatev3 via curl)
+          openai   (OpenAI-compatible /chat/completions — Ollama local or any gateway)
+          anthropic(Anthropic Messages API /v1/messages)
+      fallback chain (independent, e.g. google/bing) tried when the primary chain fails
   → browser-direct fallback
 ```
 
-- **Host half** (`lib/index.js`): provider adapters, LRU cache (600), `/_xlate/models` listing, `/_xlate/model/pull` + `pull-status` model download management (auto-configures on completion)
-- **Client half** (`lib/client.js`): 8-language UI, sentence/paragraph-batched translation, streaming Think rows, localStorage persistence (settings + translation cache)
+- **Provider config** lives in `config.json` (runtime, gitignored): `chain` (ordered ids), `fallback` (enabled + chain), `providers` (per-provider `type`/`enabled`/`baseURL`/`apiKey`/`model`/`apiKeyEnv`). Old `priority`-based configs auto-migrate.
+- **DSH discovery** reads the harness `settings.yaml` (`llm-pi-ai.providers`) and `.credentials.yaml` (`refs`) on load; discovered providers are marked `source: "dsh"`, resolved keys stay in memory (never written to `config.json`), and a `/_xlate/dsh-scan` route re-reads them on demand.
+- **Host half** (`lib/index.js`): provider adapters, ordered chain + fallback execution, LRU cache (600), per-provider override for tests, `/_xlate/models` listing, `/_xlate/model/pull` + `pull-status` model download management (auto-configures on completion)
+- **Client half** (`lib/client.js`): 8-language UI, drag-reorderable provider list, add/edit/delete custom providers, per-provider test buttons, sentence/paragraph-batched translation, streaming Think rows, localStorage persistence (settings + translation cache)
 - Pure display layer: originals remain in the transcript and model context
 
 ## 🛠 Development
