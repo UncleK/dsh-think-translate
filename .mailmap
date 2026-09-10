@@ -1,0 +1,7 @@
+# Canonical commit identity for the maintainer: fold the npm-publish identity
+# (kolinfly@gmail.com) into the GitHub one, so `git shortlog -sne` reports a
+# single maintainer instead of two.
+#
+# Contributor identities (e.g. PR authors) are intentionally left as authored —
+# attribution must stay with the person who wrote the code.
+UncleK <UncleK@users.noreply.github.com> <kolinfly@gmail.com>
