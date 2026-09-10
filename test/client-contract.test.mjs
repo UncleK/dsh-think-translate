@@ -317,4 +317,17 @@ describe('settings UI contracts', function () {
     assert.ok(src.indexOf('var dshAll = Object.keys(provs)') > src.indexOf('var provs = cfg.providers || {}'),
       'the inherit block must run after provs is assigned')
   })
+
+  it('describes the provider list without the chain metaphor', function () {
+    // "加入链 / 移出链 / 未在链中 / 全部加入链 / 链路失败" read as jargon in a list that is
+    // simply the priority order. 思考链 — the model's reasoning chain — is a different
+    // thing and keeps its name.
+    for (const bad of ['加入链', '移出链', '未在链中', '链路失败', 'Add to chain', 'Remove from chain', 'not in chain']) {
+      assert.ok(!src.includes(bad), 'the provider UI should not say "' + bad + '" any more')
+    }
+    assert.match(src, /providerAddToChain: "加入"/)
+    assert.match(src, /providerRemoveFromChain: "移出"/)
+    assert.match(src, /dshImportAll: "全部加入"/)
+    assert.match(src, /sectionTitle: "思考链翻译"/)
+  })
 })

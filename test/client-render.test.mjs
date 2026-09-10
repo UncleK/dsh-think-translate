@@ -289,9 +289,9 @@ describe('settings panel renders (real bundle, mini React)', function () {
     const text = textOf(afterScan)
     assert.match(text, /a-dsh/, 'the list shows the harness’s own provider ids')
     assert.match(text, /b-dsh/)
-    assert.match(text, /全部加入链/)
+    assert.match(text, /全部加入/)
 
-    click(button(afterScan, '全部加入链'))
+    click(button(afterScan, '全部加入'))
     const saved = panel.calls.filter(function (c) { return c.url === '/_xlate/config' && c.init && c.init.method === 'POST' })
     assert.equal(saved.length, 1, 'exactly one save is sent')
     const chain = JSON.parse(saved[0].init.body).chain
