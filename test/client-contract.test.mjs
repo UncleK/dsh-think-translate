@@ -290,26 +290,28 @@ describe('settings UI contracts', function () {
     assert.match(src, new RegExp('var PLUGIN_NAME = "' + pkg.name + '";'))
   })
 
-  it('offers a one-click way to inherit the API this DSH is already configured with', function () {
-    // A fresh install knows nothing, but the harness it runs inside already does:
-    // GET /_xlate/dsh-scan re-reads settings.yaml + .credentials.yaml and returns
-    // those providers as read-only `source: 'dsh'` entries, so the user never
-    // retypes a base URL or a key.
+  it('lists the providers this DSH is configured with, and can re-read them', function () {
+    // A fresh install knows nothing, but the harness it runs inside already does: the
+    // host merges settings.yaml/.credentials.yaml providers into the config it serves,
+    // so they appear as read-only `source: 'dsh'` rows on their own. What needs a
+    // click is the RE-READ (editing ~/.dsh/settings.yaml otherwise needs a restart).
     assert.match(src, /fetch\("\/_xlate\/dsh-scan"\)\.then\(function \(r\) \{ return r\.json\(\); \}\)/)
     assert.match(src, /var dshAvailable = dshAll\.filter\(function \(id\) \{ return chain\.indexOf\(id\) < 0; \}\);/)
     assert.match(src, /return provs\[id\] && provs\[id\]\.source === "dsh";/)
-    assert.match(src, /var dshMenuPair = useDraft\("dshMenu", false\)/)
-    // The button sits next to "+ add provider" and names the count it can add.
-    assert.match(src, /onClick: openDshImport/)
-    assert.match(src, /t\.dshImport \+ \(dshAvailable\.length \? " · " \+ dshAvailable\.length : ""\)/)
-    // One row per inherited provider, with the DSH badge and a one-click add; a
-    // second button adds every remaining provider at once.
-    assert.match(src, /className: "xl-dsh-menu"/)
+    assert.match(src, /onClick: rescanDsh/)
+    assert.match(src, /"↻ " \+ t\.dshImport/)
+    // Rows carry the DSH badge and a compact "+" labelled through its tooltip; the
+    // bulk action rides the heading of the same list.
     assert.match(src, /createElement\("span", \{ className: "xl-badge" \}, t\.providerDsh\)/)
-    assert.match(src, /t\.dshImportAll/)
-    assert.match(src, /onClick: function \(\) \{ actions\.addToChain\(id\); \}/)
-    // Nothing to inherit must read as an explanation, never as an empty box.
-    assert.match(src, /dshAvailable\.length === 0[\s\S]{0,120}t\.dshImportEmpty/)
+    assert.match(src, /className: "xl-btn xl-add-btn"[\s\S]{0,120}"aria-label": t\.providerAddToChain/)
+    assert.match(src, /unusedDsh\.length > 1 \? createElement\("button", \{\s*className: "xl-btn", type: "button", onClick: addAllDsh/)
+    // One list, not two: the old separate menu is gone.
+    assert.ok(!src.includes('xl-dsh-menu'), 'the duplicate inherit menu must stay removed')
+    assert.ok(!src.includes('openDshImport'), 'and its handler with it')
+    // The heading names the rows when they are all DSH entries.
+    assert.match(src, /allDsh \? t\.providerDshList : t\.providerUnused/)
+    // An empty scan reports the file it read rather than a bare "nothing found".
+    assert.match(src, /t\.dshImportEmpty \+ \(d\.home \? " · " \+ d\.home \+ "\/settings\.yaml" : ""\)/)
     // Ordering: this reads provs/chain, which the same function assigns further
     // down. The render test is the real guard; this keeps the intent visible.
     assert.ok(src.indexOf('var dshAll = Object.keys(provs)') > src.indexOf('var provs = cfg.providers || {}'),

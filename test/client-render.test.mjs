@@ -175,10 +175,20 @@ const DSH_PROVIDER = {
 }
 
 function configWith(providers, chain) {
-  return { ok: true, chain: chain, providers: providers, targetLang: 'zh-CN', think: true, todo: true, ans: false, mode: 'lazy' }
+  // dshScan rides on the config the scan route answers with (host-side diagnostic):
+  // the panel uses it to name the file it read when a scan finds nothing.
+  return {
+    ok: true, chain: chain, providers: providers, targetLang: 'zh-CN', think: true, todo: true, ans: false, mode: 'lazy',
+    dshScan: { home: 'C:/Users/test/.dsh', settingsFound: true, credsFound: true, providers: [] },
+  }
 }
 
-async function mountPanel(scanConfig) {
+async function mountPanel(config, scanConfig) {
+  // The host already merges the harness's providers into GET /_xlate/config, so the
+  // panel paints them without being asked; the scan route answers with the same shape
+  // (a second argument models "the harness config changed since we loaded").
+  const served = config
+  const scanned = scanConfig || config
   const calls = []
   const runtime = createRuntime()
   const captured = {}
@@ -193,9 +203,9 @@ async function mountPanel(scanConfig) {
         body = JSON.parse(init.body)
         body = configWith(body.providers || {}, body.chain || [])
       } else if (url === '/_xlate/config') {
-        body = configWith({ google: { type: 'google', enabled: true }, 'openrouter-ox': DSH_PROVIDER }, ['google'])
+        body = served
       } else if (url === '/_xlate/dsh-scan') {
-        body = scanConfig
+        body = scanned
       } else if (url === '/_xlate/models') {
         body = { models: [] }
       } else if (url === '/_xlate/version') {
@@ -239,7 +249,7 @@ async function mountPanel(scanConfig) {
 }
 
 describe('settings panel renders (real bundle, mini React)', function () {
-  it('paints the section and names the DSH providers it can inherit', async function () {
+  it('paints the section and lists the DSH providers it can use', async function () {
     const panel = await mountPanel(configWith({ google: { type: 'google', enabled: true }, 'a-dsh': DSH_PROVIDER }, ['google']))
     const text = textOf(panel.tree)
     // The section title travels as the registration label; the panel itself
@@ -249,13 +259,22 @@ describe('settings panel renders (real bundle, mini React)', function () {
     assert.equal(section.id, 'dsh-think-translate')
     assert.match(text, /目标语言/)
     assert.match(text, /当前使用/)
-    assert.match(text, /继承 DSH 已配置的 API/, 'the inherit entry point must be visible')
-    assert.match(text, /· 1/, 'and it must say how many providers it can add')
+    // The discovered provider is listed without asking (the host merges it), under a
+    // heading that says what the rows are, with a rescan button beside "+ add provider".
+    assert.match(text, /重新扫描 DSH 配置/, 'the rescan entry point must be visible')
+    assert.match(text, /DSH 已配置提供方/, 'and the list names what it holds')
+    assert.match(text, /a-dsh/, 'with the provider the harness is configured with')
+    assert.ok(flatten(panel.tree).some(function (n) { return n.host && cls(n) === 'xl-btn xl-add-btn' }),
+      'each listed provider has its compact "+" add button')
     assert.ok(!panel.calls.some(function (c) { return c.url === '/_xlate/dsh-scan' }),
       'nothing is scanned before the user asks for it')
   })
 
-  it('rescans on click and adds every inherited provider with one more click', async function () {
+  it('rescans on click, then adds every listed provider with one more click', async function () {
+    // The host already merges the harness's providers into the config it serves, so
+    // they are listed without asking. The button re-reads them (an edit to
+    // ~/.dsh/settings.yaml otherwise needs a restart) and the bulk action sits on the
+    // list they appear in — there is no second, duplicate list any more.
     const scan = configWith({
       google: { type: 'google', enabled: true },
       'a-dsh': DSH_PROVIDER,
@@ -263,12 +282,12 @@ describe('settings panel renders (real bundle, mini React)', function () {
     }, ['google'])
 
     const panel = await mountPanel(scan)
-    click(button(panel.tree, '继承 DSH 已配置的 API'))
+    click(button(panel.tree, '重新扫描 DSH 配置'))
     const afterScan = await panel.runtime.mount(panel.registered)
 
     assert.ok(panel.calls.some(function (c) { return c.url === '/_xlate/dsh-scan' }), 'the click must rescan')
     const text = textOf(afterScan)
-    assert.match(text, /a-dsh/, 'the menu lists the harness’s own provider ids')
+    assert.match(text, /a-dsh/, 'the list shows the harness’s own provider ids')
     assert.match(text, /b-dsh/)
     assert.match(text, /全部加入链/)
 
@@ -279,22 +298,31 @@ describe('settings panel renders (real bundle, mini React)', function () {
     assert.deepEqual(chain, ['google', 'a-dsh', 'b-dsh'], 'both inherited providers join the chain, order preserved')
   })
 
-  it('explains an empty scan instead of showing an empty box', async function () {
-    const panel = await mountPanel(configWith({ google: { type: 'google', enabled: true } }, ['google']))
-    click(button(panel.tree, '继承 DSH 已配置的 API'))
-    const afterScan = await panel.runtime.mount(panel.registered)
-    assert.match(textOf(afterScan), /没有发现已配置的 provider/)
+  it('adds one provider from the list with the compact + button', async function () {
+    const panel = await mountPanel(configWith({ google: { type: 'google', enabled: true }, 'a-dsh': DSH_PROVIDER }, ['google']))
+    const add = flatten(panel.tree).find(function (n) { return n.host && cls(n) === 'xl-btn xl-add-btn' })
+    assert.ok(add, 'the row carries a compact "+" button')
+    assert.equal(textOf(add), '+', 'with no label text')
+    assert.ok(add.props.title, 'and the wording lives in its tooltip: ' + add.props.title)
+    click(add)
+    const after = await panel.runtime.mount(panel.registered)
+    const post = panel.calls.filter(function (c) { return c.url === '/_xlate/config' && c.init && c.init.method === 'POST' }).pop()
+    assert.deepEqual(JSON.parse(post.init.body).chain, ['google', 'a-dsh'])
+    assert.match(textOf(after), /a-dsh/)
   })
 
-  it('closes the inherit menu when the custom-provider form opens', async function () {
+  it('names the list after what it holds', async function () {
     const panel = await mountPanel(configWith({ google: { type: 'google', enabled: true }, 'a-dsh': DSH_PROVIDER }, ['google']))
-    click(button(panel.tree, '继承 DSH 已配置的 API'))
-    let tree = await panel.runtime.mount(panel.registered)
-    assert.match(textOf(tree), /全部加入链|a-dsh/, 'the menu is open')
+    assert.match(textOf(panel.tree), /DSH 已配置提供方/, 'all-DSH rows get the DSH heading')
+  })
 
-    click(button(tree, '+ 添加自定义提供方'))
-    tree = await panel.runtime.mount(panel.registered)
-    assert.ok(!textOf(tree).includes('全部加入链'), 'the two entry points must not be open at once')
+  it('explains a scan that found nothing, naming the file it read', async function () {
+    const panel = await mountPanel(configWith({ google: { type: 'google', enabled: true } }, ['google']))
+    click(button(panel.tree, '重新扫描 DSH 配置'))
+    const afterScan = await panel.runtime.mount(panel.registered)
+    const text = textOf(afterScan)
+    assert.match(text, /没有发现已配置的 provider/)
+    assert.match(text, /settings\.yaml/, 'and it names the file it looked at')
   })
 
   it('keeps a half-typed provider form across the remount a language change causes', async function () {
