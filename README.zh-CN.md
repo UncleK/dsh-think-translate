@@ -70,7 +70,7 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 2. 选择**目标语言**（比如日本語）——设置面板、思考行、任务卡片全部切换为该语言
 3. 管理**供应商链**（拖动排序，勾选即启用）：
    - 内置：**google gtx / bing**（免费，开箱即用，自动走系统代理）与**本地模型（Ollama）**（首次选中提示下载 7b/14b 或自定义）
-   - **DSH 供应商**：`settings.yaml` 里已配置的端点会自动出现（只读，勾选即加入链）
+   - **DSH 供应商**：`settings.yaml` 里已配置的端点会自动出现（只读，勾选即加入链）；列表下方的 **继承 DSH 已配置的 API** 会重新扫描并一键全部加入——不用重填 baseURL 或密钥（密钥在请求时从 DSH 自己的凭据里解析）
    - **自定义供应商**：任意 OpenAI 兼容或 Anthropic Messages 端点；密钥可直接填，也可只填**环境变量名**（不落盘），表单里带常见模型的预设
    - 取消勾选即跳过该供应商；更细的说明以 [README.md](README.md) 为准
 4. 发消息让模型思考，展开 Think 行查看译文

@@ -146,13 +146,35 @@ describe('settings UI contracts', function () {
     assert.match(src, /disabled: !presetByName\(formProvider\)/)
     assert.match(src, /return pp \? pp\.models : \[\];/)
     assert.match(src, /onClick: function \(\) \{ onProviderChange\(pp\.name\); setFormProviderMenu\(false\); \}/)
-    // Every known provider suggests more than one model.
-    const perProvider = (src.match(/models: \[[^\]]+\]/g) || []).filter(function (m) {
-      return (m.match(/", "/g) || []).length >= 1
-    })
-    assert.ok(perProvider.length >= 8, 'each preset should list several models')
+    // Every preset suggests at least one model, and most of them several.
+    const presets = src.match(/models: \[[^\]]+\]/g) || []
+    assert.equal(presets.length, 8, 'one model list per preset')
+    assert.ok(presets.every(function (m) { return m !== 'models: []' }), 'no preset may suggest nothing')
+    const several = presets.filter(function (m) { return (m.match(/", "/g) || []).length >= 1 })
+    assert.ok(several.length >= 6, 'most presets should list several models')
+    // The ids were re-checked against the vendors' docs on 2026-09-11; the retired
+    // ones must not come back (Qwen retired qwen-turbo, Moonshot the whole
+    // moonshot-v1 series, and the Claude 3.x ids are gone).
+    for (const gone of ['"qwen-turbo"', '"moonshot-v1-8k"', '"claude-3-5-haiku-latest"',
+      '"claude-3-7-sonnet-latest"', '"glm-4-flash"', '"deepseek-chat"']) {
+      assert.ok(!src.includes(gone), gone + ' is retired and must not be suggested')
+    }
+    for (const live of ['"deepseek-flash"', '"gpt-5.6-luna"', '"qwen3.7-max"', '"glm-5.3"',
+      '"kimi-k3"', '"claude-sonnet-5"', '"Pro/deepseek-ai/DeepSeek-R1"', '"openrouter/auto"']) {
+      assert.ok(src.includes(live), live + ' should be suggested')
+    }
     // The environment-variable row is gone from the form (the value survives an edit).
     assert.ok(!src.includes('t.providerEnvLabel)'), 'the env-var row must be gone')
+  })
+
+  it('marks both suggestion menus as suggestions only, in all 8 languages', function () {
+    // The lists drift with every vendor release, so the note is what keeps the
+    // free-text promise visible where the user actually picks a model.
+    assert.match(src, /createElement\("div", \{ className: "xl-menu-note" \}, t\.providerHint\)/)
+    assert.match(src, /createElement\("div", \{ className: "xl-menu-note" \}, t\.modelHint\)/)
+    assert.match(src, /"\.xl-menu-note\{/)
+    assert.equal((src.match(/^\s*providerHint: "/gm) || []).length, 8)
+    assert.equal((src.match(/^\s*modelHint: "/gm) || []).length, 8)
   })
 
   it('names the provider and model in the connection-test message', function () {
@@ -173,5 +195,31 @@ describe('settings UI contracts', function () {
     const pkg = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'))
     assert.match(src, new RegExp('var PLUGIN_VERSION = "' + pkg.version.replace(/\./g, '\\.') + '";'))
     assert.match(src, new RegExp('var PLUGIN_NAME = "' + pkg.name + '";'))
+  })
+
+  it('offers a one-click way to inherit the API this DSH is already configured with', function () {
+    // A fresh install knows nothing, but the harness it runs inside already does:
+    // GET /_xlate/dsh-scan re-reads settings.yaml + .credentials.yaml and returns
+    // those providers as read-only `source: 'dsh'` entries, so the user never
+    // retypes a base URL or a key.
+    assert.match(src, /fetch\("\/_xlate\/dsh-scan"\)\.then\(function \(r\) \{ return r\.json\(\); \}\)/)
+    assert.match(src, /var dshAvailable = dshAll\.filter\(function \(id\) \{ return chain\.indexOf\(id\) < 0; \}\);/)
+    assert.match(src, /return provs\[id\] && provs\[id\]\.source === "dsh";/)
+    assert.match(src, /var dshMenuPair = useState\(false\)/)
+    // The button sits next to "+ add provider" and names the count it can add.
+    assert.match(src, /onClick: openDshImport/)
+    assert.match(src, /t\.dshImport \+ \(dshAvailable\.length \? " · " \+ dshAvailable\.length : ""\)/)
+    // One row per inherited provider, with the DSH badge and a one-click add; a
+    // second button adds every remaining provider at once.
+    assert.match(src, /className: "xl-dsh-menu"/)
+    assert.match(src, /createElement\("span", \{ className: "xl-badge" \}, t\.providerDsh\)/)
+    assert.match(src, /t\.dshImportAll/)
+    assert.match(src, /onClick: function \(\) \{ actions\.addToChain\(id\); \}/)
+    // Nothing to inherit must read as an explanation, never as an empty box.
+    assert.match(src, /dshAvailable\.length === 0[\s\S]{0,120}t\.dshImportEmpty/)
+    // Ordering: this reads provs/chain, which the same function assigns further
+    // down. The render test is the real guard; this keeps the intent visible.
+    assert.ok(src.indexOf('var dshAll = Object.keys(provs)') > src.indexOf('var provs = cfg.providers || {}'),
+      'the inherit block must run after provs is assigned')
   })
 })

@@ -586,6 +586,24 @@ describe('runChainFor', function () {
     assert.equal(result.ok, false)
     assert.match(result.error, /no enabled provider in chain/)
   })
+
+  it('runs a DSH provider that is in the chain even though its enabled flag is false', async function () {
+    // Inherited providers are persisted with enabled: false (the user has to opt in
+    // by adding them to the chain), so chain membership — not the flag — is what
+    // activates them. Otherwise "inherit this DSH's API" would add a dead entry.
+    ADAPTERS['__mock_dsh'] = async function () { return 'inherited ok' }
+    try {
+      const result = await runChainFor(['inherited'], 'hello', 'zh-CN', {
+        providers: {
+          inherited: { type: '__mock_dsh', source: 'dsh', enabled: false, apiKeyEnv: 'DSH_TEST_INHERITED_KEY' },
+        },
+      })
+      assert.equal(result.ok, true)
+      assert.equal(result.text, 'inherited ok')
+    } finally {
+      delete ADAPTERS['__mock_dsh']
+    }
+  })
 })
 
 describe('translateViaChain', function () {

@@ -70,7 +70,7 @@ No hay nada que configurar en el plugin: no declara dependencia de orden con los
 2. Elige el **idioma de destino** (p. ej. Español) — el panel, las filas y las tarjetas cambian a ese idioma
 3. Gestiona la **cadena de proveedores** (arrastra para ordenar, marca para activar):
    - Integrados: **google gtx / bing** (gratis, listos para usar, proxy del sistema) y **modelo local (Ollama)** (al elegirlo por primera vez se descarga 7b/14b o uno personalizado)
-   - **Proveedores DSH**: los endpoints ya configurados en `settings.yaml` aparecen solos (solo lectura; márcalos para añadirlos a la cadena)
+   - **Proveedores DSH**: los endpoints ya configurados en `settings.yaml` aparecen solos (solo lectura; márcalos para añadirlos a la cadena). El botón **Importar desde la config de DSH**, justo debajo de la lista, vuelve a escanear y los añade todos de una vez: ni baseURL ni clave que reescribir, porque la clave se resuelve desde las credenciales de DSH
    - **Proveedores personalizados**: cualquier endpoint compatible con OpenAI o Anthropic Messages; la clave se puede escribir o indicar solo su **variable de entorno** (no se guarda). Incluye preajustes de modelos habituales
    - Si desmarcas uno, se omite. Los detalles están en [README.md](README.md)
 4. Envía un mensaje y expande la fila Think para ver la traducción

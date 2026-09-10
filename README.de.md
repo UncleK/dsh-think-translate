@@ -70,7 +70,7 @@ Am Plugin ist nichts zu konfigurieren: Es deklariert keine Reihenfolge-Abhängig
 2. Die **Zielsprache** wählen (z. B. Deutsch) — Einstellungen, Denkzeilen und Karten wechseln in diese Sprache
 3. Die **Anbieterkette** verwalten (ziehen zum Sortieren, ankreuzen zum Aktivieren):
    - Integriert: **google gtx / bing** (kostenlos, sofort nutzbar, Systemproxy) und **lokales Modell (Ollama)** (bei der ersten Auswahl werden 7b/14b oder ein eigenes Modell geladen)
-   - **DSH-Anbieter**: in `settings.yaml` konfigurierte Endpunkte erscheinen automatisch (schreibgeschützt; ankreuzen fügt sie der Kette hinzu)
+   - **DSH-Anbieter**: in `settings.yaml` konfigurierte Endpunkte erscheinen automatisch (schreibgeschützt; ankreuzen fügt sie der Kette hinzu). Die Schaltfläche **Aus DSH-Konfiguration übernehmen** direkt unter der Liste liest die Konfiguration neu ein und fügt alle auf einmal hinzu – keine baseURL und kein Schlüssel zum Neutippen, denn der Schlüssel wird aus den DSH-Credentials aufgelöst
    - **Benutzerdefinierte Anbieter**: jeder OpenAI-kompatible oder Anthropic-Messages-Endpunkt; der Schlüssel kann eingetragen oder durch einen **Umgebungsvariablennamen** ersetzt werden (wird nie gespeichert). Vorlagen für gängige Modelle inklusive
    - Abgewählte Anbieter werden übersprungen. Details stehen in [README.md](README.md)
 4. Nachricht senden und die Think-Zeile aufklappen, um die Übersetzung zu sehen

@@ -70,7 +70,7 @@ Rien à configurer côté plugin : il ne déclare aucune dépendance d'ordre vis
 2. Choisissez la **langue cible** (p. ex. Français) — le panneau, les lignes et les cartes basculent dans cette langue
 3. Gérez la **chaîne de fournisseurs** (glisser pour ordonner, cocher pour activer) :
    - Intégrés : **google gtx / bing** (gratuits, prêts à l'emploi, proxy système) et **modèle local (Ollama)** (au premier choix, téléchargement de 7b/14b ou d'un modèle personnalisé)
-   - **Fournisseurs DSH** : les endpoints déjà configurés dans `settings.yaml` apparaissent seuls (lecture seule ; cochez pour les ajouter à la chaîne)
+   - **Fournisseurs DSH** : les endpoints déjà configurés dans `settings.yaml` apparaissent seuls (lecture seule ; cochez pour les ajouter à la chaîne). Le bouton **Importer depuis la config DSH**, juste sous la liste, relance l'analyse et les ajoute tous d'un coup : ni baseURL ni clé à ressaisir, la clé étant résolue depuis les identifiants de DSH
    - **Fournisseurs personnalisés** : tout endpoint compatible OpenAI ou Anthropic Messages ; la clé peut être saisie ou remplacée par un **nom de variable d'environnement** (jamais enregistrée). Préréglages de modèles courants inclus
    - Décocher un fournisseur l'ignore. Détails dans [README.md](README.md)
 4. Envoyez un message et dépliez la ligne Think pour voir la traduction
