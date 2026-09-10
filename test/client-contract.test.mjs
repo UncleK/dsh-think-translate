@@ -127,11 +127,21 @@ describe('settings UI contracts', function () {
   it('builds the custom-provider form as labelled rows named by the model', function () {
     assert.ok(!src.includes('placeholder: t.providerName'), 'the 名称 row must be gone')
     assert.match(src, /createElement\("span", \{ className: "xl-form-label" \}, t\.providerPreset\)/)
-    assert.match(src, /createElement\("span", \{ className: "xl-form-label" \}, t\.providerEnvLabel\)/)
     assert.match(src, /placeholder: t\.providerModel, value: formModel/)
     // The model name is the provider's name, with a suffix when it collides.
     assert.match(src, /var id = editingId \|\| model;/)
-    assert.match(src, /var onModelChange = function \(value\) \{/)
+  })
+
+  it('keeps the provider field typable and suggests names, not preset labels', function () {
+    // A datalist input, so a private gateway can simply be typed in.
+    assert.match(src, /list: "xl-provider-presets",/)
+    assert.match(src, /list: "xl-model-presets",/)
+    assert.match(src, /var PROVIDER_PRESETS = \[/)
+    // Suggestions carry the provider name only; the models belong to the model field.
+    assert.match(src, /createElement\("option", \{ key: pp\.name, value: pp\.name \}\)/)
+    assert.match(src, /modelsForProvider\(formProvider\)/)
+    // The environment-variable row is gone from the form (the value survives an edit).
+    assert.ok(!src.includes('t.providerEnvLabel)'), 'the env-var row must be gone')
   })
 
   it('names the provider and model in the connection-test message', function () {
