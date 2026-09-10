@@ -133,13 +133,22 @@ describe('settings UI contracts', function () {
   })
 
   it('keeps the provider field typable and suggests names, not preset labels', function () {
-    // A datalist input, so a private gateway can simply be typed in.
-    assert.match(src, /list: "xl-provider-presets",/)
-    assert.match(src, /list: "xl-model-presets",/)
+    // Suggestions are our own panels: a browser suggestion list filters itself by
+    // whatever is already in the input, so after picking a provider the arrow only
+    // offered that same provider again.
+    assert.ok(!src.includes('createElement("datalist"'), 'no browser suggestion list may come back')
+    assert.match(src, /className: "xl-suggest"/)
+    assert.match(src, /var formProviderMenuPair = useState\(false\)/)
     assert.match(src, /var PROVIDER_PRESETS = \[/)
-    // Suggestions carry the provider name only; the models belong to the model field.
-    assert.match(src, /createElement\("option", \{ key: pp\.name, value: pp\.name \}\)/)
-    assert.match(src, /modelsForProvider\(formProvider\)/)
+    // The model panel offers the picked provider's models, and the provider panel
+    // carries names only.
+    assert.match(src, /modelsForProvider\(formProvider\)\.map/)
+    assert.match(src, /onClick: function \(\) \{ onProviderChange\(pp\.name\); setFormProviderMenu\(false\); \}/)
+    // Every known provider suggests more than one model.
+    const perProvider = (src.match(/models: \[[^\]]+\]/g) || []).filter(function (m) {
+      return (m.match(/", "/g) || []).length >= 1
+    })
+    assert.ok(perProvider.length >= 8, 'each preset should list several models')
     // The environment-variable row is gone from the form (the value survives an edit).
     assert.ok(!src.includes('t.providerEnvLabel)'), 'the env-var row must be gone')
   })
@@ -152,7 +161,15 @@ describe('settings UI contracts', function () {
     assert.match(src, /fetch\("\/_xlate\/version"\)/)
     assert.match(src, /className: "xl-about"/)
     assert.match(src, /t\.starCta \+ " ★"/)
-    assert.match(src, /href: \(about && about\.repo\) \? about\.repo : "https:\/\/github\.com\/UncleK\/dsh-think-translate"/)
+    assert.match(src, /href: \(about && about\.repo\) \|\| PLUGIN_REPO/)
     assert.ok(!src.includes('t.note)'), 'the stale footnote must be gone')
+  })
+
+  it('keeps the embedded plugin version in step with package.json', function () {
+    // The panel reads the host route first; this constant is the fallback for a host
+    // that predates the route, so it must never drift from the real release version.
+    const pkg = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'))
+    assert.match(src, new RegExp('var PLUGIN_VERSION = "' + pkg.version.replace(/\./g, '\\.') + '";'))
+    assert.match(src, new RegExp('var PLUGIN_NAME = "' + pkg.name + '";'))
   })
 })
