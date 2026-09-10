@@ -89,4 +89,17 @@ describe('settings UI contracts', function () {
     assert.match(src, /ctx\.slots\.inject\("settings\.section\.icon", function \(\) \{/)
     assert.match(src, /name: "settings\.section\.icon", key: "dsh-think-translate"/)
   })
+
+  it('carries its own inline glyph for platforms without that seat', function () {
+    // Every released DSH paints the settings gear for plugin sections, so users on
+    // those versions must still see this plugin's own shape.
+    assert.match(src, /var NAV_GLYPH_SVG = '<svg width="16" height="16"/)
+    assert.match(src, /function decorateSettingsGlyph\(\)/)
+    assert.match(src, /data-xl-nav-glyph/)
+  })
+
+  it('scopes that decoration to its own nav cell and disposes the observer', function () {
+    assert.match(src, /if \(!label \|\| \(label\.textContent \|\| ""\)\.trim\(\) !== title\) continue;/)
+    assert.match(src, /observer\.disconnect\(\)/)
+  })
 })
