@@ -15,6 +15,9 @@
     "cordis.patch.yml",
     "demo"
   ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/UncleK/dsh-think-translate.git"
