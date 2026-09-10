@@ -54,6 +54,16 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 #  3. web neu starten
 ```
 
+## 🧯 Nach einem DSH-Upgrade
+
+Client-Plugins von Drittanbietern werden über den Client-Modulgraphen von DSH geladen, und dieser Graph wird **pro Prozess nur einmal** zusammengesetzt – eine fehlgeschlagene Komposition bleibt bis zum Neustart im Speicher. Deshalb passieren direkt nach einem Upgrade meist diese drei Dinge.
+
+- **Der Start aus einem Source-Checkout schlägt fehl** mit `client bundles not found; run \`pnpm run build\` before launch` —— die neuen Client-Pakete sind nicht gebaut: führe `pnpm run build` im Harness-Checkout aus und starte `dsh web` erneut.
+- **Die Plugin-Oberfläche ist verschwunden** (keine übersetzte Think-Zeile, kein Abschnitt *Übersetzung der Gedankenkette* in den Einstellungen) —— **starte `dsh web` einmal neu**; ein bloßes Neuladen der Seite reicht manchmal nicht.
+- **Die Liste der lokalen Modelle ist leer** —— der `ollama`-Dienst bedient dieses Modellverzeichnis nicht: prüfe `ollama list` (oder `GET /api/tags`) und das `OLLAMA_MODELS`, das der laufende Dienst tatsächlich verwendet. Liegen die Modelldateien auf einem anderen Laufwerk, kann ein Verzeichnis-Junction das Standardverzeichnis des Dienstes dorthin zeigen lassen.
+
+Am Plugin ist nichts zu konfigurieren: Es deklariert keine Reihenfolge-Abhängigkeit zu DSH-Interna (es bindet nur den `slots`-Dienst und optional `@deepseek-ai/dsh-client-ui-primitives`) und läuft daher sowohl auf älterem DSH (≤ 0.1.1-rc) als auch auf der aktuellen Linie (≥ 0.1.2-alpha.1, inklusive 0.1.5-rc.1).
+
 ## 🚀 Verwendung
 
 1. **Einstellungen → Übersetzung der Gedankenkette** öffnen

@@ -54,6 +54,16 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 #  3. redémarrez web
 ```
 
+## 🧯 Après une mise à jour de DSH
+
+Les plugins clients tiers sont chargés via le graphe de modules client de DSH, et ce graphe n'est composé **qu'une seule fois par processus** : une composition en échec reste en mémoire jusqu'au redémarrage. D'où ces trois écueils juste après une mise à jour.
+
+- **Le démarrage depuis un checkout source échoue** avec `client bundles not found; run \`pnpm run build\` before launch` —— les nouveaux paquets clients ne sont pas compilés : lancez `pnpm run build` dans le checkout du harness, puis redémarrez `dsh web`.
+- **L'interface du plugin a disparu** (pas de ligne Think traduite, pas de section *Traduction de chaîne de réflexion* dans les Réglages) —— **redémarrez `dsh web`** ; un simple rafraîchissement de la page ne suffit pas toujours.
+- **La liste des modèles locaux est vide** —— le service `ollama` ne sert pas ce répertoire de modèles : vérifiez `ollama list` (ou `GET /api/tags`) et l'`OLLAMA_MODELS` réellement utilisé par le service en cours. Si les modèles sont sur un autre disque, une jonction de répertoire peut pointer le répertoire par défaut du service vers eux.
+
+Rien à configurer côté plugin : il ne déclare aucune dépendance d'ordre vis-à-vis des paquets internes de DSH (il ne se lie qu'au service `slots`, et éventuellement à `@deepseek-ai/dsh-client-ui-primitives`), et fonctionne donc aussi bien sur un DSH ancien (≤ 0.1.1-rc) que sur la ligne actuelle (≥ 0.1.2-alpha.1, 0.1.5-rc.1 incluse).
+
 ## 🚀 Utilisation
 
 1. Ouvrez **Réglages → Traduction de chaîne de réflexion**

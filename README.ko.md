@@ -54,6 +54,16 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 #  3. web 재시작
 ```
 
+## 🧯 DSH 업그레이드 후
+
+서드파티 클라이언트 플러그인은 DSH의 클라이언트 모듈 그래프를 통해 로드되며, 이 그래프는 **프로세스 시작 시 한 번만** 구성됩니다. 실패한 구성은 재시작 전까지 메모리에 남습니다. 그래서 업그레이드 직후에는 보통 다음 세 가지가 발생합니다.
+
+- **소스에서 시작하면 실패**: `client bundles not found; run \`pnpm run build\` before launch` —— 새 클라이언트 패키지가 아직 빌드되지 않은 상태입니다. harness 체크아웃에서 `pnpm run build`를 실행한 뒤 `dsh web`을 다시 시작하세요.
+- **플러그인 UI가 사라짐** (Think 행에 번역이 없고, 설정에 "사고 체인 번역"이 없음) —— **`dsh web`을 한 번 재시작**하세요. 페이지를 새로고침하는 것만으로는 부족할 때가 있습니다.
+- **로컬 모델 목록이 비어 있음** —— `ollama` 서비스가 해당 모델 디렉터리를 보고 있지 않습니다: `ollama list`(또는 `GET /api/tags`)와 실행 중인 서비스가 실제로 사용하는 `OLLAMA_MODELS`를 확인하세요. 모델 파일이 다른 드라이브에 있다면 디렉터리 정션으로 기본 디렉터리를 그쪽으로 연결할 수 있습니다.
+
+플러그인 쪽에서 설정할 것은 없습니다. DSH 내부 패키지의 로드 순서에 의존하지 않고(`slots` 서비스만 사용하며 `@deepseek-ai/dsh-client-ui-primitives`는 선택 사항), 구버전(≤ 0.1.1-rc)과 현재 라인(≥ 0.1.2-alpha.1, 0.1.5-rc.1 포함) 모두에서 동작합니다.
+
 ## 🚀 사용법
 
 1. **설정 → 사고 체인 번역** 열기
