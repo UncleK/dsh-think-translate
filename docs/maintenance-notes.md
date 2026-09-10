@@ -67,3 +67,48 @@
 
 - 仓库里 `.xl-dock` 背景用的是 **`--dsw-specific-tip`**(dsw 前缀),与官方一致;
   不存在 `--dsh-specific-tip`。排查时别被旧文档带偏。
+
+---
+
+## 1.2.0(2026-09-11)—— 本轮全量审查后的状态
+
+### 这一版包含
+
+- **PR #2**(动态提供方链)+ `apiKeyEnv`(密钥只从环境变量/DSH 凭据解析,不落盘)
+- **issue #3 修复**:官方 MarkdownText 的嵌套 `labels.code.copyLabel/footnotes` 契约
+- **一键继承 DSH 配置的 API**:设置页「继承 DSH 已配置的 API」按钮,重新扫描
+  `~/.dsh/settings.yaml` + `.credentials.yaml` 并批量入链(密钥不复制,请求时解析)
+- 模型预设按各家 2026-09 文档更新,两个建议菜单末尾都标注「仅为建议」
+- 8 语言文案补全(之前 6 种语言里整套提供方管理 UI 是英文)、去掉 15 个废弃键
+
+### 审查发现并修掉的(本轮)
+
+| 问题 | 影响 | 位置 |
+|---|---|---|
+| `GET /_xlate/dsh-scan` 与 `POST /_xlate/config` 把 live config 回给浏览器 | **凭据泄露**(同源/本机) | `lib/index.js` 三条 config 响应统一走 `stripResolvedKeys` |
+| `config.json` 解析失败即被默认值覆盖 | 手改一个逗号就丢全部 provider/密钥 | 先备份 `config.json.corrupt-<ts>` |
+| 改链/换模型后 host 缓存不失效 | 旧译文与「当前使用」一直显示旧提供方 | 保存配置即清缓存 |
+| 空模型列表下下载无进度、失败无提示 | 用户看到「点了没反应」 | pull 区域两种状态都渲染 |
+| `apiKeyEnv` 不可见、手打密钥被忽略 | 配了预设后自己的 key 不生效 | 表单显示 `env:NAME`,两者互斥 |
+| `/_xlate/models` 用 `p.apiKey` 而非 `resolveApiKey` | 纯 env 提供方模型列表永远空 | `lib/index.js` |
+| `migrateConfig` 把用户关掉的 fallback 重新打开 | 白跑一遍免费链 | 改为 `enabled:false` |
+| `runProgram` 不读 stderr | `curl exit 7:` 无原因 | 顺带排空管道避免 64KB 阻塞 |
+| 切目标语言重挂载面板丢表单 | 填到一半换语言全白填 | 草稿状态移到模块作用域(`useDraft`) |
+| 6 种语言缺 `copy`/`copied` | 代码块复制按钮是英文 | UI_TEXT 补全,并加语言键集一致性测试 |
+
+### 验证
+
+- `npm test`:**123 通过**(host 单测 + 客户端契约 + 真实 bundle 挂载渲染/重挂载 + 导航图标 DOM 测试)
+- 沙箱副本实跑路由:三处响应与磁盘均无密钥;配置变更后缓存确实失效;坏 config 留存备份
+- 真实 bundle 探针:8 语言渲染无 `undefined`、行操作/表单/继承 DSH/下载进度与失败/404 回退全部通过
+- npm 包体:2.4 MB → **1.7 MB**(两张 demo GIF 用 ffmpeg 重压,见 `docs/demo-guide.md`)
+
+### 遗留(都不影响使用)
+
+- 官方 `settings.section.icon` 座位尚未合入 DSH;插件已自带内联图标 + 一次性 DOM 装饰兜底,
+  老版本也显示正确图标。上游补丁留在 `..\.pr-staging\dsh-settings-section-icon.patch`。
+- 纯清理项:`formName` 状态、`.xl-fallback-chain/.xl-fallback-provider` 两条死 CSS、
+  `applyLocal` 里已无调用方的 `patch.fallback` 分支。
+- `demo/` 里两张 GIF 的宽度百分比与源图比例绑定(46% / 41%);换图后按
+  `docs/demo-guide.md` 的公式重算,并给 URL 加 `?v=N` 以击穿 GitHub 的 camo 缓存。
+
