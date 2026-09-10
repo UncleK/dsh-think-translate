@@ -133,16 +133,18 @@ describe('settings UI contracts', function () {
   })
 
   it('keeps the provider field typable and suggests names, not preset labels', function () {
-    // Suggestions are our own panels: a browser suggestion list filters itself by
-    // whatever is already in the input, so after picking a provider the arrow only
-    // offered that same provider again.
+    // Suggestions are the plugin's own boxed menus: a browser suggestion list filters
+    // itself by whatever is already in the input, so after picking a provider the
+    // arrow only offered that same provider again.
     assert.ok(!src.includes('createElement("datalist"'), 'no browser suggestion list may come back')
-    assert.match(src, /className: "xl-suggest"/)
+    assert.match(src, /className: "xl-menu"/)
+    assert.match(src, /className: "xl-menu-item"/)
     assert.match(src, /var formProviderMenuPair = useState\(false\)/)
     assert.match(src, /var PROVIDER_PRESETS = \[/)
-    // The model panel offers the picked provider's models, and the provider panel
-    // carries names only.
-    assert.match(src, /modelsForProvider\(formProvider\)\.map/)
+    // The model menu belongs to one provider: disabled until one is known, then it
+    // lists only that provider's models.
+    assert.match(src, /disabled: !presetByName\(formProvider\)/)
+    assert.match(src, /return pp \? pp\.models : \[\];/)
     assert.match(src, /onClick: function \(\) \{ onProviderChange\(pp\.name\); setFormProviderMenu\(false\); \}/)
     // Every known provider suggests more than one model.
     const perProvider = (src.match(/models: \[[^\]]+\]/g) || []).filter(function (m) {
