@@ -66,8 +66,8 @@ describe('settings UI contracts', function () {
     assert.ok(!src.includes('fbEnabled') && !src.includes('fbAdd:'), 'fallback UI and actions must be gone')
   })
 
-  it('offers model presets filtered by the selected type', function () {
-    assert.match(src, /var MODEL_PRESETS = \[/)
+  it('offers provider presets filtered by the selected type', function () {
+    assert.match(src, /var PROVIDER_PRESETS = \[/)
     assert.match(src, /if \(pp\.type !== formType\) return null;/)
   })
 
