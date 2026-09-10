@@ -28,6 +28,7 @@ import {
   ADAPTERS,
   resolveApiKey,
   stripResolvedKeys,
+  clearNullFields,
 } from '../lib/index.js'
 
 // ---------------------------------------------------------------------------
@@ -741,5 +742,62 @@ describe('apiKeyEnv through the config patch routes', function () {
       { _full: true, mine: { type: 'anthropic', baseURL: 'https://y/v1', model: 'c', apiKeyEnv: 'ANTHROPIC_KEY' } },
     )
     assert.equal(next.mine.apiKeyEnv, 'ANTHROPIC_KEY')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// clearing a provider field (2026-09-11)
+//
+// A partial patch cannot delete: deepMerge only overwrites, so an emptied field
+// kept its old value and a stale apiKeyEnv kept shadowing the key just typed.
+// The client now sends an explicit null, which survives normalization and is
+// dropped together with the field after the merge.
+// ---------------------------------------------------------------------------
+
+describe('clearing provider fields', function () {
+  it('keeps an explicit null as a delete marker (partial patch)', function () {
+    const out = normalizeConfigPatch(
+      { providers: { mine: { apiKeyEnv: null, apiKey: 'typed' } } },
+      { providers: { mine: { type: 'openai', apiKeyEnv: 'OLD' } } },
+    )
+    assert.equal(out.providers.mine.apiKeyEnv, null)
+    assert.equal(out.providers.mine.apiKey, 'typed')
+  })
+
+  it('keeps an explicit null in a full providers replace', function () {
+    const next = applyFullProviders(
+      { providers: {} },
+      { _full: true, mine: { type: 'openai', baseURL: 'https://x/v1', model: 'm', apiKeyEnv: null } },
+    )
+    assert.equal(next.mine.apiKeyEnv, null)
+  })
+
+  it('drops the null fields and keeps everything else', function () {
+    const cfg = {
+      providers: {
+        mine: { type: 'openai', baseURL: 'https://x/v1', model: 'm', apiKeyEnv: null, apiKey: null, enabled: true },
+        other: { type: 'google', enabled: true },
+      },
+    }
+    clearNullFields(cfg)
+    assert.deepEqual(cfg.providers.mine, { type: 'openai', baseURL: 'https://x/v1', model: 'm', enabled: true })
+    assert.deepEqual(cfg.providers.other, { type: 'google', enabled: true })
+  })
+
+  it('tolerates a config without providers', function () {
+    assert.deepEqual(clearNullFields({}), {})
+    assert.deepEqual(clearNullFields({ providers: {} }), { providers: {} })
+  })
+
+  it('resolves the key typed in the same save that cleared the env name', function () {
+    // Regression for the shadowing bug: the emptied env name must disappear so the
+    // literal key is what resolves afterwards.
+    const live = { providers: { mine: { type: 'openai', baseURL: 'https://x/v1', model: 'm', apiKeyEnv: 'OLD_ENV' } } }
+    const norm = normalizeConfigPatch({ providers: { mine: { apiKeyEnv: null, apiKey: 'fresh' } } }, live)
+    deepMerge(live, norm)
+    clearNullFields(live)
+    assert.equal(live.providers.mine.apiKeyEnv, undefined)
+    assert.equal(live.providers.mine.apiKey, 'fresh')
+    assert.equal(resolveApiKey(live.providers.mine), 'fresh')
   })
 })

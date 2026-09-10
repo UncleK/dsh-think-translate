@@ -68,20 +68,22 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 
 1. **設定 → 思考チェーン翻訳** を開く
 2. **対象言語**を選択（例：日本語）— 設定パネル・思考行・タスクカードがすべてその言語に切替
-3. **優先プロバイダー**を選択：
-   - **ローカルモデル（Ollama）**：初回選択時にダウンロードボタンが表示（qwen2.5:7b / 14b またはカスタム）、完了後自動有効化。モデル選択の横の「＋」でいつでも追加ダウンロード
-   - **google gtx / bing**：そのまま使える（システムプロキシ / VPN を自動利用）
+3. **プロバイダーチェーン**を管理（ドラッグで並べ替え、チェックで有効化）：
+   - 組み込み：**google gtx / bing**（無料・すぐ使える・システムプロキシ経由）と**ローカルモデル（Ollama）**（初回選択で 7b/14b または任意のモデルをダウンロード）
+   - **DSH プロバイダー**：`settings.yaml` に設定済みのエンドポイントが自動表示（読み取り専用、チェックでチェーンに追加）
+   - **カスタムプロバイダー**：任意の OpenAI 互換 / Anthropic Messages エンドポイント。キーは直接入力でも**環境変数名**だけでも可（保存されません）。主要モデルのプリセット付き
+   - チェックを外すとそのプロバイダーは使われません。詳細は [README.md](README.md)
 4. メッセージを送信し、Think 行を展開して訳文を確認
 
 ## ⚙️ 仕組み
 
 ```
 ブラウザ → POST /_xlate/translate（同一オリジン、CORS なし）
-  → host プロバイダーチェーン（fail-open）：
-      openai 互換（ローカル Ollama、Node fetch でループバック直結）
-      → google gtx（Node https + CONNECT トンネルでシステムプロキシ経由）
-      → bing（curl form）
-  → 失敗時はブラウザ直接へフォールバック
+  → host プロバイダーチェーン（fail-open、並べ替え可能）：
+      chain: [provider1, provider2, ...]   ← 設定でドラッグして並べ替え
+        google / bing / OpenAI 互換 / Anthropic から選択
+      fallback チェーン（任意、既定は無効、設定で有効化）
+  → ブラウザ直結のフォールバック
 ```
 
 - **host 側**（`lib/index.js`）：プロバイダーアダプタ、LRU キャッシュ（600）、`/_xlate/models` モデル一覧、`/_xlate/model/pull` + `pull-status` モデルダウンロード管理（完了時自動設定）

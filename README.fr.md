@@ -68,20 +68,22 @@ Rien à configurer côté plugin : il ne déclare aucune dépendance d'ordre vis
 
 1. Ouvrez **Réglages → Traduction de chaîne de réflexion**
 2. Choisissez la **langue cible** (p. ex. Français) — le panneau, les lignes et les cartes basculent dans cette langue
-3. Choisissez le **fournisseur préféré** :
-   - **Modèle local (Ollama)** — au premier choix, un bouton de téléchargement apparaît (qwen2.5:7b / 14b ou personnalisé) ; il s'active automatiquement à la fin. Le bouton "+" à côté du sélecteur télécharge d'autres modèles
-   - **google gtx / bing** — fonctionne directement (proxy système / VPN automatiques)
+3. Gérez la **chaîne de fournisseurs** (glisser pour ordonner, cocher pour activer) :
+   - Intégrés : **google gtx / bing** (gratuits, prêts à l'emploi, proxy système) et **modèle local (Ollama)** (au premier choix, téléchargement de 7b/14b ou d'un modèle personnalisé)
+   - **Fournisseurs DSH** : les endpoints déjà configurés dans `settings.yaml` apparaissent seuls (lecture seule ; cochez pour les ajouter à la chaîne)
+   - **Fournisseurs personnalisés** : tout endpoint compatible OpenAI ou Anthropic Messages ; la clé peut être saisie ou remplacée par un **nom de variable d'environnement** (jamais enregistrée). Préréglages de modèles courants inclus
+   - Décocher un fournisseur l'ignore. Détails dans [README.md](README.md)
 4. Envoyez un message et dépliez la ligne Think pour voir la traduction
 
 ## ⚙️ Fonctionnement
 
 ```
 navigateur → POST /_xlate/translate (même origine, sans CORS)
-  → chaîne de fournisseurs host (fail-open) :
-      compatible OpenAI (Ollama local, Node fetch vers loopback)
-      → google gtx (Node https + tunnel CONNECT via le proxy système)
-      → bing (curl form)
-  → repli direct navigateur
+  → chaîne de fournisseurs côté host (fail-open, réordonnable) :
+      chain: [provider1, provider2, ...]   ← ordre par glisser dans les Réglages
+        google / bing / compatible OpenAI / Anthropic
+      chaîne fallback (facultative, désactivée par défaut, activable dans la config)
+  → repli direct depuis le navigateur
 ```
 
 - **Moitié host** (`lib/index.js`) : adaptateurs de fournisseurs, cache LRU (600), `/_xlate/models`, `/_xlate/model/pull` + `pull-status` (configuration automatique à la fin)

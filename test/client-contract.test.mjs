@@ -46,3 +46,39 @@ describe('MarkdownText label contract (issue #3)', function () {
     assert.equal(hits, 8)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Settings-UI contracts (2026-09-11 rework)
+// ---------------------------------------------------------------------------
+
+describe('settings UI contracts', function () {
+  it('keeps a built-in provider undeletable and offers × for custom ones', function () {
+    assert.match(src, /!isBuiltin && !isDsh \? createElement\("button", \{ className: "xl-x-btn"/)
+    assert.ok(!src.includes('t.providerRemoveFromChain) : null'), 'no remove-from-chain text button should remain on rows')
+  })
+
+  it('turns a DSH row checkbox into chain membership', function () {
+    assert.match(src, /if \(isDsh\) \{ if \(e\.target\.checked\) actions\.addToChain\(id\); else actions\.removeFromChain\(id\); \}/)
+    assert.match(src, /var isChecked = isDsh \? inChain : \(p\.enabled !== false\);/)
+  })
+
+  it('has no fallback-chain UI left', function () {
+    assert.ok(!src.includes('fbEnabled') && !src.includes('fbAdd:'), 'fallback UI and actions must be gone')
+  })
+
+  it('offers model presets filtered by the selected type', function () {
+    assert.match(src, /var MODEL_PRESETS = \[/)
+    assert.match(src, /if \(pp\.type !== formType\) return null;/)
+  })
+
+  it('sends an explicit null for a cleared secret field', function () {
+    assert.match(src, /apiKeyEnv: formApiKeyEnv\.trim\(\) === "" \? null : formApiKeyEnv\.trim\(\),/)
+    assert.match(src, /apiKey: formApiKey\.trim\(\) === "" \? null : formApiKey\.trim\(\),/)
+  })
+
+  it('bounds the persisted translation cache', function () {
+    assert.match(src, /var LS_CACHE_MAX = 300;/)
+    assert.match(src, /function pruneCache\(\)/)
+    assert.match(src, /if \(cacheWrites % 20 === 0\) pruneCache\(\);/)
+  })
+})

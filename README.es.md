@@ -68,20 +68,22 @@ No hay nada que configurar en el plugin: no declara dependencia de orden con los
 
 1. Abre **Ajustes → Traducción de cadena de pensamiento**
 2. Elige el **idioma de destino** (p. ej. Español) — el panel, las filas y las tarjetas cambian a ese idioma
-3. Elige el **proveedor preferido**:
-   - **Modelo local (Ollama)** — al elegirlo por primera vez aparece el botón de descarga (qwen2.5:7b / 14b o personalizado); se habilita solo al terminar. El botón "+" junto al selector descarga más modelos
-   - **google gtx / bing** — funciona directamente (proxy del sistema / VPN automáticos)
+3. Gestiona la **cadena de proveedores** (arrastra para ordenar, marca para activar):
+   - Integrados: **google gtx / bing** (gratis, listos para usar, proxy del sistema) y **modelo local (Ollama)** (al elegirlo por primera vez se descarga 7b/14b o uno personalizado)
+   - **Proveedores DSH**: los endpoints ya configurados en `settings.yaml` aparecen solos (solo lectura; márcalos para añadirlos a la cadena)
+   - **Proveedores personalizados**: cualquier endpoint compatible con OpenAI o Anthropic Messages; la clave se puede escribir o indicar solo su **variable de entorno** (no se guarda). Incluye preajustes de modelos habituales
+   - Si desmarcas uno, se omite. Los detalles están en [README.md](README.md)
 4. Envía un mensaje y expande la fila Think para ver la traducción
 
 ## ⚙️ Cómo funciona
 
 ```
 navegador → POST /_xlate/translate (mismo origen, sin CORS)
-  → cadena de proveedores host (fail-open):
-      compatible con OpenAI (Ollama local, Node fetch al loopback)
-      → google gtx (Node https + túnel CONNECT por el proxy del sistema)
-      → bing (curl form)
-  → respaldo directo del navegador
+  → cadena de proveedores en el host (fail-open, reordenable):
+      chain: [provider1, provider2, ...]   ← orden arrastrando en Ajustes
+        google / bing / compatible con OpenAI / Anthropic
+      cadena fallback (opcional, desactivada por defecto, se activa en el config)
+  → respaldo directo desde el navegador
 ```
 
 - **Mitad host** (`lib/index.js`): adaptadores de proveedor, caché LRU (600), `/_xlate/models`, `/_xlate/model/pull` + `pull-status` (configura automáticamente al terminar)

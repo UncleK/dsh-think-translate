@@ -1,7 +1,7 @@
 {
   "name": "dsh-think-translate",
-  "description": "Display-layer translation for the DSH web app: thinking chain, task cards, and optional answer text, in 8 target languages (local Ollama / Google / Bing, fail-open)",
-  "version": "1.1.0",
+  "description": "Display-layer translation for the DSH web app: thinking chain, task cards, and optional answer text, in 8 target languages (local Ollama / any OpenAI-compatible or Anthropic endpoint / Google / Bing, fail-open)",
+  "version": "1.2.0",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -18,9 +18,27 @@
   "scripts": {
     "test": "node --test test/*.test.mjs"
   },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "translation",
+    "think-translate",
+    "ollama",
+    "openai-compatible",
+    "anthropic",
+    "i18n"
+  ],
+  "homepage": "https://github.com/UncleK/dsh-think-translate#readme",
+  "bugs": {
+    "url": "https://github.com/UncleK/dsh-think-translate/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/UncleK/dsh-think-translate.git"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "publishConfig": {
     "access": "public"

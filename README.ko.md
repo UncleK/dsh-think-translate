@@ -68,20 +68,22 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 
 1. **설정 → 사고 체인 번역** 열기
 2. **대상 언어** 선택(예: 한국어) — 설정 패널, 사고 행, 작업 카드가 모두 전환
-3. **기본 제공자** 선택:
-   - **로컬 모델(Ollama)** — 첫 선택 시 다운로드 버튼 표시(qwen2.5:7b / 14b 또는 커스텀), 완료 후 자동 활성화. 모델 선택 옆 "+"로 언제든 추가 다운로드
-   - **google gtx / bing** — 바로 사용 가능(시스템 프록시/VPN 자동 이용)
+3. **제공자 체인** 관리(드래그로 순서 변경, 체크로 사용):
+   - 내장: **google gtx / bing**(무료, 즉시 사용, 시스템 프록시)과 **로컬 모델(Ollama)**(처음 선택 시 7b/14b 또는 사용자 지정 다운로드)
+   - **DSH 제공자**: `settings.yaml`에 설정된 엔드포인트가 자동 표시(읽기 전용, 체크하면 체인에 추가)
+   - **사용자 지정 제공자**: OpenAI 호환 / Anthropic Messages 엔드포인트. 키를 직접 입력하거나 **환경 변수 이름**만 입력(저장되지 않음). 주요 모델 프리셋 제공
+   - 체크를 해제하면 해당 제공자는 건너뜁니다. 자세한 내용은 [README.md](README.md)
 4. 메시지를 보내고 Think 행을 펼쳐 번역 확인
 
 ## ⚙️ 작동 원리
 
 ```
 브라우저 → POST /_xlate/translate(동일 출처, CORS 없음)
-  → host 제공자 체인(fail-open):
-      openai 호환(로컬 Ollama, Node fetch로 루프백 직결)
-      → google gtx(Node https + CONNECT 터널로 시스템 프록시 경유)
-      → bing(curl form)
-  → 실패 시 브라우저 직접 폴백
+  → host 제공자 체인(fail-open, 순서 변경 가능):
+      chain: [provider1, provider2, ...]   ← 설정에서 드래그로 정렬
+        google / bing / OpenAI 호환 / Anthropic 중 선택
+      fallback 체인(선택, 기본 비활성, 설정에서 활성화)
+  → 브라우저 직접 연결 폴백
 ```
 
 - **host 측**(`lib/index.js`): 제공자 어댑터, LRU 캐시(600), `/_xlate/models` 모델 목록, `/_xlate/model/pull` + `pull-status` 모델 다운로드 관리(완료 시 자동 설정)

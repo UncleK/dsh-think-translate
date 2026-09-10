@@ -68,20 +68,22 @@ Am Plugin ist nichts zu konfigurieren: Es deklariert keine Reihenfolge-Abhängig
 
 1. **Einstellungen → Übersetzung der Gedankenkette** öffnen
 2. Die **Zielsprache** wählen (z. B. Deutsch) — Einstellungen, Denkzeilen und Karten wechseln in diese Sprache
-3. Den **bevorzugten Anbieter** wählen:
-   - **Lokales Modell (Ollama)** — bei der ersten Auswahl erscheint ein Download-Button (qwen2.5:7b / 14b oder benutzerdefiniert); es aktiviert sich automatisch am Ende. Der "+"-Button neben der Auswahl lädt weitere Modelle
-   - **google gtx / bing** — funktioniert sofort (Systemproxy / VPN automatisch)
+3. Die **Anbieterkette** verwalten (ziehen zum Sortieren, ankreuzen zum Aktivieren):
+   - Integriert: **google gtx / bing** (kostenlos, sofort nutzbar, Systemproxy) und **lokales Modell (Ollama)** (bei der ersten Auswahl werden 7b/14b oder ein eigenes Modell geladen)
+   - **DSH-Anbieter**: in `settings.yaml` konfigurierte Endpunkte erscheinen automatisch (schreibgeschützt; ankreuzen fügt sie der Kette hinzu)
+   - **Benutzerdefinierte Anbieter**: jeder OpenAI-kompatible oder Anthropic-Messages-Endpunkt; der Schlüssel kann eingetragen oder durch einen **Umgebungsvariablennamen** ersetzt werden (wird nie gespeichert). Vorlagen für gängige Modelle inklusive
+   - Abgewählte Anbieter werden übersprungen. Details stehen in [README.md](README.md)
 4. Nachricht senden und die Think-Zeile aufklappen, um die Übersetzung zu sehen
 
 ## ⚙️ Funktionsweise
 
 ```
-Browser → POST /_xlate/translate (gleicher Ursprung, kein CORS)
-  → Host-Anbieterkette (fail-open):
-      OpenAI-kompatibel (lokales Ollama, Node fetch zum Loopback)
-      → google gtx (Node https + CONNECT-Tunnel über den Systemproxy)
-      → bing (curl form)
-  → Browser-Direkt-Fallback
+Browser → POST /_xlate/translate (gleiche Origin, kein CORS)
+  → Anbieterkette im Host (fail-open, umsortierbar):
+      chain: [provider1, provider2, ...]   ← Reihenfolge per Drag in den Einstellungen
+        google / bing / OpenAI-kompatibel / Anthropic
+      Fallback-Kette (optional, standardmäßig aus, in der Config aktivierbar)
+  → direkter Browser-Fallback
 ```
 
 - **Host-Hälfte** (`lib/index.js`): Anbieteradapter, LRU-Cache (600), `/_xlate/models`, `/_xlate/model/pull` + `pull-status` (automatische Konfiguration am Ende)

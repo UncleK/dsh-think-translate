@@ -69,11 +69,12 @@ Nothing to configure on the plugin side: it declares no ordering dependency on D
 
 1. Open **Settings → Think Translation**
 2. Pick the **target language** (e.g. 日本語) — the settings panel, thinking rows and task cards all switch to it
-3. **Manage the provider chain** (drag to reorder):
-   - Built-ins: **google gtx / bing** (free, works out of the box via system proxy) and **local Ollama** — on first local-model selection a download prompt appears (qwen2.5:7b / 14b or custom); it auto-enables when finished
-   - **DSH providers**: endpoints already configured in DSH (`llm-pi-ai.providers`) appear automatically as read-only entries (badge "DSH"); enable them to route translation through your existing gateway accounts
-   - **Custom providers**: click "Add custom provider" to register any OpenAI-compatible endpoint or a native Anthropic Messages endpoint (base URL, API key, model); each row has a **test** button to verify it live. Instead of typing the key you can name an **environment variable** (`apiKeyEnv`) — the key is then read from the environment at request time and never written to `config.json`; a row using one shows an `env:NAME` badge
-   - Use the **fallback chain** toggle to keep a backup set (e.g. google/bing) when the primary chain fails
+3. **Manage the provider chain** — the list below it *is* the delivery order; drag rows to reorder, and the checkbox is the on/off switch:
+   - Built-ins: **google gtx / bing** (free, works out of the box via system proxy) and **local Ollama** — on first local-model selection a download prompt appears (qwen2.5:7b / 14b or custom); it auto-enables when finished. Built-ins are permanent: uncheck one to stop using it, there is nothing to delete
+   - **DSH providers**: endpoints already configured in DSH (`llm-pi-ai.providers`) appear automatically as read-only entries (badge "DSH"); their checkbox adds/removes them from the chain
+   - **Custom providers**: "Add custom provider" registers any **OpenAI-compatible** or **Anthropic Messages** endpoint; the form offers **presets** for common low-cost models (DeepSeek, gpt-4o-mini, qwen-turbo, glm-4-flash, moonshot, SiliconFlow, Claude Haiku/Sonnet…) that fill base URL + model + env name, all still editable. Each row has a **test** button, an edit form and a **×** to delete it (a DSH row cannot be deleted — it is managed by the harness)
+   - Instead of typing the key you can name an **environment variable** (`apiKeyEnv`): the key is then read from the environment at request time and never written to `config.json`; such a row shows an `env:NAME` badge. Emptying a field in the edit form really removes it (the field is sent as an explicit delete), so switching from an env name back to a literal key works
+   - The former **fallback chain** option is gone: it was redundant once the chain itself ends with the free providers, and unchecking a provider is how you opt out of it. `fallback` still exists in `config.json` for anyone who wants it (off by default)
 4. Send a message that makes the model think, then expand the **Think row** to read the translation and compare with the original
 
 ## ⚙️ How it works
@@ -87,11 +88,11 @@ browser → POST /_xlate/translate (same-origin, no CORS)
           bing     (ttranslatev3 via curl)
           openai   (OpenAI-compatible /chat/completions — Ollama local or any gateway)
           anthropic(Anthropic Messages API /v1/messages)
-      fallback chain (independent, e.g. google/bing) tried when the primary chain fails
+      fallback chain (config-only, off by default) tried when the primary chain fails entirely
   → browser-direct fallback
 ```
 
-- **Provider config** lives in `config.json` (runtime, gitignored): `chain` (ordered ids), `fallback` (enabled + chain), `providers` (per-provider `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). Old `priority`-based configs auto-migrate. A provider that declares `apiKeyEnv` resolves its key from that environment variable at request time (the literal `apiKey` stays as the fallback), and no env-resolved key is ever written back to `config.json`.
+- **Provider config** lives in `config.json` (runtime, gitignored): `chain` (ordered ids), `fallback` (enabled + chain, config-only), `providers` (per-provider `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). Old `priority`-based configs auto-migrate. A provider that declares `apiKeyEnv` resolves its key from that environment variable at request time (the literal `apiKey` stays as the fallback), and no env-resolved key is ever written back to `config.json`. A `null` field in a config patch deletes that field, which is how the UI clears one.
 - **DSH discovery** reads the harness `settings.yaml` (`llm-pi-ai.providers`) and `.credentials.yaml` (`refs`) on load; discovered providers are marked `source: "dsh"`, resolved keys stay in memory (never written to `config.json`), and a `/_xlate/dsh-scan` route re-reads them on demand.
 - **Host half** (`lib/index.js`): provider adapters, ordered chain + fallback execution, LRU cache (600), per-provider override for tests, `/_xlate/models` listing, `/_xlate/model/pull` + `pull-status` model download management (auto-configures on completion)
 - **Client half** (`lib/client.js`): 8-language UI, drag-reorderable provider list, add/edit/delete custom providers, per-provider test buttons, sentence/paragraph-batched translation, streaming Think rows, localStorage persistence (settings + translation cache)
