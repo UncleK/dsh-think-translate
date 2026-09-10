@@ -334,6 +334,54 @@ describe('extractDshProviders', function () {
     assert.equal(providers.another.model, 'm')
   })
 
+  it('reads a real settings.yaml: comments, nested model metadata, several providers', function () {
+    // The shape a real ~/.dsh/settings.yaml has: a comment at provider level, a
+    // models list with per-model metadata and deeper-indented comments, and a
+    // second provider right after it. Every one of those is a chance to cut the
+    // field group short and silently lose a provider, which is exactly what an
+    // older build did — so pin the whole shape.
+    const real = [
+      'agent-default-model:',
+      '  provider: deepseek-official',
+      '  model: deepseek-flash',
+      'llm-pi-ai:',
+      '  providers:',
+      '    openrouter-ox:',
+      '      displayName: OpenRouter',
+      '      apiKeyEnv: OPENROUTER_OX_API_KEY',
+      '      api: openai-completions',
+      '      baseURL: https://openrouter.ai/api/v1',
+      '      # 默认推理档位钉在 max（请求级 reasoningEffort 仍可覆盖）。',
+      '      reasoning: max',
+      '      models:',
+      '        - id: ox-alpha',
+      '          name: Ox Alpha (免费)',
+      '          # 声明后提示词可携带图片附件。',
+      '          input: [ text, image ]',
+      '          contextWindow: 1048576',
+      '          reasoningEfforts:',
+      '            low: low',
+      '            max: max',
+      '    plain-hub:',
+      '      apiKeyEnv: PLAIN_KEY',
+      '      baseURL: https://plain.example/v1',
+      '      models:',
+      '        - id: plain-model',
+      '    no-models:',
+      '      baseURL: https://empty.example/v1',
+      '      models:',
+      'ui-theme:',
+      '  preference: light',
+    ].join('\n')
+
+    const providers = extractDshProviders(real)
+    assert.deepEqual(Object.keys(providers).sort(), ['openrouter-ox', 'plain-hub'])
+    assert.equal(providers['openrouter-ox'].model, 'ox-alpha')
+    assert.equal(providers['openrouter-ox'].apiKeyEnv, 'OPENROUTER_OX_API_KEY')
+    assert.equal(providers['plain-hub'].model, 'plain-model', 'the provider after a nested map must still be found')
+    assert.equal(providers['no-models'], undefined, 'a provider with no model id is unusable and stays out')
+  })
+
   it('skips non-openai-compatible providers', function () {
     const providers = extractDshProviders(sample)
     assert.equal(providers['not-compatible'], undefined)
