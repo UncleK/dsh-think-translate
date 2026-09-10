@@ -147,4 +147,12 @@ describe('settings UI contracts', function () {
   it('names the provider and model in the connection-test message', function () {
     assert.match(src, /providerLabel\(id, \(cfgRef\.current\.providers \|\| \{\}\)\[id\] \|\| \{\}, t\)/)
   })
+
+  it('closes the panel with the plugin name, its real version, and the star link', function () {
+    assert.match(src, /fetch\("\/_xlate\/version"\)/)
+    assert.match(src, /className: "xl-about"/)
+    assert.match(src, /t\.starCta \+ " ★"/)
+    assert.match(src, /href: \(about && about\.repo\) \? about\.repo : "https:\/\/github\.com\/UncleK\/dsh-think-translate"/)
+    assert.ok(!src.includes('t.note)'), 'the stale footnote must be gone')
+  })
 })

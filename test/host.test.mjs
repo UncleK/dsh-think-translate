@@ -29,6 +29,7 @@ import {
   resolveApiKey,
   stripResolvedKeys,
   clearNullFields,
+  handleVersion,
 } from '../lib/index.js'
 
 // ---------------------------------------------------------------------------
@@ -799,5 +800,22 @@ describe('clearing provider fields', function () {
     assert.equal(live.providers.mine.apiKeyEnv, undefined)
     assert.equal(live.providers.mine.apiKey, 'fresh')
     assert.equal(resolveApiKey(live.providers.mine), 'fresh')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// handleVersion — what the settings panel shows as "name vX.Y.Z"
+//
+// The version is read from the installed package.json, so the panel cannot drift
+// from the release the user actually installed.
+// ---------------------------------------------------------------------------
+
+describe('handleVersion', function () {
+  it('reports the installed package name, version and repository', async function () {
+    const v = await handleVersion()
+    assert.equal(v.ok, true)
+    assert.equal(v.name, 'dsh-think-translate')
+    assert.match(v.version, /^\d+\.\d+\.\d+/)
+    assert.equal(v.repo, 'https://github.com/UncleK/dsh-think-translate')
   })
 })
