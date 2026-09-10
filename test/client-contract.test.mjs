@@ -116,7 +116,8 @@ describe('settings UI contracts', function () {
     // The name cell stays as the flex filler so the controls line up across rows.
     assert.match(src, /createElement\("span", \{ className: "xl-provider-name" \}, isBuiltin \? "" : id\)/)
     assert.match(src, /createElement\("b", null, t\.currentInUse\)/)
-    assert.match(src, /onClick: clearCache/)
-    assert.ok(!src.includes('marginLeft: "auto"'), 'the clear button must align with the labels, not float right')
+    // The clear button belongs to the "当前使用" row itself (tail of that row),
+    // not to a row of its own.
+    assert.match(src, /style: \{ marginLeft: "auto", flex: "0 0 auto" \},\n\t*onClick: clearCache/)
   })
 })
