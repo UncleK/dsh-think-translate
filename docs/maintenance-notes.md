@@ -103,12 +103,13 @@
 - 真实 bundle 探针:8 语言渲染无 `undefined`、行操作/表单/继承 DSH/下载进度与失败/404 回退全部通过
 - npm 包体:2.4 MB → **1.7 MB**(两张 demo GIF 用 ffmpeg 重压,见 `docs/demo-guide.md`)
 
-### 遗留(都不影响使用)
+### 遗留
 
 - 官方 `settings.section.icon` 座位尚未合入 DSH;插件已自带内联图标 + 一次性 DOM 装饰兜底,
-  老版本也显示正确图标。上游补丁留在 `..\.pr-staging\dsh-settings-section-icon.patch`。
-- 纯清理项:`formName` 状态、`.xl-fallback-chain/.xl-fallback-provider` 两条死 CSS、
-  `applyLocal` 里已无调用方的 `patch.fallback` 分支。
+  老版本也显示正确图标。上游补丁留在 `..\.pr-staging\dsh-settings-section-icon.patch`
+  (不影响使用,也不需要等它)。
 - `demo/` 里两张 GIF 的宽度百分比与源图比例绑定(46% / 41%);换图后按
   `docs/demo-guide.md` 的公式重算,并给 URL 加 `?v=N` 以击穿 GitHub 的 camo 缓存。
+
+(本轮列出的死代码 —— `formName` 状态、两条 fallback CSS、`applyLocal` 的 fallback 分支 —— 已删除。)
 
