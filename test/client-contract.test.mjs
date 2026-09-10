@@ -81,4 +81,12 @@ describe('settings UI contracts', function () {
     assert.match(src, /function pruneCache\(\)/)
     assert.match(src, /if \(cacheWrites % 20 === 0\) pruneCache\(\);/)
   })
+
+  it('registers its own settings nav glyph through the settings.section.icon seat', function () {
+    // The seat only exists on DSH >= 0.1.5: the inject stays dormant elsewhere and
+    // the shell keeps its default glyph, so this registration is safe either way.
+    assert.match(src, /var IconThink = primitives && primitives\.IconThinkOutline16/)
+    assert.match(src, /ctx\.slots\.inject\("settings\.section\.icon", function \(\) \{/)
+    assert.match(src, /name: "settings\.section\.icon", key: "dsh-think-translate"/)
+  })
 })
