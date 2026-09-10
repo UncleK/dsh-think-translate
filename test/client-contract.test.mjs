@@ -113,8 +113,10 @@ describe('settings UI contracts', function () {
   })
 
   it('hides the raw id on built-in rows and reports "in use" in the status block', function () {
-    assert.match(src, /isBuiltin \? null : createElement\("span", \{ className: "xl-provider-name" \}, id\)/)
+    // The name cell stays as the flex filler so the controls line up across rows.
+    assert.match(src, /createElement\("span", \{ className: "xl-provider-name" \}, isBuiltin \? "" : id\)/)
     assert.match(src, /createElement\("b", null, t\.currentInUse\)/)
     assert.match(src, /onClick: clearCache/)
+    assert.ok(!src.includes('marginLeft: "auto"'), 'the clear button must align with the labels, not float right')
   })
 })
