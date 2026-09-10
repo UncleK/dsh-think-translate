@@ -123,4 +123,18 @@ describe('settings UI contracts', function () {
     assert.ok(!src.includes('className: "xl-kv", style: { marginTop: "4px" }'),
       'the clear button must not have a row of its own')
   })
+
+  it('builds the custom-provider form as labelled rows named by the model', function () {
+    assert.ok(!src.includes('placeholder: t.providerName'), 'the 名称 row must be gone')
+    assert.match(src, /createElement\("span", \{ className: "xl-form-label" \}, t\.providerPreset\)/)
+    assert.match(src, /createElement\("span", \{ className: "xl-form-label" \}, t\.providerEnvLabel\)/)
+    assert.match(src, /placeholder: t\.providerModel, value: formModel/)
+    // The model name is the provider's name, with a suffix when it collides.
+    assert.match(src, /var id = editingId \|\| model;/)
+    assert.match(src, /var onModelChange = function \(value\) \{/)
+  })
+
+  it('names the provider and model in the connection-test message', function () {
+    assert.match(src, /providerLabel\(id, \(cfgRef\.current\.providers \|\| \{\}\)\[id\] \|\| \{\}, t\)/)
+  })
 })
