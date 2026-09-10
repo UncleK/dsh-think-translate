@@ -118,6 +118,9 @@ describe('settings UI contracts', function () {
     assert.match(src, /createElement\("b", null, t\.currentInUse\)/)
     // The clear button belongs to the "当前使用" row itself (tail of that row),
     // not to a row of its own.
-    assert.match(src, /style: \{ marginLeft: "auto", flex: "0 0 auto" \},\n\t*onClick: clearCache/)
+    assert.match(src, /style: \{ marginLeft: "auto", flex: "0 0 auto" \}/)
+    assert.match(src, /onClick: clearCache/)
+    assert.ok(!src.includes('className: "xl-kv", style: { marginTop: "4px" }'),
+      'the clear button must not have a row of its own')
   })
 })
