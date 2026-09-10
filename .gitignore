@@ -1,3 +1,4 @@
-# Local runtime state â€” generated with defaults on first run
+# Local runtime state â€?generated with defaults on first run
 config.json
 lib/config.json
+lib/config.json.corrupt-*

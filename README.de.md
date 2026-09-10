@@ -21,6 +21,7 @@
 
 Modelle der DeepSeek-Familie denken oft auf Chinesisch — oder in der Sprache, in der sie gerade denken. dsh-think-translate zeigt die Think-Zeile, Aufgabenkarten und die Antwort live in *Ihrer* Sprache an, wie Untertitel für das Denken des Modells.
 
+- **🕵️ Jede Gedankenkette lesbar** — Reasoning, Gedankenkette, Aufgabenkarten und Antworten in Echtzeit übersetzt, in Stapeln gestreamt
 - **8 Zielsprachen** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
 - **Einsprachige Oberfläche** — Einstellungsbereich, Denkzeilen und Aufgabenkarten folgen der Zielsprache (kein zh/en-Gemisch); die Auswahl bleibt erhalten
 - **Lokales Modell zuerst** — nutzt Ihr lokales Ollama-Modell (qwen usw.): privat, offline, kostenlos. Die erste Auswahl **startet den Download automatisch** mit Fortschrittsbalken; das Modell wird danach automatisch konfiguriert und aktiviert
@@ -30,8 +31,11 @@ Modelle der DeepSeek-Familie denken oft auf Chinesisch — oder in der Sprache, 
 - **Satzweise Batch-Übersetzung** — lange Denkketten werden in kleinen Sätzen übersetzt, damit lokale kleine Modelle Qualität behalten
 - **🧩 Absatz- und satzweise Zerlegung** — lange Denkketten werden an Leerzeilen geteilt (Absatzstruktur bleibt erhalten) und zusätzlich satzweise gebündelt, damit kleine lokale Modelle Qualität behalten
 - **Streaming-Ausgabe** — Übersetzungen erscheinen während des Denkens batchweise; Think-Zeile aufklappen zum Vergleich mit dem Original
-- **Robust** — Host-Anfragen mit Backoff (3×), Browser-Direkt-Fallback, Fehlschläge werden nie gecacht
 - **🎚️ Einstellbarer Übersetzungszeitpunkt** — alles vorübersetzen / alte Ketten lazy laden (Standard) / nur beim Aufklappen
+- **🔗 Dynamische Anbieter-Kette** — die Listenreihenfolge ist die Ausführungsreihenfolge: ziehen zum Sortieren, jede Zeile einzeln ein-/ausschalten. Integriert google gtx / bing / lokales Ollama plus beliebige eigene Endpunkte
+- **🔌 Eigene Anbieter (OpenAI & Anthropic)** — im Panel jeden OpenAI-kompatiblen Endpunkt (`/v1/chat/completions`) oder die **Anthropic Messages API** (Claude) hinzufügen: Typ, Vorlage, Basis-URL, API-Schlüssel, Modell
+- **🪄 DSH-konfigurierte Anbieter übernehmen** — liest schreibgeschützte DSH-Zeilen aus `settings.yaml` (`llm-pi-ai.providers`); eine Schaltfläche liest neu ein und fügt alle der Kette hinzu. Der Schlüssel wird pro Anfrage aus `.credentials.yaml` aufgelöst und nie in der Plugin-Konfiguration gespeichert
+- **⏱️ Robust** — 3 Wiederholungen mit Backoff + direkter Browser-Fallback, Test-Schaltfläche pro Zeile, Fehlschläge werden nie zwischengespeichert
 
 ## 📦 Installation
 
@@ -71,7 +75,7 @@ Am Plugin ist nichts zu konfigurieren: Es deklariert keine Reihenfolge-Abhängig
 3. Die **Anbieterkette** verwalten (ziehen zum Sortieren, ankreuzen zum Aktivieren):
    - Integriert: **google gtx / bing** (kostenlos, sofort nutzbar, Systemproxy) und **lokales Modell (Ollama)** (bei der ersten Auswahl werden 7b/14b oder ein eigenes Modell geladen)
    - **DSH-Anbieter**: in `settings.yaml` konfigurierte Endpunkte erscheinen automatisch (schreibgeschützt; ankreuzen fügt sie der Kette hinzu). Die Schaltfläche **Aus DSH-Konfiguration übernehmen** direkt unter der Liste liest die Konfiguration neu ein und fügt alle auf einmal hinzu – keine baseURL und kein Schlüssel zum Neutippen, denn der Schlüssel wird aus den DSH-Credentials aufgelöst
-   - **Benutzerdefinierte Anbieter**: jeder OpenAI-kompatible oder Anthropic-Messages-Endpunkt; der Schlüssel kann eingetragen oder durch einen **Umgebungsvariablennamen** ersetzt werden (wird nie gespeichert). Vorlagen für gängige Modelle inklusive
+   - Der Schlüssel wird eingetippt oder kommt als **`apiKeyEnv`** aus einer Vorlage bzw. einer DSH-Zeile: diese Zeile zeigt das `env:NAME`-Abzeichen, und der Schlüssel wird pro Anfrage aufgelöst und nie in `config.json` geschrieben. Das Bearbeitungsformular hat kein Feld für die Umgebungsvariable (der Wert bleibt erhalten), aber ein geleertes Feld wird wirklich gelöscht (als explizite Löschung gesendet)
    - Abgewählte Anbieter werden übersprungen. Details stehen in [README.md](README.md)
 4. Nachricht senden und die Think-Zeile aufklappen, um die Übersetzung zu sehen
 
@@ -86,6 +90,8 @@ Browser → POST /_xlate/translate (gleiche Origin, kein CORS)
   → direkter Browser-Fallback
 ```
 
+- Die **Anbieter-Konfiguration** liegt in `config.json` (zur Laufzeit erzeugt, gitignoriert): `chain` (geordnete IDs), `fallback` (enabled + chain, nur Datei), `providers` (je Anbieter `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). Alte `priority`-Konfigurationen werden automatisch migriert; ein Anbieter mit `apiKeyEnv` löst seinen Schlüssel pro Anfrage aus dieser Umgebungsvariable auf (der literale `apiKey` bleibt als Rückfall) und kein aufgelöster Schlüssel wird je in `config.json` zurückgeschrieben; ein `null` in einem Patch löscht das Feld — so leert die Oberfläche eines
+- Die **DSH-Erkennung** liest beim Laden `settings.yaml` (`llm-pi-ai.providers`) und `.credentials.yaml` (`refs`) des Harness; erkannte Anbieter tragen `source: "dsh"`, aufgelöste Schlüssel bleiben im Speicher (nie in `config.json`), und die Route `/_xlate/dsh-scan` liest sie bei Bedarf neu ein
 - **Host-Hälfte** (`lib/index.js`): Anbieteradapter, LRU-Cache (600), `/_xlate/models`, `/_xlate/model/pull` + `pull-status` (automatische Konfiguration am Ende)
 - **Client-Hälfte** (`lib/client.js`): 8-sprachige UI, satzweise Batch-Übersetzung, Streaming-Think-Zeilen, localStorage-Persistenz
 - Reine Anzeigeschicht: Originale bleiben im Verlauf und im Modellkontext erhalten

@@ -21,6 +21,7 @@
 
 DeepSeek 系模型经常用中文思考——或者用它们碰巧习惯的语言。dsh-think-translate 在你观看时把 Think 行、任务卡片和回答渲染成*你的*语言，就像给模型的思考配上字幕。
 
+- **🕵️ 任意思考链都能读** — 推理、思维链、任务卡片与回答实时翻译，按批流式出现
 - **8 种目标语言** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
 - **单一语言界面** — 设置面板、思考行、任务卡片全部跟随目标语言（不混中英），选择持久化
 - **本地模型为主力** — 优先使用本地 Ollama 模型（qwen 等），隐私离线免费；首次选择本地模型时**自动触发下载**（实时进度条），完成后自动配置启用
@@ -30,8 +31,11 @@ DeepSeek 系模型经常用中文思考——或者用它们碰巧习惯的语�
 - **句子分批翻译** — 长思考链按句子分批串行翻译，本地小模型也能保持质量
 - **🧩 段落与句子感知切分** — 长思考链按空行切分（保留段落结构）再按句分批，本地小模型也能保持质量
 - **流式输出** — 思考过程中译文逐批出现，展开 Think 行可对照原文
-- **失败韧性** — host 请求 3 次退避重试 + 浏览器直连兜底，失败结果不缓存
 - **🎚️ 可调翻译时机** — 三档：全部预翻译 / 懒加载历史（默认）/ 仅展开时翻译
+- **🔗 动态提供方链** — 列表顺序就是投递顺序：拖动排序、逐行开关；内置 google gtx / bing / 本地 Ollama，外加任意数量的自定义端点
+- **🔌 自定义提供方（OpenAI 与 Anthropic）** — 设置面板里可添加任意 OpenAI 兼容端点（任何 `/v1/chat/completions` 网关）或原生 **Anthropic Messages API**（Claude）：类型、预设、接口地址、API 密钥、模型
+- **🪄 继承 DSH 已配置的提供方** — 自动发现 `settings.yaml`（`llm-pi-ai.providers`）里的只读 DSH 行，一个按钮重新扫描并全部加入链；密钥在请求时从 `.credentials.yaml` 解析，绝不写入插件配置
+- **⏱️ 失败韧性** — host 请求 3 次退避重试 + 浏览器直连兜底、每行独立的测试按钮、失败结果不缓存
 
 ## 📦 安装
 
@@ -71,7 +75,7 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 3. 管理**供应商链**（拖动排序，勾选即启用）：
    - 内置：**google gtx / bing**（免费，开箱即用，自动走系统代理）与**本地模型（Ollama）**（首次选中提示下载 7b/14b 或自定义）
    - **DSH 供应商**：`settings.yaml` 里已配置的端点会自动出现（只读，勾选即加入链）；列表下方的 **继承 DSH 已配置的 API** 会重新扫描并一键全部加入——不用重填 baseURL 或密钥（密钥在请求时从 DSH 自己的凭据里解析）
-   - **自定义供应商**：任意 OpenAI 兼容或 Anthropic Messages 端点；密钥可直接填，也可只填**环境变量名**（不落盘），表单里带常见模型的预设
+   - 密钥可以直接填，也可以由预设或 DSH 行带上 **`apiKeyEnv`**：那类行显示 `env:NAME` 徽标，密钥在请求时解析、绝不写入 `config.json`。编辑表单里没有环境变量输入框（值会原样保留），清空某个字段会真的删除它（以显式删除提交），所以从环境变量名切回字面密钥是可行的
    - 取消勾选即跳过该供应商；更细的说明以 [README.md](README.md) 为准
 4. 发消息让模型思考，展开 Think 行查看译文
 
@@ -86,6 +90,8 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
   → 浏览器直连兜底
 ```
 
+- **提供方配置** 存在 `config.json`（运行期生成，已 gitignore）：`chain`（有序 id）、`fallback`（enabled + chain，仅配置文件）、`providers`（每项的 `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`）。旧的 `priority` 配置会自动迁移；声明 `apiKeyEnv` 的提供方在请求时从该环境变量解析密钥（字面 `apiKey` 作为兜底），解析出的密钥绝不写回 `config.json`；patch 里显式的 `null` 表示删除该字段，UI 就是用它清空字段的
+- **DSH 发现** 在加载时读取 harness 的 `settings.yaml`（`llm-pi-ai.providers`）与 `.credentials.yaml`（`refs`）；被发现的提供方标记为 `source: "dsh"`，解析出的密钥只留在内存中（绝不写入 `config.json`），`/_xlate/dsh-scan` 路由可按需重新读取
 - **host 半边**（`lib/index.js`）：供应商适配器、LRU 缓存（600）、`/_xlate/models` 模型列表、`/_xlate/model/pull` + `pull-status` 模型下载管理（完成后自动配置启用）
 - **client 半边**（`lib/client.js`）：8 语言 UI、段落/句子分批翻译、流式 Think 行、设置与译文缓存持久化（localStorage）
 - 纯显示层：原文完整保留在会话日志与模型上下文中

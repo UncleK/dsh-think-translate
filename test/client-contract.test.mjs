@@ -19,8 +19,79 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import vm from 'node:vm'
 
 const src = readFileSync(fileURLToPath(new URL('../lib/client.js', import.meta.url)), 'utf8')
+
+// UI_TEXT is built inside the bundle factory, so read it out of a copy: the anchor
+// below is the last statement of the factory body.
+function captureUIText() {
+  const anchor = '\t\texports.inject = inject;'
+  assert.ok(src.includes(anchor), 'the UI_TEXT capture anchor must exist')
+  const patched = src.replace(anchor, '\t\tglobalThis.__UI_TEXT__ = UI_TEXT;\n' + anchor)
+  const sandbox = { console, setTimeout, clearTimeout, setInterval, clearInterval, window: {} }
+  sandbox.window.__ModuleLoader__ = { load: function (spec) { sandbox.__spec = spec } }
+  vm.createContext(sandbox)
+  vm.runInContext(patched, sandbox, { filename: 'lib/client.js' })
+  sandbox.__spec.factory(function (name) {
+    // Only the dictionary is under test; react is never rendered here.
+    if (name === 'react') {
+      return { default: { createElement: function () { return null }, Fragment: null, useState: function () { return [null, function () {}] }, useEffect: function () {}, useId: function () { return 'id' }, Component: class {} } }
+    }
+    throw new Error('unexpected require: ' + name)
+  })
+  return sandbox.__UI_TEXT__
+}
+
+const LANGS = ['zh-CN', 'en', 'ja', 'ko', 'es', 'fr', 'de', 'ru']
+
+describe('locale dictionary parity', function () {
+  it('defines exactly the same keys in all 8 locales', function () {
+    // A key added to en only used to be invisible: the panel falls back to English
+    // for the whole locale, so nothing showed up as `undefined` — six locales simply
+    // rendered English (the provider buttons) or lost a label (copy/copied).
+    const UI = captureUIText()
+    assert.deepEqual(Object.keys(UI).sort(), LANGS.slice().sort())
+    const ref = Object.keys(UI.en).sort()
+    assert.ok(ref.length > 60, 'the dictionary should not shrink unnoticed: ' + ref.length)
+    for (const lang of LANGS) {
+      assert.deepEqual(Object.keys(UI[lang]).sort(), ref, lang + ' has a different key set than en')
+      assert.deepEqual(Object.keys(UI[lang].labels).sort(), Object.keys(UI.en.labels).sort(),
+        lang + ' has a different provider-label set')
+    }
+  })
+
+  it('defines the code-block copy labels in every locale', function () {
+    // MarkdownText reads labels.code.copyLabel/copiedLabel (issue #3); a missing
+    // value here is the copy button speaking English inside a translated UI.
+    const UI = captureUIText()
+    for (const lang of LANGS) {
+      for (const key of ['copy', 'copied']) {
+        assert.equal(typeof UI[lang][key], 'string', lang + ' is missing ' + key)
+        assert.ok(UI[lang][key].trim().length > 0, lang + '.' + key + ' is empty')
+      }
+    }
+  })
+
+  it('keeps the doneFmt placeholders in every locale', function () {
+    // The consumer replaces {d} and {t}; a locale missing one shows literal braces.
+    const UI = captureUIText()
+    for (const lang of LANGS) {
+      assert.match(UI[lang].doneFmt, /\{d\}/, lang + '.doneFmt lost {d}')
+      assert.match(UI[lang].doneFmt, /\{t\}/, lang + '.doneFmt lost {t}')
+    }
+  })
+
+  it('has no leftover key from a removed feature', function () {
+    // The fallback-chain UI, the form's 名称/env rows, the panel footnote and the old
+    // "preferred provider" dropdown are gone; their strings must not come back.
+    const UI = captureUIText()
+    for (const dead of ['fallbackChain', 'fallbackToggle', 'modelNotInChain', 'note', 'presetLabel',
+      'providerApiKeyEnv', 'providerEnvLabel', 'providerManaged', 'providerName', 'providerOf', 'testConn']) {
+      assert.ok(!(dead in UI.en), 'dead key came back: ' + dead)
+    }
+  })
+})
 
 describe('MarkdownText label contract (issue #3)', function () {
   it('builds the nested labels shape the 0.1.2+ renderer dereferences', function () {
@@ -119,7 +190,9 @@ describe('settings UI contracts', function () {
     // The clear button belongs to the "当前使用" row itself (tail of that row),
     // not to a row of its own.
     assert.match(src, /style: \{ marginLeft: "auto", flex: "0 0 auto" \}/)
-    assert.match(src, /onClick: clearCache/)
+    // Clearing must also refresh the counter: `mem` is a plain Map, so without a
+    // state bump the 缓存条目 number kept its old value.
+    assert.match(src, /onClick: function \(\) \{ clearCache\(\); bumpTick\(function \(n\) \{ return n \+ 1; \}\); \}/)
     assert.ok(!src.includes('className: "xl-kv", style: { marginTop: "4px" }'),
       'the clear button must not have a row of its own')
   })

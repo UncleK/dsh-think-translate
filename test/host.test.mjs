@@ -9,6 +9,8 @@
 
 import { describe, it, after } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import {
   buildChainFromPriority,
   migrateConfig,
@@ -83,12 +85,26 @@ describe('migrateConfig', function () {
     assert.equal(cfg.chain[0], 'bing')
   })
 
-  it('injects fallback when missing', function () {
+  it('injects a DISABLED fallback when missing', function () {
+    // DEFAULT_CONFIG ships the fallback off: the chain itself ends with the free
+    // providers, so walking them a second time is a latency tax, not a rescue.
+    // Injecting enabled:true here used to switch it back on behind the user's back.
     const cfg = { chain: ['google'] }
     migrateConfig(cfg)
     assert.ok(cfg.fallback)
-    assert.equal(cfg.fallback.enabled, true)
+    assert.equal(cfg.fallback.enabled, false)
     assert.deepEqual(cfg.fallback.chain, ['google', 'bing'])
+  })
+
+  it('never re-enables a fallback that was turned off or deleted', function () {
+    const off = { chain: ['google', 'bing'], fallback: { enabled: false, chain: null } }
+    migrateConfig(off)
+    assert.equal(off.fallback.enabled, false, 'an explicit off must survive migration')
+    assert.deepEqual(off.fallback.chain, ['google', 'bing'])
+
+    const removed = { chain: ['google'], fallback: null }
+    migrateConfig(removed)
+    assert.equal(removed.fallback.enabled, false, 'a deleted fallback comes back off')
   })
 
   it('does not modify valid chain + fallback', function () {
@@ -790,6 +806,22 @@ describe('stripResolvedKeys', function () {
     assert.deepEqual(stripResolvedKeys({ providers: { g: { type: 'google' } } }).providers.g, { type: 'google' })
     // No providers map means nothing to strip — the helper never invents one.
     assert.equal(stripResolvedKeys({}).providers, undefined)
+  })
+
+  it('is also the sanitizer for config responses, so no route can answer with a secret', function () {
+    // mergeDshProviders writes the resolved credential into the LIVE config so the
+    // adapters can use it; every route that answers with a config must therefore
+    // go through this helper. The dsh-scan and POST /config routes used to answer
+    // with the live object, handing the browser a key read from .credentials.yaml.
+    const src = readFileSync(fileURLToPath(new URL('../lib/index.js', import.meta.url)), 'utf8')
+    // All three config answers go through the sanitizer: GET /_xlate/config,
+    // POST /_xlate/config and GET /_xlate/dsh-scan.
+    assert.match(src, /sendJson\(res, 200, stripResolvedKeys\(await loadConfig\(\)\)\)/)
+    assert.match(src, /sendJson\(res, 200, stripResolvedKeys\(merged\)\)/)
+    assert.match(src, /sendJson\(res, 200, stripResolvedKeys\(cfg\)\)/)
+    // And no route may answer with a live config object.
+    assert.ok(!/sendJson\(res, 200, (cfg|merged|live)\)/.test(src),
+      'a live config (which carries the resolved credentials) must never be sent as-is')
   })
 })
 

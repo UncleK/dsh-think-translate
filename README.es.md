@@ -21,6 +21,7 @@ Traducción en la capa de visualización para la interfaz web de [DeepSeek Harne
 
 Los modelos de la familia DeepSeek suelen razonar en chino — o en el idioma en que les da por pensar. dsh-think-translate muestra la fila Think, las tarjetas de tareas y la respuesta en *tu* idioma mientras miras, como subtítulos del pensamiento del modelo.
 
+- **🕵️ Lee cualquier cadena de pensamiento** — razonamiento, cadena de pensamiento, tarjetas de tareas y respuestas traducidos en tiempo real, por lotes
 - **8 idiomas de destino** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
 - **Interfaz en un solo idioma** — panel de ajustes, filas de pensamiento y tarjetas de tareas siguen el idioma de destino (sin mezclar zh/en); la elección persiste
 - **Modelo local primero** — usa tu modelo local de Ollama (qwen, etc.): privado, sin conexión, gratis. La primera selección **activa la descarga automática** con barra de progreso; el modelo se configura y habilita al terminar
@@ -30,8 +31,11 @@ Los modelos de la familia DeepSeek suelen razonar en chino — o en el idioma en
 - **Traducción por lotes de frases** — las cadenas largas se traducen en lotes pequeños para mantener la calidad en modelos locales pequeños
 - **🧩 Fragmentación por párrafos y frases** — las cadenas largas se dividen por líneas en blanco (se conserva la estructura de párrafos) y luego por frases, para que un modelo local pequeño mantenga la calidad
 - **Salida en streaming** — las traducciones aparecen lote a lote mientras piensa; expande la fila Think para comparar con el original
-- **Resistente** — reintentos con backoff (3×), respaldo directo del navegador, los fallos nunca se cachean
 - **🎚️ Momento de traducción ajustable** — pre-traducir todo / carga diferida de cadenas antiguas (por defecto) / solo al expandir
+- **🔗 Cadena de proveedores dinámica** — el orden de la lista es el orden de uso: arrastra para reordenar y activa o desactiva cada fila. Integrados google gtx / bing / Ollama local más cualquier endpoint personalizado
+- **🔌 Proveedores personalizados (OpenAI y Anthropic)** — añade desde el panel cualquier endpoint compatible con OpenAI (`/v1/chat/completions`) o la **Anthropic Messages API** (Claude): tipo, preajuste, URL base, clave de API y modelo
+- **🪄 Hereda los proveedores configurados en DSH** — detecta filas DSH de solo lectura desde `settings.yaml` (`llm-pi-ai.providers`) y un botón reescanea y las añade todas a la cadena; la clave se resuelve en cada petición desde `.credentials.yaml` y nunca se guarda en la config del plugin
+- **⏱️ Resistente** — 3 reintentos con backoff + respaldo directo del navegador, botón de prueba por fila, los fallos nunca se almacenan en caché
 
 ## 📦 Instalación
 
@@ -71,7 +75,7 @@ No hay nada que configurar en el plugin: no declara dependencia de orden con los
 3. Gestiona la **cadena de proveedores** (arrastra para ordenar, marca para activar):
    - Integrados: **google gtx / bing** (gratis, listos para usar, proxy del sistema) y **modelo local (Ollama)** (al elegirlo por primera vez se descarga 7b/14b o uno personalizado)
    - **Proveedores DSH**: los endpoints ya configurados en `settings.yaml` aparecen solos (solo lectura; márcalos para añadirlos a la cadena). El botón **Importar desde la config de DSH**, justo debajo de la lista, vuelve a escanear y los añade todos de una vez: ni baseURL ni clave que reescribir, porque la clave se resuelve desde las credenciales de DSH
-   - **Proveedores personalizados**: cualquier endpoint compatible con OpenAI o Anthropic Messages; la clave se puede escribir o indicar solo su **variable de entorno** (no se guarda). Incluye preajustes de modelos habituales
+   - La clave se escribe a mano o llega como **`apiKeyEnv`** desde un preajuste o una fila DSH: esa fila muestra la insignia `env:NAME`, y la clave se resuelve en cada petición sin escribirse nunca en `config.json`. El formulario de edición no tiene campo de variable de entorno (el valor se conserva intacto), pero vaciar un campo lo elimina de verdad (se envía como borrado explícito)
    - Si desmarcas uno, se omite. Los detalles están en [README.md](README.md)
 4. Envía un mensaje y expande la fila Think para ver la traducción
 
@@ -86,6 +90,8 @@ navegador → POST /_xlate/translate (mismo origen, sin CORS)
   → respaldo directo desde el navegador
 ```
 
+- La **configuración de proveedores** vive en `config.json` (generado en tiempo de ejecución, ignorado por git): `chain` (ids ordenados), `fallback` (enabled + chain, solo en el archivo), `providers` (por proveedor `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). Las configuraciones antiguas con `priority` se migran solas; un proveedor que declara `apiKeyEnv` resuelve la clave desde esa variable en cada petición (el `apiKey` literal queda como respaldo) y ninguna clave resuelta se escribe de vuelta en `config.json`; un `null` en un parche borra ese campo, que es como la interfaz vacía uno
+- El **descubrimiento DSH** lee `settings.yaml` (`llm-pi-ai.providers`) y `.credentials.yaml` (`refs`) del harness al cargar; los proveedores detectados se marcan con `source: "dsh"`, las claves resueltas se quedan en memoria (nunca en `config.json`) y la ruta `/_xlate/dsh-scan` los relee cuando hace falta
 - **Mitad host** (`lib/index.js`): adaptadores de proveedor, caché LRU (600), `/_xlate/models`, `/_xlate/model/pull` + `pull-status` (configura automáticamente al terminar)
 - **Mitad cliente** (`lib/client.js`): UI en 8 idiomas, traducción por lotes, filas Think en streaming, persistencia en localStorage
 - Capa de visualización pura: los originales permanecen en la transcripción y el contexto del modelo
