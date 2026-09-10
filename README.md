@@ -74,7 +74,8 @@ Nothing to configure on the plugin side: it declares no ordering dependency on D
    - **DSH providers**: endpoints already configured in DSH (`llm-pi-ai.providers`) appear automatically as read-only entries (badge "DSH"); enable them to route translation through your existing gateway accounts
    - **Custom providers**: click "Add custom provider" to register any OpenAI-compatible endpoint or a native Anthropic Messages endpoint (base URL, API key, model); each row has a **test** button to verify it live. Instead of typing the key you can name an **environment variable** (`apiKeyEnv`) — the key is then read from the environment at request time and never written to `config.json`; a row using one shows an `env:NAME` badge
    - Use the **fallback chain** toggle to keep a backup set (e.g. google/bing) when the primary chain fails
-4. Send a message that makes the model think, then expand the **Think row** to read the translation and compare with the original
+4. Optional: price your paid providers (`priceIn` / `priceOut` per 1M tokens, in the add/edit form) and set a **daily cap** under *Usage & daily budget* — the panel shows today's spend per provider and can reset it; once the cap is reached, paid providers are skipped and the free/local ones take over
+5. Send a message that makes the model think, then expand the **Think row** to read the translation and compare with the original
 
 ## ⚙️ How it works
 
@@ -92,6 +93,7 @@ browser → POST /_xlate/translate (same-origin, no CORS)
 ```
 
 - **Provider config** lives in `config.json` (runtime, gitignored): `chain` (ordered ids), `fallback` (enabled + chain), `providers` (per-provider `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). Old `priority`-based configs auto-migrate. A provider that declares `apiKeyEnv` resolves its key from that environment variable at request time (the literal `apiKey` stays as the fallback), and no env-resolved key is ever written back to `config.json`.
+- **Usage & daily budget** — a provider that carries `priceIn` / `priceOut` (per 1M tokens, in whatever currency you price in) is metered: with the budget enabled and a daily limit set, today's spend accumulates in `usage.json` (pruned to 31 days) and **paid providers are skipped once the limit is reached** — the chain falls through to the free/local providers, so translation keeps working, it just stops costing money. Prices are set in the add/edit form (custom providers) or inline on the row (DSH-discovered providers, whose other fields stay read-only); `GET /_xlate/usage` reports the day's spend per provider, and the settings panel shows it and can reset today.
 - **DSH discovery** reads the harness `settings.yaml` (`llm-pi-ai.providers`) and `.credentials.yaml` (`refs`) on load; discovered providers are marked `source: "dsh"`, resolved keys stay in memory (never written to `config.json`), and a `/_xlate/dsh-scan` route re-reads them on demand.
 - **Host half** (`lib/index.js`): provider adapters, ordered chain + fallback execution, LRU cache (600), per-provider override for tests, `/_xlate/models` listing, `/_xlate/model/pull` + `pull-status` model download management (auto-configures on completion)
 - **Client half** (`lib/client.js`): 8-language UI, drag-reorderable provider list, add/edit/delete custom providers, per-provider test buttons, sentence/paragraph-batched translation, streaming Think rows, localStorage persistence (settings + translation cache)

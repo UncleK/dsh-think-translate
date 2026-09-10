@@ -1,3 +1,6 @@
 # Local runtime state — generated with defaults on first run
 config.json
 lib/config.json
+# Daily usage ledger (per-provider tokens/cost for the budget cap)
+usage.json
+lib/usage.json
