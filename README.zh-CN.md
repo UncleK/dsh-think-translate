@@ -54,6 +54,16 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 #  3. 重启 web
 ```
 
+## 🧯 DSH 升级之后
+
+第三方客户端插件走 DSH 的客户端模块图，而这张图**每个进程只在启动时组合一次**，一次失败的组合会被记在内存里直到重启。于是升级 DSH 后常撞到这三件事：
+
+- **从源码启动失败**：`client bundles not found; run \`pnpm run build\` before launch` —— 新版客户端包需要先构建：在 harness 仓库根目录跑 `pnpm run build`，再重新启动 `dsh web`。
+- **插件 UI 不见了**（Think 行没有译文、设置里没有“思考链翻译”）—— **重启一次 `dsh web`**；只刷新页面有时不够。
+- **本地模型列表是空的** —— `ollama` 服务当前用的模型目录里没有模型：查 `ollama list`（或 `GET /api/tags`）以及该服务实际生效的 `OLLAMA_MODELS`；模型文件在别的盘时，可用目录联接把服务的默认目录指过去。
+
+插件侧无需任何配置：它不依赖 DSH 内部包的加载顺序（只绑定 `slots` 服务，可选使用 `@deepseek-ai/dsh-client-ui-primitives`），因此老版本（≤ 0.1.1-rc）与当前版本线（≥ 0.1.2-alpha.1，含 0.1.5-rc.1）都能直接跑。
+
 ## 🚀 使用
 
 1. 打开 **设置 → 思考链翻译**

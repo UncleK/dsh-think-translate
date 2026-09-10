@@ -52,6 +52,16 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 #  3. restart web
 ```
 
+## 🧯 After a DSH upgrade
+
+Third-party client plugins load through DSH's client module graph, and that graph is composed **once per process** — a composition that failed is remembered in memory until the process restarts. So these three things commonly bite right after an upgrade:
+
+- **Starting from a source checkout fails with** `client bundles not found; run \`pnpm run build\` before launch` — the new client packages ship unbuilt: run `pnpm run build` in the harness checkout, then start `dsh web` again.
+- **The plugin's UI is gone** (no translated Think row, no *Think Translation* section in Settings) — **restart `dsh web`**; refreshing the page alone is sometimes not enough.
+- **The local model list is empty** — the `ollama` service is not serving that model directory: check `ollama list` (or `GET /api/tags`) and the `OLLAMA_MODELS` the running service actually uses. When the model files live on another drive, a directory junction can point the service's default directory at them.
+
+Nothing to configure on the plugin side: it declares no ordering dependency on DSH internals (it binds only to the `slots` service, plus an optional `@deepseek-ai/dsh-client-ui-primitives`), so it runs on both older DSH (≤ 0.1.1-rc) and the current line (≥ 0.1.2-alpha.1, 0.1.5-rc.1 included).
+
 ## 🚀 Usage
 
 1. Open **Settings → Think Translation**
