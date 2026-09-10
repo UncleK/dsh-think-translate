@@ -102,4 +102,19 @@ describe('settings UI contracts', function () {
     assert.match(src, /if \(!label \|\| \(label\.textContent \|\| ""\)\.trim\(\) !== title\) continue;/)
     assert.match(src, /observer\.disconnect\(\)/)
   })
+
+  it('moves the local-model picker into its own provider row', function () {
+    assert.match(src, /className: "xl-chip"/)
+    assert.match(src, /toggleModelMenu: function \(id\) \{/)
+    assert.match(src, /className: "xl-model-panel"/)
+    assert.match(src, /onClick: function \(\) \{ pickModel\(m\); \}/)
+    assert.ok(!src.includes('var modelArea'), 'the separate model block must be gone')
+    assert.ok(!src.includes('var testConn'), 'the standalone connection test must be gone')
+  })
+
+  it('hides the raw id on built-in rows and reports "in use" in the status block', function () {
+    assert.match(src, /isBuiltin \? null : createElement\("span", \{ className: "xl-provider-name" \}, id\)/)
+    assert.match(src, /createElement\("b", null, t\.currentInUse\)/)
+    assert.match(src, /onClick: clearCache/)
+  })
 })
