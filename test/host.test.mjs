@@ -30,6 +30,8 @@ import {
   ADAPTERS,
   resolveApiKey,
   stripResolvedKeys,
+  harnessHomeCandidates,
+  pickHarnessHome,
   clearNullFields,
   handleVersion,
 } from '../lib/index.js'
@@ -314,6 +316,63 @@ describe('applyFullProviders', function () {
 // ---------------------------------------------------------------------------
 // extractDshProviders — regex parser for settings.yaml llm-pi-ai section
 // ---------------------------------------------------------------------------
+
+describe('harness home resolution', function () {
+  // The plugin used to pick ONE guess (`$DSH_HOME` or the desktop-app layout), and an
+  // install whose home is ~/.dsh therefore looked at %APPDATA%\dsh-desktop\harness —
+  // a directory that does not exist there — so discovery answered "no provider
+  // configured" while settings.yaml sat in ~/.dsh. DSH's own order is $DSH_HOME, then
+  // ~/.dsh (see @deepseek-ai/dsh-home-paths).
+  const saved = {}
+  const KEYS = ['DSH_HOME', 'HOME', 'USERPROFILE', 'APPDATA']
+  function withEnv(values, fn) {
+    for (const k of KEYS) saved[k] = process.env[k]
+    try {
+      for (const k of KEYS) {
+        if (values[k] === undefined) delete process.env[k]
+        else process.env[k] = values[k]
+      }
+      return fn()
+    } finally {
+      for (const k of KEYS) {
+        if (saved[k] === undefined) delete process.env[k]
+        else process.env[k] = saved[k]
+      }
+    }
+  }
+
+  it('puts $DSH_HOME first, then the home directory, then the desktop layout', function () {
+    withEnv({ DSH_HOME: 'C:/custom-dsh', HOME: '', USERPROFILE: 'C:/Users/probe', APPDATA: 'C:/Users/probe/AppData/Roaming' }, function () {
+      const c = harnessHomeCandidates()
+      assert.equal(c[0], 'C:/custom-dsh')
+      assert.equal(c[1], 'C:/Users/probe/.dsh')
+      assert.ok(c[c.length - 1].endsWith('dsh-desktop\\harness'), 'the desktop layout is only the last resort: ' + c.join(' | '))
+    })
+  })
+
+  it('treats a blank DSH_HOME as unset, like DSH does', function () {
+    withEnv({ DSH_HOME: '   ', HOME: '', USERPROFILE: 'C:/Users/probe', APPDATA: '' }, function () {
+      const c = harnessHomeCandidates()
+      assert.equal(c[0], 'C:/Users/probe/.dsh')
+    })
+  })
+
+  it('picks the first candidate that actually holds a settings.yaml', function () {
+    const exists = function (p) { return p === '/home/u/.dsh/settings.yaml' }
+    assert.deepEqual(pickHarnessHome(['/env-dsh', '/home/u/.dsh'], exists),
+      { home: '/home/u/.dsh', settingsFound: true })
+  })
+
+  it('reports the first candidate when none of them has one', function () {
+    assert.deepEqual(pickHarnessHome(['/env-dsh', '/home/u/.dsh'], function () { return false }),
+      { home: '/env-dsh', settingsFound: false })
+  })
+
+  it('never throws on a candidate it cannot stat', function () {
+    const boom = function (p) { if (p.indexOf('bad') >= 0) throw new Error('EPERM'); return p.indexOf('.dsh') >= 0 }
+    assert.equal(pickHarnessHome(['/bad', '/home/u/.dsh'], boom).home, '/home/u/.dsh')
+  })
+})
 
 describe('extractDshProviders', function () {
   const sample = [
@@ -815,10 +874,12 @@ describe('stripResolvedKeys', function () {
     // with the live object, handing the browser a key read from .credentials.yaml.
     const src = readFileSync(fileURLToPath(new URL('../lib/index.js', import.meta.url)), 'utf8')
     // All three config answers go through the sanitizer: GET /_xlate/config,
-    // POST /_xlate/config and GET /_xlate/dsh-scan.
+    // POST /_xlate/config and GET /_xlate/dsh-scan (which sanitizes into `out` so the
+    // scan diagnostic can ride along on the response copy).
     assert.match(src, /sendJson\(res, 200, stripResolvedKeys\(await loadConfig\(\)\)\)/)
     assert.match(src, /sendJson\(res, 200, stripResolvedKeys\(merged\)\)/)
-    assert.match(src, /sendJson\(res, 200, stripResolvedKeys\(cfg\)\)/)
+    assert.match(src, /const out = stripResolvedKeys\(cfg\)/)
+    assert.match(src, /sendJson\(res, 200, out\)/)
     // And no route may answer with a live config object.
     assert.ok(!/sendJson\(res, 200, (cfg|merged|live)\)/.test(src),
       'a live config (which carries the resolved credentials) must never be sent as-is')

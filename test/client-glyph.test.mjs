@@ -48,6 +48,7 @@ function makeElement(tag) {
     },
     setAttribute: function (k, v) { this.attrs[k] = String(v) },
     getAttribute: function (k) { return k in this.attrs ? this.attrs[k] : null },
+    hasAttribute: function (k) { return k in this.attrs },
     removeAttribute: function (k) { delete this.attrs[k] },
     appendChild: function (c) { c.parentNode = this; this.children.push(c); return c },
     insertBefore: function (c, ref) {
@@ -71,7 +72,14 @@ function makeElement(tag) {
       while (n) { if (matches(n, sel)) return n; n = n.parentNode }
       return null
     },
-    set innerHTML(v) { this._html = v },
+    // Enough of an innerHTML parser for the one thing this test needs: an inserted
+    // <svg> becomes a real child element, so querySelector('svg') finds it — that is
+    // what the plugin's own-glyph marker and the regression below depend on.
+    set innerHTML(v) {
+      this._html = v
+      this.children.length = 0
+      if (/<svg/i.test(v)) this.appendChild(makeElement('svg'))
+    },
     get innerHTML() { return this._html || '' },
   }
 }
@@ -175,6 +183,29 @@ describe('settings nav glyph fallback', function () {
 
     assert.equal(dom.other.btn.querySelector('[data-xl-nav-glyph="1"]'), null, 'another section is untouched')
     assert.equal(dom.other.icon.style.display, undefined, 'and keeps its own glyph visible')
+  })
+
+  it('keeps its OWN glyph visible on every later pass (regression: the book vanished)', function () {
+    // The bug that shipped in 1.2.0: `btn.querySelector('svg')` returned the glyph
+    // this plugin had just inserted, so the next pass hid the book instead of the
+    // shell's icon — leaving the nav row with no icon at all.
+    const dom = buildDom()
+    const timers = [], observers = []
+    loadPlugin(dom, timers, observers)
+    flush(timers)
+
+    const holder = dom.ours.btn.querySelector('[data-xl-nav-glyph="1"]')
+    const ours = holder.querySelector('svg')
+    assert.ok(ours, 'the book svg exists')
+    assert.equal(ours.style.display, undefined, 'and is visible after the first pass')
+
+    // any later nav mutation triggers another pass
+    observers[0].cb([{ target: dom.nav, addedNodes: [] }])
+    flush(timers)
+
+    assert.equal(ours.style.display, undefined, 'the book is still visible after a second pass')
+    assert.equal(holder.querySelectorAll('svg').length, 1, 'exactly one book svg')
+    assert.equal(dom.ours.icon.style.display, 'none', 'and the shell icon is still the hidden one')
   })
 
   it('is idempotent and self-heals when the shell re-renders its icon', function () {

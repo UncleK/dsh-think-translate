@@ -70,6 +70,47 @@
 
 ---
 
+## 1.2.1(2026-09-11)—— 1.2.0 发布后用户报的两个 bug
+
+### 1) 设置左侧的书本图标消失(自己写的 bug)
+
+- **现象**:更新到 1.2.0 后,「思考链翻译」那一行的图标整个没了(既不是书本,也不是齿轮)。
+- **根因**:1.2.0 把"替换 shell 图标"改成"在 shell 图标前插入自己的图标 + 隐藏 shell 图标"。
+  第二轮装饰时 `btn.querySelector("svg")` 会先命中**我们自己插入的书本 svg**(文档顺序更靠前),
+  于是代码把**自己的图标**隐藏了 → 两个都不可见。
+- **修复**:新增 `shellNavIcon(btn)`,只找 shell 的 svg —— 先扫直接子元素,再用
+  `data-xl-nav-glyph-svg` 标记排除自己的图标(`lib/client.js`)。
+- **为什么测试没挡住**:原 DOM 测试只断言了"shell 图标被隐藏 + 只有一个 holder",
+  没断言"自己的 svg 仍然可见"。已补回归测试
+  `keeps its OWN glyph visible on every later pass (regression: the book vanished)`,
+  并给测试 DOM stub 补上 `hasAttribute` 与 innerHTML 解析。把修复去掉后该文件 4/4 全红。
+
+### 2) 「继承 DSH 已配置的 API」说没发现 provider(用户明明有)
+
+- **根因**:插件在猜目录。`DSH_HOME` 不存在时回退到桌面版布局
+  `%APPDATA%\dsh-desktop\harness`,而这台机器的 home 是 `~/.dsh` —— 那个目录不存在,
+  于是读不到 `settings.yaml`;而且 discovery **整体静默失败**,面板只会说"没有发现"。
+  注意:`DSH_HOME` 在 DSH 给工具子进程注入的 shell 里有,不代表 web 进程也有。
+- **修复**:目录解析对齐 DSH 自己的规则(`@deepseek-ai/dsh-home-paths`:
+  `$DSH_HOME` → `~/.dsh`,空白视为未设置),桌面版路径降为兜底;并且逐个候选检查
+  哪个真的存在 `settings.yaml`(`harnessHomeCandidates` / `pickHarnessHome`,已导出 + 单测)。
+- **不再静默**:`discoverDshProviders` 记录诊断(候选目录、实际使用、两个文件是否找到、
+  找到哪些 provider),`GET /_xlate/dsh-scan` 在响应副本里带 `dshScan`(不落盘),
+  面板在"没发现"时直接显示扫描过的路径。
+
+### 3) 表单里的 `env:NAME` 徽标去掉
+
+按用户反馈移除:`apiKeyEnv` 是预设自带的实现细节,保存后的行上本来就有 `env:NAME` 徽标;
+"输入密钥即清掉 env 名"的行为保留,所以看得见的那把密钥一定生效。
+
+### 验证
+
+- `npm test`:**129 通过**(新增 5 条 home 解析单测 + 1 条图标回归测试 + stub 能力补齐)
+- 沙箱实跑:把 `DSH_HOME` 删掉后 `discoverDshProviders()` 仍能找出 `openrouter-ox`;
+  候选顺序 `[~/.dsh, %APPDATA%\dsh-desktop\harness]`
+
+---
+
 ## 1.2.0(2026-09-11)—— 本轮全量审查后的状态
 
 ### 这一版包含
