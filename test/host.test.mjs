@@ -26,6 +26,8 @@ import {
   deepMerge,
   structuredCloneSafe,
   ADAPTERS,
+  resolveApiKey,
+  stripResolvedKeys,
 } from '../lib/index.js'
 
 // ---------------------------------------------------------------------------
@@ -653,5 +655,91 @@ describe('translateViaChain', function () {
   it('fails when the chain is missing entirely', async function () {
     const result = await translateViaChain('hello', 'zh-CN', { providers: {} })
     assert.equal(result.ok, false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// resolveApiKey / stripResolvedKeys — apiKeyEnv (2026-09-11)
+//
+// A provider may name an environment variable instead of carrying the secret
+// itself. The key is resolved per request and must never reach config.json.
+// ---------------------------------------------------------------------------
+
+describe('resolveApiKey', function () {
+  const ENV_NAME = 'DSH_XLATE_TEST_KEY'
+  after(function () { delete process.env[ENV_NAME] })
+
+  it('prefers the environment variable named by apiKeyEnv', function () {
+    process.env[ENV_NAME] = 'from-env'
+    assert.equal(resolveApiKey({ apiKeyEnv: ENV_NAME, apiKey: 'literal' }), 'from-env')
+  })
+
+  it('falls back to the literal apiKey when that variable is unset', function () {
+    delete process.env[ENV_NAME]
+    assert.equal(resolveApiKey({ apiKeyEnv: ENV_NAME, apiKey: 'literal' }), 'literal')
+  })
+
+  it('ignores an empty environment value', function () {
+    process.env[ENV_NAME] = ''
+    assert.equal(resolveApiKey({ apiKeyEnv: ENV_NAME, apiKey: 'fallback' }), 'fallback')
+    delete process.env[ENV_NAME]
+  })
+
+  it('returns undefined when nothing resolves', function () {
+    delete process.env[ENV_NAME]
+    assert.equal(resolveApiKey({ apiKeyEnv: ENV_NAME }), undefined)
+    assert.equal(resolveApiKey({}), undefined)
+    assert.equal(resolveApiKey(null), undefined)
+  })
+
+  it('keeps the plain literal key working without apiKeyEnv', function () {
+    assert.equal(resolveApiKey({ apiKey: 'ollama-local' }), 'ollama-local')
+  })
+})
+
+describe('stripResolvedKeys', function () {
+  it('drops the literal key of a provider that declares apiKeyEnv', function () {
+    const live = { providers: { custom: { type: 'openai', apiKeyEnv: 'MY_KEY', apiKey: 'secret' } } }
+    const disk = stripResolvedKeys(live)
+    assert.equal(disk.providers.custom.apiKey, undefined)
+    assert.equal(disk.providers.custom.apiKeyEnv, 'MY_KEY')
+    // The live config keeps its value: the strip is a write-time clone.
+    assert.equal(live.providers.custom.apiKey, 'secret')
+  })
+
+  it('drops DSH-resolved keys but keeps a user-typed one', function () {
+    const disk = stripResolvedKeys({
+      providers: {
+        linuxdo: { type: 'openai', source: 'dsh', apiKey: 'resolved-from-credentials' },
+        mine: { type: 'openai', apiKey: 'typed-by-user' },
+      },
+    })
+    assert.equal(disk.providers.linuxdo.apiKey, undefined)
+    assert.equal(disk.providers.mine.apiKey, 'typed-by-user')
+  })
+
+  it('survives providers without keys and an empty config', function () {
+    assert.deepEqual(stripResolvedKeys({ providers: { g: { type: 'google' } } }).providers.g, { type: 'google' })
+    // No providers map means nothing to strip — the helper never invents one.
+    assert.equal(stripResolvedKeys({}).providers, undefined)
+  })
+})
+
+describe('apiKeyEnv through the config patch routes', function () {
+  it('accepts apiKeyEnv on a custom provider (partial patch)', function () {
+    const out = normalizeConfigPatch(
+      { providers: { mine: { type: 'openai', baseURL: 'https://x/v1', model: 'm', apiKeyEnv: 'MY_KEY' } } },
+      { providers: {}, chain: [] },
+    )
+    assert.equal(out.providers.mine.apiKeyEnv, 'MY_KEY')
+    assert.equal(out.providers.mine.apiKey, undefined)
+  })
+
+  it('accepts apiKeyEnv in a full providers replace', function () {
+    const next = applyFullProviders(
+      { providers: {} },
+      { _full: true, mine: { type: 'anthropic', baseURL: 'https://y/v1', model: 'c', apiKeyEnv: 'ANTHROPIC_KEY' } },
+    )
+    assert.equal(next.mine.apiKeyEnv, 'ANTHROPIC_KEY')
   })
 })
