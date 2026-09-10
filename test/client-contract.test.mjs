@@ -212,7 +212,7 @@ describe('settings UI contracts', function () {
     assert.ok(!src.includes('createElement("datalist"'), 'no browser suggestion list may come back')
     assert.match(src, /className: "xl-menu"/)
     assert.match(src, /className: "xl-menu-item"/)
-    assert.match(src, /var formProviderMenuPair = useState\(false\)/)
+    assert.match(src, /var formProviderMenuPair = useDraft\("formProviderMenu", false\)/)
     assert.match(src, /var PROVIDER_PRESETS = \[/)
     // The model menu belongs to one provider: disabled until one is known, then it
     // lists only that provider's models.
@@ -278,7 +278,7 @@ describe('settings UI contracts', function () {
     assert.match(src, /fetch\("\/_xlate\/dsh-scan"\)\.then\(function \(r\) \{ return r\.json\(\); \}\)/)
     assert.match(src, /var dshAvailable = dshAll\.filter\(function \(id\) \{ return chain\.indexOf\(id\) < 0; \}\);/)
     assert.match(src, /return provs\[id\] && provs\[id\]\.source === "dsh";/)
-    assert.match(src, /var dshMenuPair = useState\(false\)/)
+    assert.match(src, /var dshMenuPair = useDraft\("dshMenu", false\)/)
     // The button sits next to "+ add provider" and names the count it can add.
     assert.match(src, /onClick: openDshImport/)
     assert.match(src, /t\.dshImport \+ \(dshAvailable\.length \? " · " \+ dshAvailable\.length : ""\)/)

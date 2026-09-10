@@ -124,7 +124,14 @@ function createRuntime() {
     throw new Error('the panel never settled: a state update kept re-rendering it')
   }
 
-  return { React, mount }
+  return {
+    React,
+    mount,
+    // Drop every component instance, the way React does when a list-slot row gets a
+    // new key. The shell keys settings rows by registration identity, and this plugin
+    // re-registers its section on a language change, so a remount is a real event.
+    reset: function () { instances.length = 0; order = 0 },
+  }
 }
 
 function flatten(node, out) {
@@ -144,8 +151,12 @@ function textOf(node) {
   return textOf(node.children)
 }
 
-function button(tree, text) {
-  return flatten(tree).find(function (n) {
+// class name of a rendered host node ('' for text nodes)
+function cls(node) {
+  return String((node.props && node.props.className) || '')
+}
+
+function button(tree, text) {  return flatten(tree).find(function (n) {
     return n.host && n.type === 'button' && textOf(n).indexOf(text) >= 0
   })
 }
@@ -219,7 +230,12 @@ async function mountPanel(scanConfig) {
   assert.equal(typeof registered.section, 'function', 'the panel must register itself into settings.section')
 
   const tree = await runtime.mount(registered.section)
-  return { tree, calls, runtime, registered: registered.section, specs }
+  return {
+    tree, calls, runtime, specs,
+    registered: registered.section,
+    // mount again with every component instance dropped (a real remount)
+    remount: function () { runtime.reset(); return runtime.mount(registered.section) },
+  }
 }
 
 describe('settings panel renders (real bundle, mini React)', function () {
@@ -279,5 +295,43 @@ describe('settings panel renders (real bundle, mini React)', function () {
     click(button(tree, '+ 添加自定义提供方'))
     tree = await panel.runtime.mount(panel.registered)
     assert.ok(!textOf(tree).includes('全部加入链'), 'the two entry points must not be open at once')
+  })
+
+  it('keeps a half-typed provider form across the remount a language change causes', async function () {
+    // The section is re-registered on a language change so its nav title follows, and
+    // the shell keys list rows by registration identity — so the panel is unmounted
+    // and mounted again. Everything the user is in the middle of has to survive that.
+    const panel = await mountPanel(configWith({ google: { type: 'google', enabled: true } }, ['google']))
+    click(button(panel.tree, '+ 添加自定义提供方'))
+    let tree = await panel.runtime.mount(panel.registered)
+
+    const form = flatten(tree).find(function (n) { return n.host && cls(n) === 'xl-add-form' })
+    assert.ok(form, 'the add form is open')
+    const inputs = flatten(form).filter(function (n) { return n.host && n.type === 'input' && cls(n) === 'xl-cfg' })
+    const baseURL = inputs.find(function (n) { return n.props.placeholder === 'https://api.example.com/v1' })
+    const key = inputs[inputs.length - 1]
+    baseURL.props.onChange({ target: { value: 'https://my-gateway.example/v1' } })
+    key.props.onChange({ target: { value: 'sk-half-typed' } })
+    tree = await panel.runtime.mount(panel.registered)
+
+    // the language switch: the registration is replaced and the row gets a new key
+    const langSelect = flatten(tree).find(function (n) {
+      return n.host && n.type === 'select' && flatten(n).some(function (o) { return o.props && o.props.value === 'ja' })
+    })
+    langSelect.props.onChange({ target: { value: 'ja' } })
+    const afterRemount = await panel.remount()
+
+    const text = textOf(afterRemount)
+    const form2 = flatten(afterRemount).find(function (n) { return n.host && cls(n) === 'xl-add-form' })
+    assert.ok(form2, 'the form is still open after the remount')
+    const values = flatten(form2).filter(function (n) { return n.host && n.type === 'input' && cls(n) === 'xl-cfg' })
+      .map(function (n) { return n.props.value })
+    assert.ok(values.includes('https://my-gateway.example/v1'), 'the typed base URL survived: ' + values.join(', '))
+    assert.ok(values.includes('sk-half-typed'), 'the typed key survived: ' + values.join(', '))
+    // and the panel must not flash the "host half not loaded" notice while it
+    // refetches: the last known config is part of the draft
+    assert.ok(!/host 半边未生效|not loaded|未加载/.test(text), 'no unavailable flash: ' + text.slice(0, 120))
+    assert.ok(panel.specs.filter(function (s) { return s.name === 'settings.section' }).length >= 2,
+      'the section was registered again for the new language')
   })
 })
