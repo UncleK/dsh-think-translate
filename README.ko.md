@@ -33,7 +33,7 @@ DeepSeek 계열 모델은 중국어로, 또는 우연히 생각에 쓰는 언어
 - **🎚️ 번역 시점 조절** — 모두 사전 번역 / 이전 체인 지연 로딩（기본）/ 펼친 체인만 번역
 - **🔗 동적 제공자 체인** — 목록 순서가 곧 실행 순서. 끌어서 정렬하고 행마다 켜고 끄기. 내장 google gtx / bing / 로컬 Ollama에 더해 임의의 사용자 지정 엔드포인트
 - **🔌 사용자 지정 제공자(OpenAI / Anthropic)** — 설정 패널에서 OpenAI 호환 엔드포인트(`/v1/chat/completions`)나 **Anthropic Messages API**(Claude)를 추가: 유형, 프리셋, 베이스 URL, API 키, 모델
-- **🪄 DSH 설정의 제공자 상속** — `settings.yaml`(`llm-pi-ai.providers`)에서 읽기 전용 DSH 행을 자동 발견하고, 버튼 한 번으로 다시 검사해 모두 체인에 추가. 키는 요청 시 `.credentials.yaml`에서 해석되며 플러그인 설정에 저장되지 않음
+- **🪄 DSH 설정의 제공자 상속** — `settings.yaml`(`llm-pi-ai.providers`)에서 읽기 전용 DSH 행을 자동 발견하고, 버튼 한 번으로 다시 검사해 모두 체인에 추가. 키는 요청 시 `.credentials.yaml`에서 해석되며 플러그인 설정에 저장되지 않음. harness 자체의 기본 경로도 포함됩니다: `agent-default-model`이 `deepseek-official`을 가리키면 DeepSeek 공식 API도 DSH 행으로 제공됩니다
 - **⏱️ 실패에 강함** — host 3회 백오프 재시도 + 브라우저 직접 폴백, 행별 테스트 버튼, 실패 결과는 캐시하지 않음
 
 ## 📦 설치

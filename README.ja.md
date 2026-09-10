@@ -33,7 +33,7 @@ DeepSeek 系モデルは中国語で考えることが多く、あるいはた�
 - **🎚️ 翻訳タイミングを調整可能** — すべて事前翻訳 / 履歴を遅延ロード（既定）/ 展開時のみ翻訳
 - **🔗 動的プロバイダーチェーン** — 一覧の順序がそのまま実行順。ドラッグで並べ替え、行ごとにオン/オフ。組み込みの google gtx / bing / ローカル Ollama に加えて任意のカスタム端点
 - **🔌 カスタムプロバイダー（OpenAI / Anthropic）** — 設定パネルから任意の OpenAI 互換端点（`/v1/chat/completions`）や **Anthropic Messages API**（Claude）を追加：種類・プリセット・ベース URL・API キー・モデル
-- **🪄 DSH 設定のプロバイダーを引き継ぐ** — `settings.yaml`（`llm-pi-ai.providers`）から読み取り専用の DSH 行を自動検出し、ボタン1つで再スキャンしてまとめてチェーンに追加。キーは `.credentials.yaml` からリクエスト時に解決され、プラグインの設定には保存されません
+- **🪄 DSH 設定のプロバイダーを引き継ぐ** — `settings.yaml`（`llm-pi-ai.providers`）から読み取り専用の DSH 行を自動検出し、ボタン1つで再スキャンしてまとめてチェーンに追加。キーは `.credentials.yaml` からリクエスト時に解決され、プラグインの設定には保存されません。harness 自身の既定ルートも対象です：`agent-default-model` が `deepseek-official` を指していれば、DeepSeek の公式 API も DSH 行として提供されます
 - **⏱️ 失敗に強い** — host は3回バックオフ再試行 + ブラウザ直接フォールバック、行ごとのテストボタン、失敗結果はキャッシュしない
 
 ## 📦 インストール

@@ -33,7 +33,7 @@ Les modèles de la famille DeepSeek raisonnent souvent en chinois — ou dans la
 - **🎚️ Moment de traduction réglable** — tout pré-traduire / chargement différé des anciennes chaînes (défaut) / uniquement à l'ouverture
 - **🔗 Chaîne de fournisseurs dynamique** — l'ordre de la liste est l'ordre d'exécution : glissez pour réordonner, activez ou désactivez chaque ligne. Intégrés google gtx / bing / Ollama local, plus tout endpoint personnalisé
 - **🔌 Fournisseurs personnalisés (OpenAI et Anthropic)** — ajoutez depuis le panneau tout endpoint compatible OpenAI (`/v1/chat/completions`) ou l'**Anthropic Messages API** (Claude) : type, préréglage, URL de base, clé API et modèle
-- **🪄 Hérite des fournisseurs configurés dans DSH** — détecte les lignes DSH en lecture seule depuis `settings.yaml` (`llm-pi-ai.providers`), et un bouton relance l'analyse et les ajoute toutes à la chaîne ; la clé est résolue à chaque requête depuis `.credentials.yaml` et n'est jamais écrite dans la config du plugin
+- **🪄 Hérite des fournisseurs configurés dans DSH** — détecte les lignes DSH en lecture seule depuis `settings.yaml` (`llm-pi-ai.providers`), et un bouton relance l'analyse et les ajoute toutes à la chaîne ; la clé est résolue à chaque requête depuis `.credentials.yaml` et n'est jamais écrite dans la config du plugin. La route par défaut du harness compte aussi : si `agent-default-model` désigne `deepseek-official`, l'API officielle DeepSeek apparaît comme une ligne DSH de plus
 - **⏱️ Résilient** — 3 tentatives avec backoff + secours direct du navigateur, bouton de test par ligne, les échecs ne sont jamais mis en cache
 
 ## 📦 Installation

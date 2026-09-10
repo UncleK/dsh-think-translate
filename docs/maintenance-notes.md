@@ -70,6 +70,33 @@
 
 ---
 
+## 1.2.2(2026-09-11)—— 继承 DSH 官方路线 + 视觉微调
+
+### 1) 只列出 openrouter-ox,没有 DeepSeek 自己
+
+- **原因**:「继承 DSH 已配置的 API」只读 `llm-pi-ai.providers`(手写的自定义端点)。
+  而**官方 DeepSeek 路线是 harness 内置的**,不写在那里——它由
+  `agent-default-model: {provider: deepseek-official, model: deepseek-flash}` 加上
+  `DEEPSEEK_API_KEY` 凭据决定。
+- **实现**(`extractHarnessDefaultRoute`):解析 `agent-default-model`,当 provider 属于
+  插件会说的内置路线时合成一条 DSH 条目。内置路线表目前只有
+  `deepseek-official` → `{type: openai, baseURL: https://api.deepseek.com, apiKeyEnv: DEEPSEEK_API_KEY}`
+  (依据 `packages/llm/llm-deepseek`:同一个 `PUBLIC_BASE_URL`、同一个 `DEFAULT_API_KEY_ENV`,
+  传输也是 OpenAI 兼容的 `${baseURL}/chat/completions`)。手写声明的同名 id 优先,不会被覆盖。
+- **效果**:继承菜单现在同时出现 `openrouter-ox` 与 `deepseek-official`,
+  后者可直接入链,用 DeepSeek 官方 API 翻译。
+
+### 2) 两处视觉微调(用户反馈)
+
+- **行内徽标不再实心**:`.xl-badge` 原来是"实心品牌色 + 白字粗体",在品牌色接近黑的主题下
+  每行都像两个黑块。现在改成浅描边小标签(`background:transparent` + 1px 边框 + 70% 不透明度);
+  `DSH` 与 `env:NAME` 都保留——前者说明该行由 harness 管理(不能编辑/删除),
+  后者说明密钥来自环境变量/DSH 凭据。
+- **链标题改名**:`providerDrag` 从「拖动排序」改成「翻译优先级(拖动排序)」(8 种语言同步),
+  因为列表顺序**就是**投递顺序,标题该说明含义而不只是手势。
+
+---
+
 ## 1.2.1(2026-09-11)—— 1.2.0 发布后用户报的两个 bug
 
 ### 1) 设置左侧的书本图标消失(自己写的 bug)

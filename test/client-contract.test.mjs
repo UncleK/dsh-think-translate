@@ -250,6 +250,26 @@ describe('settings UI contracts', function () {
     assert.equal((src.match(/^\s*modelHint: "/gm) || []).length, 8)
   })
 
+  it('keeps the row markers as light chips, not solid brand-coloured pills', function () {
+    // The badges (the DSH marker, env:NAME) were solid `background: brand` pills with
+    // white bold text; in a theme whose brand colour is near-black every provider row
+    // read as two black blocks.
+    const badge = src.match(/"\.xl-badge\{[^}]*\}"/)
+    assert.ok(badge, 'the badge style must exist')
+    assert.match(badge[0], /background:transparent/)
+    assert.match(badge[0], /border:1px solid/)
+    assert.ok(!/background:var\(--dsw-alias-brand-primary/.test(badge[0]),
+      'the badge must not go back to a solid brand-coloured block')
+  })
+
+  it('names the provider list for what it controls: the translation priority', function () {
+    // "拖动排序" described the gesture; the list order is the delivery order.
+    const labels = src.match(/providerDrag: "[^"]*"/g) || []
+    assert.equal(labels.length, 8, 'one label per locale')
+    assert.ok(labels.every(function (l) { return /优先|優先|우선순위|priorit|prioridad|préfér|приоритет/i.test(l) }),
+      'every locale should name the priority: ' + labels.join(' | '))
+  })
+
   it('names the provider and model in the connection-test message', function () {
     assert.match(src, /providerLabel\(id, \(cfgRef\.current\.providers \|\| \{\}\)\[id\] \|\| \{\}, t\)/)
   })

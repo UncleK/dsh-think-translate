@@ -18,6 +18,7 @@ import {
   applyFullProviders,
   extractDshProviders,
   extractCredRefs,
+  extractHarnessDefaultRoute,
   runChainFor,
   translateViaChain,
   removeFromChain,
@@ -371,6 +372,60 @@ describe('harness home resolution', function () {
   it('never throws on a candidate it cannot stat', function () {
     const boom = function (p) { if (p.indexOf('bad') >= 0) throw new Error('EPERM'); return p.indexOf('.dsh') >= 0 }
     assert.equal(pickHarnessHome(['/bad', '/home/u/.dsh'], boom).home, '/home/u/.dsh')
+  })
+})
+
+describe('extractHarnessDefaultRoute', function () {
+  // The harness has ONE built-in route that never appears in llm-pi-ai.providers:
+  // deepseek-official, configured by agent-default-model and driven over an
+  // OpenAI-compatible /chat/completions endpoint (llm-deepseek: PUBLIC_BASE_URL =
+  // https://api.deepseek.com, credential DEEPSEEK_API_KEY). Without this the panel
+  // could only inherit hand-declared endpoints, never DeepSeek's own API.
+  const withDefault = [
+    'agent-default-model:',
+    '  provider: deepseek-official',
+    '  model: deepseek-flash',
+    '  reasoningEffort: max',
+    'llm-pi-ai:',
+    '  providers:',
+    '    openrouter-ox:',
+    '      apiKeyEnv: OPENROUTER_OX_API_KEY',
+    '      api: openai-completions',
+    '      baseURL: https://openrouter.ai/api/v1',
+    '      models:',
+    '        - id: glm-5.3',
+  ].join('\n')
+
+  it('turns the official DeepSeek route into a usable provider', function () {
+    const route = extractHarnessDefaultRoute(withDefault, { DEEPSEEK_API_KEY: 'sk-x' })
+    assert.ok(route, 'the route should be recognized')
+    assert.equal(route.id, 'deepseek-official')
+    assert.equal(route.entry.type, 'openai')
+    assert.equal(route.entry.baseURL, 'https://api.deepseek.com')
+    assert.equal(route.entry.model, 'deepseek-flash')
+    assert.equal(route.entry.apiKeyEnv, 'DEEPSEEK_API_KEY')
+  })
+
+  it('carries the credential ref even when the key lives in the environment', function () {
+    const route = extractHarnessDefaultRoute(withDefault, {})
+    assert.equal(route.entry.apiKeyEnv, 'DEEPSEEK_API_KEY')
+  })
+
+  it('is silent for a pi-ai default provider (llm-pi-ai already covers it)', function () {
+    const txt = withDefault.replace('provider: deepseek-official', 'provider: openrouter-ox')
+    assert.equal(extractHarnessDefaultRoute(txt, {}), null)
+  })
+
+  it('is silent without a default model, or without the block', function () {
+    assert.equal(extractHarnessDefaultRoute('agent-default-model:\n  provider: deepseek-official\n', {}), null)
+    assert.equal(extractHarnessDefaultRoute('llm-pi-ai:\n  providers:\n', {}), null)
+    assert.equal(extractHarnessDefaultRoute('', {}), null)
+  })
+
+  it('reads the block even when other top-level keys surround it', function () {
+    const txt = 'ui-theme:\n  preference: light\n' + withDefault + '\npermission:\n  defaultPreset: full\n'
+    const route = extractHarnessDefaultRoute(txt, {})
+    assert.equal(route.entry.model, 'deepseek-flash', 'a following top-level key must not swallow the block')
   })
 })
 

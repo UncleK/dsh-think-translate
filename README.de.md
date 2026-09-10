@@ -33,7 +33,7 @@ Modelle der DeepSeek-Familie denken oft auf Chinesisch — oder in der Sprache, 
 - **🎚️ Einstellbarer Übersetzungszeitpunkt** — alles vorübersetzen / alte Ketten lazy laden (Standard) / nur beim Aufklappen
 - **🔗 Dynamische Anbieter-Kette** — die Listenreihenfolge ist die Ausführungsreihenfolge: ziehen zum Sortieren, jede Zeile einzeln ein-/ausschalten. Integriert google gtx / bing / lokales Ollama plus beliebige eigene Endpunkte
 - **🔌 Eigene Anbieter (OpenAI & Anthropic)** — im Panel jeden OpenAI-kompatiblen Endpunkt (`/v1/chat/completions`) oder die **Anthropic Messages API** (Claude) hinzufügen: Typ, Vorlage, Basis-URL, API-Schlüssel, Modell
-- **🪄 DSH-konfigurierte Anbieter übernehmen** — liest schreibgeschützte DSH-Zeilen aus `settings.yaml` (`llm-pi-ai.providers`); eine Schaltfläche liest neu ein und fügt alle der Kette hinzu. Der Schlüssel wird pro Anfrage aus `.credentials.yaml` aufgelöst und nie in der Plugin-Konfiguration gespeichert
+- **🪄 DSH-konfigurierte Anbieter übernehmen** — liest schreibgeschützte DSH-Zeilen aus `settings.yaml` (`llm-pi-ai.providers`); eine Schaltfläche liest neu ein und fügt alle der Kette hinzu. Der Schlüssel wird pro Anfrage aus `.credentials.yaml` aufgelöst und nie in der Plugin-Konfiguration gespeichert. Auch die eigene Standardroute des Harness zählt: zeigt `agent-default-model` auf `deepseek-official`, erscheint die offizielle DeepSeek-API als weitere DSH-Zeile
 - **⏱️ Robust** — 3 Wiederholungen mit Backoff + direkter Browser-Fallback, Test-Schaltfläche pro Zeile, Fehlschläge werden nie zwischengespeichert
 
 ## 📦 Installation

@@ -33,7 +33,7 @@ DeepSeek 系模型经常用中文思考——或者用它们碰巧习惯的语�
 - **🎚️ 可调翻译时机** — 三档：全部预翻译 / 懒加载历史（默认）/ 仅展开时翻译
 - **🔗 动态提供方链** — 列表顺序就是投递顺序：拖动排序、逐行开关；内置 google gtx / bing / 本地 Ollama，外加任意数量的自定义端点
 - **🔌 自定义提供方（OpenAI 与 Anthropic）** — 设置面板里可添加任意 OpenAI 兼容端点（任何 `/v1/chat/completions` 网关）或原生 **Anthropic Messages API**（Claude）：类型、预设、接口地址、API 密钥、模型
-- **🪄 继承 DSH 已配置的提供方** — 自动发现 `settings.yaml`（`llm-pi-ai.providers`）里的只读 DSH 行，一个按钮重新扫描并全部加入链；密钥在请求时从 `.credentials.yaml` 解析，绝不写入插件配置
+- **🪄 继承 DSH 已配置的提供方** — 自动发现 `settings.yaml`（`llm-pi-ai.providers`）里的只读 DSH 行，一个按钮重新扫描并全部加入链；密钥在请求时从 `.credentials.yaml` 解析，绝不写入插件配置；harness 自己的默认路线也算：`agent-default-model` 指向 `deepseek-official` 时，DeepSeek 官方 API 也会作为一条 DSH 条目提供
 - **⏱️ 失败韧性** — host 请求 3 次退避重试 + 浏览器直连兜底、每行独立的测试按钮、失败结果不缓存
 
 ## 📦 安装
