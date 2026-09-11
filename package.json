@@ -1,7 +1,7 @@
 {
   "name": "dsh-think-translate",
   "description": "Display-layer translation for the DSH web app: thinking chain, task cards, and optional answer text, in 8 target languages (local Ollama / any OpenAI-compatible or Anthropic endpoint / Google / Bing, fail-open)",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -38,7 +38,8 @@
     "url": "git+https://github.com/UncleK/dsh-think-translate.git"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "dsh": ">=0.1.0-rc.6"
   },
   "publishConfig": {
     "access": "public"

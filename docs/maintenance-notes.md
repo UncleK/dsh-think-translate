@@ -70,6 +70,41 @@
 
 ---
 
+## 1.2.4(2026-09-11)—— 声明宿主要求 + 市场条目清理
+
+### 1) 市场卡片上的「未声明宿主要求」
+
+**判定逻辑**(`dsh-market/src/discovery-compatibility.ts`):它把 `engines.dsh` 和
+`peerDependencies` 里满足 `/^@deepseek-ai\/dsh(?:-|$)/` **且存在于本机 hostPackages
+清单**的包合并成"宿主要求";一条都取不到就返回 `basis: 'undeclared'` → 显示
+「未声明宿主要求」。我们唯一的 `@deepseek-ai/dsh-*` peer 是
+`dsh-client-ui-primitives`,而且是 optional、不在 host 清单里,所以被判为未声明。
+
+**修复**:在 `package.json` 声明 `"engines": { "node": ">=20", "dsh": ">=0.1.0-rc.6" }`。
+`engines.dsh` 无条件参与判定,且他们的比较是
+`satisfiesRange(host, range, { includePrerelease: true })` —— 所以对
+`0.1.5-rc.1` 这类预发布版本的 host 也能匹配,不会误判成不兼容。
+
+**注意**:声明过高的下限会真的把老 host 标成不兼容(判定里 `false` = incompatible),
+所以取 `>=0.1.0-rc.6`(本插件只依赖 slots / settings.section,老版本同样能跑)。
+
+### 2) 目录条目里的陈旧 tarball(已提 PR)
+
+`data/plugins/UncleK__dsh-think-translate.yml` 里有一行
+`tarball: .../releases/download/v1.0.10/...tgz`,是 1.0.10 时代的预编译包。
+市场安装顺序是"npm 优先 → 作者 tarball → GitHub 源码",所以这一行只在 npm 路径失败时生效,
+而那正是它会装出一年前旧版本的场合。1.1.0 之后我们不再往 release 挂 .tgz,这个字段无法自更新,
+因此直接删掉,让 npm 成为唯一来源 → **PR awesome-dsh-plugin#4827**。
+
+### 3) 顺带说明:为什么我们插件卡片上有一行 `github:...#sha`
+
+因为这台机器的 profile 是**从 GitHub 安装并锁定 commit** 的
+(`~/.dsh/profiles/web/package.json`:`github:unclek/dsh-think-translate#5c01f9ee...`),
+而 `dshmarket` 等是 npm 安装(`^1.45.1`)所以只显示版本号。git 安装的更新要拉整个仓库
+(国内慢),想改成 npm 形式可 `dsh plugin --profile web remove` 后重装 `@1.2.4`。
+
+---
+
 ## 1.2.3(2026-09-11)—— 一个标签的补丁版
 
 **只改了一处**:批量入链按钮的文案去掉"链"字
