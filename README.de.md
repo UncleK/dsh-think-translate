@@ -67,6 +67,8 @@ Client-Plugins von Drittanbietern werden über den Client-Modulgraphen von DSH g
 
 Am Plugin ist nichts zu konfigurieren: Es deklariert keine Reihenfolge-Abhängigkeit zu DSH-Interna (es bindet nur den `slots`-Dienst und optional `@deepseek-ai/dsh-client-ui-primitives`) und läuft daher sowohl auf älterem DSH (≤ 0.1.1-rc) als auch auf der aktuellen Linie (≥ 0.1.2-alpha.1, inklusive 0.1.5-rc.1).
 
+Für DSH **0.2.0-rc.2** verwenden Sie **dsh-think-translate 1.2.5 oder neuer**. Version 1.2.5 behebt den Registrierungskonflikt des Slots `todo_write` und deklariert den Peer-Versionsbereich 0.2. Führen Sie `dsh plugin --profile web add dsh-think-translate@latest` aus und starten Sie DSH neu; eine Versionsausnahme ist nicht nötig.
+
 ## 🚀 Verwendung
 
 1. **Einstellungen → Übersetzung der Gedankenkette** öffnen

@@ -67,6 +67,8 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 
 插件侧无需任何配置：它不依赖 DSH 内部包的加载顺序（只绑定 `slots` 服务，可选使用 `@deepseek-ai/dsh-client-ui-primitives`），因此老版本（≤ 0.1.1-rc）与当前版本线（≥ 0.1.2-alpha.1，含 0.1.5-rc.1）都能直接跑。
 
+DSH **0.2.0-rc.2** 请使用 **dsh-think-translate 1.2.5 或更新版本**。1.2.5 修复了 `todo_write` 的 slot 注册冲突，并声明支持 0.2 版本范围。执行 `dsh plugin --profile web add dsh-think-translate@latest` 后重启 DSH，无需添加版本豁免。
+
 ## 🚀 使用
 
 1. 打开 **设置 → 思考链翻译**

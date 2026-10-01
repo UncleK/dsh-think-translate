@@ -89,13 +89,14 @@ function createRuntime() {
     inst.cursor = 0
     inst.pending = []
     let out
+    const componentProps = Object.assign({}, props, { children })
     try {
       if (type.prototype && type.prototype.render) {
-        if (!inst.self) inst.self = new type(props)
-        inst.self.props = props
+        if (!inst.self) inst.self = new type(componentProps)
+        inst.self.props = componentProps
         out = inst.self.render()
       } else {
-        out = type(Object.assign({}, props, { children }))
+        out = type(componentProps)
       }
     } finally {
       current = outer
@@ -112,12 +113,12 @@ function createRuntime() {
 
   // Re-render until nothing is dirty any more (state set from a fetch resolves
   // between passes), so the assertions see the settled tree.
-  async function mount(ComponentType) {
+  async function mount(ComponentType, props = {}) {
     let tree = null
     for (let pass = 0; pass < 40; pass++) {
       dirty = false
       order = 0
-      tree = renderComponent(ComponentType, {}, undefined)
+      tree = renderComponent(ComponentType, props, undefined)
       await new Promise(function (r) { setTimeout(r, 0) })
       if (!dirty) return tree
     }
@@ -210,6 +211,8 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null) {
         body = { models: [] }
       } else if (url === '/_xlate/version') {
         body = { ok: true, name: 'dsh-think-translate', version: '1.2.0', repo: 'https://github.com/UncleK/dsh-think-translate' }
+      } else if (url === '/_xlate/translate') {
+        body = { ok: true, text: '已翻译的任务', provider: 'test' }
       }
       return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve(body) } })
     },
@@ -225,6 +228,7 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null) {
   })
 
   const registered = {}
+  const views = new Map()
   const specs = []
   const entries = []
   const ctx = {
@@ -241,6 +245,7 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null) {
         }
         const entry = { spec, component }
         entries.push(entry)
+        views.set(spec.name + ':' + (spec.key ?? spec.id), component)
         specs.push(spec)
         if (spec.name === 'settings.section') registered.section = component
         return function () {
@@ -262,6 +267,10 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null) {
   const tree = await runtime.mount(registered.section)
   return {
     tree, calls, runtime, specs, entries, officialTodo,
+    renderView: function (name, key, props) {
+      runtime.reset()
+      return runtime.mount(views.get(name + ':' + key), props)
+    },
     registered: registered.section,
     // mount again with every component instance dropped (a real remount)
     remount: function () { runtime.reset(); return runtime.mount(registered.section) },
@@ -281,6 +290,54 @@ describe('todo_write slot composition (issue #4)', function () {
       assert.match(textOf(panel.tree), /目标语言/, 'apply must reach settings registration and rendering')
     })
   }
+})
+
+describe('DSH 0.2 conversation component props', function () {
+  it('renders assistant text and reasoning without changing the original blocks', async function () {
+    const panel = await mountPanel(configWith({}, []))
+    const node = { kind: 'assistant-step', location: { kind: 'step', turn: { status: 'closed' } }, data: {
+      status: 'completed', blocks: [
+        { kind: 'reasoning', text: '检查原始数据。' },
+        { kind: 'text', text: 'Original answer.\n\n```js\nconst x = 1;\n```' },
+      ],
+    } }
+    const original = JSON.stringify(node)
+    const tree = await panel.renderView('conversation.chat.node', 'assistant-step', {
+      node, useTurnData: function () { return undefined }, t: function (key) { return key },
+    })
+    assert.match(textOf(tree), /Original answer/)
+    assert.match(textOf(tree), /const x = 1;/)
+    assert.ok(flatten(tree).some(function (n) { return cls(n) === 'xl-think' }), 'the reasoning row must render')
+    assert.equal(JSON.stringify(node), original, 'display translation must not mutate transcript blocks')
+  })
+
+  for (const phase of ['preparing', 'start', 'result']) {
+    it('renders the todo_write ' + phase + ' phase without changing tool arguments', async function () {
+      const panel = await mountPanel(configWith({}, []))
+      const argsRaw = JSON.stringify({ todos: [{ content: 'Inspect the original data', status: 'in_progress' }] })
+      const block = phase === 'result'
+        ? { kind: 'tool-result', callId: 'test', call: { name: 'todo_write', argsRaw }, content: [], isError: false, subCalls: [] }
+        : { phase, name: 'todo_write', callId: 'test', turn: 1, step: 1, time: 1, subCalls: [], ...(phase === 'start' ? { argsRaw } : {}) }
+      const original = JSON.stringify(block)
+      const tree = await panel.renderView('tool.call.toolview', 'todo_write', { phase, block })
+      assert.ok(flatten(tree).some(function (n) { return cls(n) === 'xl-todo' }))
+      if (phase !== 'preparing') assert.match(textOf(tree), /已翻译的任务/)
+      assert.equal(JSON.stringify(block), original)
+    })
+  }
+
+  it('renders the translated composer todo dock from the todos projection', async function () {
+    const panel = await mountPanel(configWith({}, []))
+    const todos = [{ content: 'Inspect the original data', status: 'in_progress' }]
+    const original = JSON.stringify(todos)
+    const props = { useProjection: function (key) { assert.equal(key, 'todos'); return todos }, t: function (key) { return key } }
+    const tree = await panel.renderView('conversation.input.dock', 'todo', props)
+    assert.ok(flatten(tree).some(function (n) { return n.props['data-testid'] === 'todo-panel' }))
+    click(button(tree, 'todo.title'))
+    const opened = await panel.runtime.mount(panel.entries.find(function (entry) { return entry.spec.id === 'todo' }).component, props)
+    assert.match(textOf(opened), /已翻译的任务/)
+    assert.equal(JSON.stringify(todos), original)
+  })
 })
 
 describe('settings panel renders (real bundle, mini React)', function () {

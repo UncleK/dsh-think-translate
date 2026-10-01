@@ -12,10 +12,26 @@
 
 回归测试加载真实客户端 bundle，分别让官方条目先注册、后注册，验证两条目共存、
 翻译版按较低 priority 被选中，并且设置页能继续注册和渲染。
-`npm test`：140 项通过；`node --check lib/client.js` 通过。
+`npm test`：145 项通过；`node --check lib/client.js` 和 `lib/index.js` 通过。
 另用本机 DSH 的真实 `SlotCore` 核对两种注册顺序：原版均报冲突，修复版均能加载、
 选中翻译版，且移除翻译版后恢复官方条目。
-本次只修复 slot 冲突，未扩大 DSH 0.2.0 的 peer 范围；完整版本兼容仍需单独验证。
+### 1.2.5 — DSH 0.2.0-rc.2 升级验证
+
+`peerDependencies` 增加 `^0.2.0-rc.2`，通过该版本的真实 `evaluatePluginCompatibility`，
+无需 `compatibility.json` 豁免；旧 0.1 系列范围保留。
+该版本的真实 `SlotCore` 验证了 assistant、todo toolview、todo dock 三处覆盖的
+两种加载顺序、优先级选择与移除后恢复官方条目。
+
+Windows 源码版 DSH 在 `dsh-v0.2.0-rc.2` 完整构建通过。Chrome 实测设置页显示
+`v1.2.5`、旧会话及代码块正常渲染、思考行生成译文且原文可展开，浏览器无渲染错误。
+任务卡片 preparing/start/result 和输入框任务面板另有模拟渲染测试，未调用真实模型。
+此验证覆盖 Web；未实测桌面应用或其他操作系统。
+
+8 份 README 同步补充 0.2 升级命令。npm 包只包含两张已跟踪 demo GIF，
+不打包本地演示视频或运行时配置。发布包交由用户执行 npm 发布。
+
+市场当前条目已绑定 `npm: dsh-think-translate`，无旧 tarball；版本和仓库 README
+由市场定时抓取，无需每次发版提交市场 PR。卡片简介在市场 YAML 中单独维护。
 
 ---
 
@@ -245,4 +261,3 @@
   `docs/demo-guide.md` 的公式重算,并给 URL 加 `?v=N` 以击穿 GitHub 的 camo 缓存。
 
 (本轮列出的死代码 —— `formName` 状态、两条 fallback CSS、`applyLocal` 的 fallback 分支 —— 已删除。)
-

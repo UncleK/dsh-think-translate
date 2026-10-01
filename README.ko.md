@@ -67,6 +67,8 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 
 플러그인 쪽에서 설정할 것은 없습니다. DSH 내부 패키지의 로드 순서에 의존하지 않고(`slots` 서비스만 사용하며 `@deepseek-ai/dsh-client-ui-primitives`는 선택 사항), 구버전(≤ 0.1.1-rc)과 현재 라인(≥ 0.1.2-alpha.1, 0.1.5-rc.1 포함) 모두에서 동작합니다.
 
+DSH **0.2.0-rc.2**에서는 **dsh-think-translate 1.2.5 이상**을 사용하세요. 1.2.5는 `todo_write` slot 등록 충돌을 수정하고 0.2 peer 버전 범위를 선언합니다. `dsh plugin --profile web add dsh-think-translate@latest`를 실행한 뒤 DSH를 다시 시작하세요. 버전 예외 설정은 필요 없습니다.
+
 ## 🚀 사용법
 
 1. **설정 → 사고 체인 번역** 열기
