@@ -64,6 +64,8 @@ Third-party client plugins load through DSH's client module graph, and that grap
 
 Nothing to configure on the plugin side: it declares no ordering dependency on DSH internals (it binds only to the `slots` service, plus an optional `@deepseek-ai/dsh-client-ui-primitives`), so it runs on both older DSH (≤ 0.1.1-rc) and the current line (≥ 0.1.2-alpha.1, 0.1.5-rc.1 included).
 
+For DSH **0.2.0-rc.2**, use **dsh-think-translate 1.2.5 or later**. Version 1.2.5 fixes the `todo_write` slot collision and declares the 0.2 peer range. Run `dsh plugin --profile web add dsh-think-translate@latest`, then restart DSH; no version exemption is needed.
+
 ## 🚀 Usage
 
 1. Open **Settings → Think Translation**
