@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-10-01 — todo_write 注册冲突（issue #4）
+
+官方 `todo-toolview` 在 `tool.call.toolview` 用 `todo_write`、默认 priority 0 注册；
+本插件此前也用默认 0，导致同 key、同 priority 冲突，客户端插件同步失败。
+翻译版注册改为 `priority: -1`，与现有 `assistant-step` 和 `todo` dock 的覆盖方式一致。
+
+回归测试加载真实客户端 bundle，分别让官方条目先注册、后注册，验证两条目共存、
+翻译版按较低 priority 被选中，并且设置页能继续注册和渲染。
+`npm test`：140 项通过；`node --check lib/client.js` 通过。
+另用本机 DSH 的真实 `SlotCore` 核对两种注册顺序：原版均报冲突，修复版均能加载、
+选中翻译版，且移除翻译版后恢复官方条目。
+本次只修复 slot 冲突，未扩大 DSH 0.2.0 的 peer 范围；完整版本兼容仍需单独验证。
+
+---
+
 ## 2026-09-03 — DSH 0.1.2-alpha.5 升级后「答案整条消失」
 
 ### 现象

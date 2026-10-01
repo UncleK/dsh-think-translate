@@ -183,7 +183,7 @@ function configWith(providers, chain) {
   }
 }
 
-async function mountPanel(config, scanConfig) {
+async function mountPanel(config, scanConfig, officialTodoFirst = null) {
   // The host already merges the harness's providers into GET /_xlate/config, so the
   // panel paints them without being asked; the scan route answers with the same shape
   // (a second argument models "the harness config changed since we loaded").
@@ -226,27 +226,62 @@ async function mountPanel(config, scanConfig) {
 
   const registered = {}
   const specs = []
+  const entries = []
   const ctx = {
     slots: {
       inject: function (name, cb) { return cb() },
       register: function (spec, component) {
+        // DSH keyed slots reject duplicate key + priority cells (default 0).
+        // Different priorities coexist; the lowest one supplies the toolview.
+        if (spec.key !== undefined && entries.some(function (entry) {
+          return entry.spec.name === spec.name && entry.spec.key === spec.key &&
+            (entry.spec.priority ?? 0) === (spec.priority ?? 0)
+        })) {
+          throw new Error('keyed slot "' + spec.name + '" already has an entry for key "' + spec.key + '" at priority ' + (spec.priority ?? 0))
+        }
+        const entry = { spec, component }
+        entries.push(entry)
         specs.push(spec)
         if (spec.name === 'settings.section') registered.section = component
-        return function () {}
+        return function () {
+          const index = entries.indexOf(entry)
+          if (index >= 0) entries.splice(index, 1)
+        }
       },
     },
   }
+  const officialTodo = function OfficialTodo() { return null }
+  const registerOfficialTodo = function () {
+    ctx.slots.register({ name: 'tool.call.toolview', key: 'todo_write', locale: 'conversation' }, officialTodo)
+  }
+  if (officialTodoFirst === true) registerOfficialTodo()
   plugin.apply(ctx)
+  if (officialTodoFirst === false) registerOfficialTodo()
   assert.equal(typeof registered.section, 'function', 'the panel must register itself into settings.section')
 
   const tree = await runtime.mount(registered.section)
   return {
-    tree, calls, runtime, specs,
+    tree, calls, runtime, specs, entries, officialTodo,
     registered: registered.section,
     // mount again with every component instance dropped (a real remount)
     remount: function () { runtime.reset(); return runtime.mount(registered.section) },
   }
 }
+
+describe('todo_write slot composition (issue #4)', function () {
+  for (const officialFirst of [true, false]) {
+    it('loads and selects the translated toolview when the official entry registers ' + (officialFirst ? 'first' : 'last'), async function () {
+      const panel = await mountPanel(configWith({}, []), undefined, officialFirst)
+      const todos = panel.entries.filter(function (entry) {
+        return entry.spec.name === 'tool.call.toolview' && entry.spec.key === 'todo_write'
+      }).sort(function (a, b) { return (a.spec.priority ?? 0) - (b.spec.priority ?? 0) })
+      assert.equal(todos.length, 2, 'the official and translated toolviews must coexist')
+      assert.notEqual(todos[0].component, panel.officialTodo, 'the translated toolview must win dispatch')
+      assert.equal(todos[1].component, panel.officialTodo, 'the official entry must remain available')
+      assert.match(textOf(panel.tree), /目标语言/, 'apply must reach settings registration and rendering')
+    })
+  }
+})
 
 describe('settings panel renders (real bundle, mini React)', function () {
   it('paints the section and lists the DSH providers it can use', async function () {
