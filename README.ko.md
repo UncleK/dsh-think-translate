@@ -69,6 +69,8 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 
 DSH **0.2.0-rc.2**에서는 **dsh-think-translate 1.2.5 이상**을 사용하세요. 1.2.5는 `todo_write` slot 등록 충돌을 수정하고 0.2 peer 버전 범위를 선언합니다. `dsh plugin --profile web add dsh-think-translate@latest`를 실행한 뒤 DSH를 다시 시작하세요. 버전 예외 설정은 필요 없습니다.
 
+**1.2.6**은 DSH 0.2에서 사고와 답변이 중복 표시되는 문제를 수정합니다. 어시스턴트 렌더링과 오류 시 원문 표시 모두 reasoning/response 그룹을 따릅니다.
+
 ## 🚀 사용법
 
 1. **설정 → 사고 체인 번역** 열기

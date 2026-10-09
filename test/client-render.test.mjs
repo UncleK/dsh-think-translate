@@ -184,7 +184,7 @@ function configWith(providers, chain) {
   }
 }
 
-async function mountPanel(config, scanConfig, officialTodoFirst = null) {
+async function mountPanel(config, scanConfig, officialTodoFirst = null, preferences = {}) {
   // The host already merges the harness's providers into GET /_xlate/config, so the
   // panel paints them without being asked; the scan route answers with the same shape
   // (a second argument models "the harness config changed since we loaded").
@@ -196,7 +196,10 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null) {
   const sandbox = {
     console,
     setTimeout, clearTimeout, setInterval, clearInterval,
-    localStorage: { getItem: function () { return null }, setItem: function () {}, removeItem: function () {} },
+    localStorage: { getItem: function (key) {
+      const pref = key.replace('dsh-think-translate:', '')
+      return Object.hasOwn(preferences, pref) ? String(preferences[pref]) : null
+    }, setItem: function () {}, removeItem: function () {} },
     fetch: function (url, init) {
       calls.push({ url: url, init: init || null })
       let body = {}
@@ -293,6 +296,74 @@ describe('todo_write slot composition (issue #4)', function () {
 })
 
 describe('DSH 0.2 conversation component props', function () {
+  it('keeps the stopped marker when an interrupted step has only reasoning', async function () {
+    const panel = await mountPanel(configWith({}, []), undefined, null, { mode: 'expanded' })
+    const tree = await panel.renderView('conversation.chat.node', 'assistant-step', {
+      groupPart: 'reasoning', node: { location: {}, data: { status: 'interrupted', blocks: [{ kind: 'reasoning', text: '检查原文。' }] } },
+      useTurnData: function () { return undefined }, t: function (key) { return key },
+    })
+    assert.equal(flatten(tree).filter(function (n) { return cls(n) === 'xl-warn' }).length, 1)
+  })
+
+  for (const groupPart of ['reasoning', 'response', undefined]) {
+    it('keeps the original-text error fallback within group ' + groupPart, async function () {
+      const panel = await mountPanel(configWith({}, []))
+      const props = { groupPart, node: { data: { blocks: [
+        { kind: 'reasoning', text: 'Original reasoning.' },
+        { kind: 'text', text: 'Original answer.' },
+      ] } } }
+      const registered = panel.entries.find(function (entry) { return entry.spec.key === 'assistant-step' }).component
+      const assistant = registered(props)
+      const boundary = assistant.type(assistant.props)
+      panel.runtime.reset()
+      const tree = await panel.runtime.mount(function () { return boundary.props.fallback })
+      const text = textOf(tree)
+      if (groupPart !== 'response') assert.match(text, /Original reasoning/)
+      else assert.doesNotMatch(text, /Original reasoning/)
+      if (groupPart !== 'reasoning') assert.match(text, /Original answer/)
+      else assert.doesNotMatch(text, /Original answer/)
+    })
+  }
+
+  for (const think of [true, false]) {
+    for (const status of ['completed', 'running', 'interrupted']) {
+      it('renders split assistant groups once with thinking ' + think + ' and status ' + status, async function () {
+        const panel = await mountPanel(configWith({}, []), undefined, null, { think, mode: 'expanded' })
+        const node = { kind: 'assistant-step', location: { kind: 'step', turn: { status: 'closed' } }, data: {
+          status, blocks: [
+            { kind: 'reasoning', text: '检查第一段原文。' },
+            { kind: 'text', text: 'First answer.' },
+            { kind: 'reasoning', text: '检查第二段原文。' },
+            { kind: 'text', text: 'Second answer.\n\n```js\nconst x = 1;\n```' },
+            { kind: 'image', attachment: 'image-a' },
+            { kind: 'image', attachment: 'image-b' },
+            { kind: 'tool-call', callId: 'tool-a' },
+          ],
+        } }
+        const original = JSON.stringify(node)
+        const props = {
+          node, useTurnData: function () { return undefined }, t: function (key) { return key },
+          renderMessageImages: function (group) { return panel.runtime.React.createElement('span', { className: 'test-images' }, String(group.images.length)) },
+        }
+        const reasoning = await panel.renderView('conversation.chat.node', 'assistant-step', { ...props, groupPart: 'reasoning' })
+        const response = await panel.renderView('conversation.chat.node', 'assistant-step', { ...props, groupPart: 'response' })
+        assert.equal(flatten(reasoning).filter(function (n) { return cls(n) === 'xl-think' }).length, 2)
+        if (status === 'running') assert.ok(flatten(reasoning).filter(function (n) { return cls(n) === 'xl-think-title' })
+          .every(function (n) { return textOf(n) === '思考' }), 'earlier reasoning must not become the active streaming tail')
+        assert.doesNotMatch(textOf(reasoning), /First answer|Second answer|const x = 1;/)
+        assert.equal(flatten(reasoning).filter(function (n) { return cls(n) === 'test-images' }).length, 0)
+        assert.equal(flatten(response).filter(function (n) { return cls(n) === 'xl-think' }).length, 0)
+        assert.equal((textOf(response).match(/First answer/g) || []).length, 1)
+        assert.equal((textOf(response).match(/Second answer/g) || []).length, 1)
+        assert.match(textOf(response), /const x = 1;/)
+        assert.equal(flatten(response).filter(function (n) { return cls(n) === 'test-images' }).length, 1)
+        assert.equal(flatten(reasoning).filter(function (n) { return cls(n) === 'xl-warn' }).length, 0)
+        assert.equal(flatten(response).filter(function (n) { return cls(n) === 'xl-warn' }).length, status === 'interrupted' ? 1 : 0)
+        assert.equal(JSON.stringify(node), original)
+      })
+    }
+  }
+
   it('renders assistant text and reasoning without changing the original blocks', async function () {
     const panel = await mountPanel(configWith({}, []))
     const node = { kind: 'assistant-step', location: { kind: 'step', turn: { status: 'closed' } }, data: {

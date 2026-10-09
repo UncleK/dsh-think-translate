@@ -69,6 +69,8 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 
 Для DSH **0.2.0-rc.2** используйте **dsh-think-translate 1.2.5 или новее**. Версия 1.2.5 исправляет конфликт регистрации slot `todo_write` и объявляет диапазон peer-версий 0.2. Выполните `dsh plugin --profile web add dsh-think-translate@latest`, затем перезапустите DSH; исключение версии не требуется.
 
+**1.2.6** исправляет двойное отображение рассуждений и ответов в DSH 0.2: основной вывод и исходный текст при ошибке учитывают группы reasoning/response.
+
 ## 🚀 Использование
 
 1. Откройте **Настройки → Перевод цепочки размышлений**

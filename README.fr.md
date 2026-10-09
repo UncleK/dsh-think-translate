@@ -69,6 +69,8 @@ Rien à configurer côté plugin : il ne déclare aucune dépendance d'ordre vis
 
 Pour DSH **0.2.0-rc.2**, utilisez **dsh-think-translate 1.2.5 ou une version ultérieure**. La version 1.2.5 corrige le conflit du slot `todo_write` et déclare la plage de versions peer 0.2. Exécutez `dsh plugin --profile web add dsh-think-translate@latest`, puis redémarrez DSH ; aucune exception de version requise.
 
+**1.2.6** corrige les pensées et réponses affichées en double dans DSH 0.2 : le rendu et le texte original de secours respectent les groupes reasoning/response.
+
 ## 🚀 Utilisation
 
 1. Ouvrez **Réglages → Traduction de chaîne de réflexion**

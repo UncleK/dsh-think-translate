@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-10-09 — 1.2.6 候选版：assistant-step 分组重复（issue #6）
+
+DSH 为同一 assistant step 分别传入 `groupPart: reasoning` 和 `response`，
+插件 1.2.5 没有筛选块，导致两次都绘制完整的思考与回答。
+修复遵守官方分组筛选，并保留原始块下标以维持流式尾部判断；
+原文错误回退也按组筛选，中断提示遵守官方的仅思考或回答组显示规则。
+
+修复前六个分组测试均复现；修复后 `npm test` 共 155 项通过。
+覆盖翻译开关、完成/流式/中断状态、图片分组、代码块、旧版无分组调用和原文回退。
+原始 transcript 块不变。候选包通过 DSH 0.2.1-alpha.1 的真实兼容性检查，无需豁免。
+发布包交由用户发布 npm。
+
+DSH 在 `dsh-v0.2.1-alpha.1` 完整构建通过，Web 启动在 127.0.0.1:3088。
+页面、前端 JS 资源及插件版本 API 均返回 200，API 与设置页均确认插件为 1.2.6。
+Chrome 历史会话实测：57 个 reasoning 入口、3 个 response 入口；
+回答组无 Think 行，思考组无正文段落或图片，浏览器无渲染错误。
+服务和复查标签页按用户要求保持运行，原插件运行时配置已保留。
+
+### 复查服务的市场重启失败
+
+市场重启把 cwd 切到 `apps/cli/src`，相对 `--patch apps/web/tests/pin-browse-picker.overlay.yml`
+因此解析到不存在的文件；日志报 ENOENT，失败发生在插件加载之前。
+本次复查启动器改用 overlay 的完整绝对路径，避免 cwd 变化影响重启。
+随后通过市场的真实 restart API 验证：替换进程启动成功，前端返回 200，
+翻译插件 1.2.6 与市场 1.66.14 同时启用，未出现该路径错误。
+
+---
+
 ## 2026-10-01 — todo_write 注册冲突（issue #4）
 
 官方 `todo-toolview` 在 `tool.call.toolview` 用 `todo_write`、默认 priority 0 注册；

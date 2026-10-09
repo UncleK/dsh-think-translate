@@ -66,6 +66,8 @@ Nothing to configure on the plugin side: it declares no ordering dependency on D
 
 For DSH **0.2.0-rc.2**, use **dsh-think-translate 1.2.5 or later**. Version 1.2.5 fixes the `todo_write` slot collision and declares the 0.2 peer range. Run `dsh plugin --profile web add dsh-think-translate@latest`, then restart DSH; no version exemption is needed.
 
+Version **1.2.6** fixes duplicated thinking and answer text in DSH 0.2: the assistant renderer now respects the separate reasoning/response groups, including its original-text error fallback.
+
 ## 🚀 Usage
 
 1. Open **Settings → Think Translation**

@@ -69,6 +69,8 @@ New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-tr
 
 DSH **0.2.0-rc.2** では **dsh-think-translate 1.2.5 以降**を使用してください。1.2.5 は `todo_write` の slot 登録競合を修正し、0.2 の peer バージョン範囲を宣言します。`dsh plugin --profile web add dsh-think-translate@latest` を実行して DSH を再起動してください。バージョンの例外設定は不要です。
 
+**1.2.6** は DSH 0.2 で思考と回答が重複表示される問題を修正します。助手の表示とエラー時の原文表示が reasoning/response の各グループに従います。
+
 ## 🚀 使い方
 
 1. **設定 → 思考チェーン翻訳** を開く

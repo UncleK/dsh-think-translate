@@ -69,6 +69,8 @@ Am Plugin ist nichts zu konfigurieren: Es deklariert keine Reihenfolge-Abhängig
 
 Für DSH **0.2.0-rc.2** verwenden Sie **dsh-think-translate 1.2.5 oder neuer**. Version 1.2.5 behebt den Registrierungskonflikt des Slots `todo_write` und deklariert den Peer-Versionsbereich 0.2. Führen Sie `dsh plugin --profile web add dsh-think-translate@latest` aus und starten Sie DSH neu; eine Versionsausnahme ist nicht nötig.
 
+**1.2.6** behebt doppelt angezeigte Gedanken und Antworten in DSH 0.2: Der Renderer und die Originaltext-Anzeige bei Fehlern beachten die Gruppen reasoning/response.
+
 ## 🚀 Verwendung
 
 1. **Einstellungen → Übersetzung der Gedankenkette** öffnen
