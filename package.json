@@ -1,7 +1,7 @@
 {
   "name": "dsh-think-translate",
   "description": "Display-layer translation for the DSH web app: thinking chain, task cards, and optional answer text, in 8 target languages (local Ollama / any OpenAI-compatible or Anthropic endpoint / Google / Bing, fail-open)",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -12,6 +12,7 @@
   "files": [
     "lib/index.js",
     "lib/client.js",
+    "lib/ollama.js",
     "cordis.patch.yml",
     "demo/demo.gif",
     "demo/demo2.gif"

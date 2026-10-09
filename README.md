@@ -68,6 +68,8 @@ For DSH **0.2.0-rc.2**, use **dsh-think-translate 1.2.5 or later**. Version 1.2.
 
 Version **1.2.6** fixes duplicated thinking and answer text in DSH 0.2: the assistant renderer now respects the separate reasoning/response groups, including its original-text error fallback.
 
+**1.2.7 local setup:** enabled Ollama in first priority, or its Test button, finds an existing installation and starts/loads it automatically. Missing software/models require the labelled setup action, with staged download/install/load progress. Automatic software installation supports Windows; other systems link to the official guide. “In use” follows the first enabled, verified provider in priority order; testing a lower row does not override a verified higher row.
+
 ## 🚀 Usage
 
 1. Open **Settings → Think Translation**

@@ -71,6 +71,8 @@ Pour DSH **0.2.0-rc.2**, utilisez **dsh-think-translate 1.2.5 ou une version ult
 
 **1.2.6** corrige les pensées et réponses affichées en double dans DSH 0.2 : le rendu et le texte original de secours respectent les groupes reasoning/response.
 
+**1.2.7 préparation locale :** Ollama activé en première position, ou son test, détecte une installation existante, démarre le service et charge le modèle. Le bouton de préparation autorise les installations et téléchargements manquants, avec progression par étapes. Installation automatique du logiciel sur Windows ; guide officiel ailleurs. Le fournisseur utilisé respecte la priorité des fournisseurs activés et vérifiés.
+
 ## 🚀 Utilisation
 
 1. Ouvrez **Réglages → Traduction de chaîne de réflexion**

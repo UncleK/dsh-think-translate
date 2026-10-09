@@ -71,6 +71,8 @@ Para DSH **0.2.0-rc.2**, usa **dsh-think-translate 1.2.5 o posterior**. La versi
 
 **1.2.6** corrige la duplicación del razonamiento y las respuestas en DSH 0.2: el renderizador y su texto original de respaldo respetan los grupos reasoning/response.
 
+**1.2.7 preparación local:** Ollama habilitado en primera posición, o su botón de prueba, detecta la instalación existente y arranca/carga el modelo. La instalación y descarga requieren el botón de preparación y muestran progreso por etapas. La instalación automática del software admite Windows; otros sistemas enlazan la guía oficial. El proveedor en uso sigue la prioridad de los proveedores habilitados y verificados.
+
 ## 🚀 Uso
 
 1. Abre **Ajustes → Traducción de cadena de pensamiento**

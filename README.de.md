@@ -71,6 +71,8 @@ Für DSH **0.2.0-rc.2** verwenden Sie **dsh-think-translate 1.2.5 oder neuer**. 
 
 **1.2.6** behebt doppelt angezeigte Gedanken und Antworten in DSH 0.2: Der Renderer und die Originaltext-Anzeige bei Fehlern beachten die Gruppen reasoning/response.
 
+**1.2.7 lokale Vorbereitung:** Aktiviertes Ollama an erster Stelle oder dessen Test findet vorhandene Installationen und startet/lädt das Modell. Fehlende Software und Modelle werden erst über die Vorbereitungsschaltfläche installiert/heruntergeladen, mit Fortschritt je Phase. Automatische Softwareinstallation unter Windows, sonst offizielle Anleitung. Der aktuelle Anbieter folgt der Priorität aktivierter, geprüfter Anbieter.
+
 ## 🚀 Verwendung
 
 1. **Einstellungen → Übersetzung der Gedankenkette** öffnen

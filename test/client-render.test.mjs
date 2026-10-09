@@ -184,7 +184,7 @@ function configWith(providers, chain) {
   }
 }
 
-async function mountPanel(config, scanConfig, officialTodoFirst = null, preferences = {}) {
+async function mountPanel(config, scanConfig, officialTodoFirst = null, preferences = {}, localResponse = null, testResponse = null) {
   // The host already merges the harness's providers into GET /_xlate/config, so the
   // panel paints them without being asked; the scan route answers with the same shape
   // (a second argument models "the harness config changed since we loaded").
@@ -195,7 +195,7 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
   const captured = {}
   const sandbox = {
     console,
-    setTimeout, clearTimeout, setInterval, clearInterval,
+    setTimeout, clearTimeout, setInterval: function (fn, ms) { const timer = setInterval(fn, ms); timer.unref(); return timer }, clearInterval, URL,
     localStorage: { getItem: function (key) {
       const pref = key.replace('dsh-think-translate:', '')
       return Object.hasOwn(preferences, pref) ? String(preferences[pref]) : null
@@ -205,7 +205,7 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
       let body = {}
       if (url === '/_xlate/config' && init && init.method === 'POST') {
         body = JSON.parse(init.body)
-        body = configWith(body.providers || {}, body.chain || [])
+        body = configWith(body.providers || served.providers || {}, body.chain || served.chain || [])
       } else if (url === '/_xlate/config') {
         body = served
       } else if (url === '/_xlate/dsh-scan') {
@@ -215,7 +215,9 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
       } else if (url === '/_xlate/version') {
         body = { ok: true, name: 'dsh-think-translate', version: '1.2.0', repo: 'https://github.com/UncleK/dsh-think-translate' }
       } else if (url === '/_xlate/translate') {
-        body = { ok: true, text: '已翻译的任务', provider: 'test' }
+        body = testResponse ? testResponse(JSON.parse(init.body)) : { ok: true, text: '已翻译的任务', provider: 'test' }
+      } else if (url === '/_xlate/local/prepare' || url.startsWith('/_xlate/local/status')) {
+        body = { ok: true, job: localResponse || { id: '1', origin: 'http://localhost:11434', model: 'test-model', phase: 'ready', running: false, percent: 100, completed: 0, total: 0, platform: 'win32', canInstall: true } }
       }
       return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve(body) } })
     },
@@ -412,6 +414,87 @@ describe('DSH 0.2 conversation component props', function () {
 })
 
 describe('settings panel renders (real bundle, mini React)', function () {
+  it('ignores an older successful test after the model was changed', async function () {
+    let resolve
+    const pending = new Promise(done => { resolve = done })
+    const first = { type: 'openai', enabled: true, baseURL: 'https://first.example/v1', model: 'old-model' }
+    const panel = await mountPanel(configWith({ first }, ['first']), undefined, null, {}, null, () => pending)
+    click(button(panel.tree, '测试'))
+    first.model = 'new-model'
+    resolve({ ok: true, model: 'old-model' })
+    const tree = await panel.runtime.mount(panel.registered)
+    const current = flatten(tree).find(n => cls(n) === 'xl-kv-value')
+    assert.doesNotMatch(textOf(current), /old-model|new-model/)
+  })
+
+  it('keeps the first verified provider current when the second provider is tested', async function () {
+    const first = { type: 'openai', enabled: true, baseURL: 'https://first.example/v1', model: 'first-model' }
+    const second = { type: 'openai', enabled: true, baseURL: 'https://second.example/v1', model: 'second-model' }
+    let firstFails = false
+    const panel = await mountPanel(configWith({ first, second }, ['first', 'second']), undefined, null, {}, null,
+      body => firstFails && body.provider === 'first' ? { ok: false, error: 'offline' } : { ok: true })
+    const testButtons = tree => flatten(tree).filter(n => n.type === 'button' && textOf(n) === '测试')
+    const current = tree => flatten(tree).find(n => cls(n) === 'xl-kv-value')
+    click(testButtons(panel.tree)[0])
+    let tree = await panel.runtime.mount(panel.registered)
+    assert.match(textOf(current(tree)), /first-model/)
+    click(testButtons(tree)[1])
+    tree = await panel.runtime.mount(panel.registered)
+    assert.match(textOf(current(tree)), /first-model/)
+    assert.doesNotMatch(textOf(current(tree)), /second-model/)
+    firstFails = true
+    click(testButtons(tree)[0])
+    tree = await panel.runtime.mount(panel.registered)
+    assert.match(textOf(current(tree)), /second-model/)
+    first.model = 'new-model'
+    firstFails = false
+    click(testButtons(tree)[0])
+    tree = await panel.runtime.mount(panel.registered)
+    assert.match(textOf(current(tree)), /new-model/)
+  })
+
+  const ollama = { type: 'openai', enabled: true, baseURL: 'http://localhost:11434/v1', model: 'test-model' }
+  it('prepares Ollama automatically when it is the first enabled provider', async function () {
+    const panel = await mountPanel(configWith({ openai: ollama }, ['openai']))
+    const preparation = panel.calls.filter(c => c.url === '/_xlate/local/prepare')
+    assert.equal(preparation.length, 1)
+    assert.deepEqual(JSON.parse(preparation[0].init.body), { allowInstall: false, allowDownload: false })
+    assert.match(textOf(panel.tree), /本地模型已就绪/)
+  })
+  it('prepares Ollama when its row is moved above the other provider', async function () {
+    const panel = await mountPanel(configWith({ google: { type: 'google', enabled: true }, openai: ollama }, ['google', 'openai']))
+    assert.equal(panel.calls.some(c => c.url === '/_xlate/local/prepare'), false)
+    const up = flatten(panel.tree).filter(n => n.type === 'button' && textOf(n) === '↑')[1]
+    click(up)
+    await panel.runtime.mount(panel.registered)
+    assert.ok(panel.calls.some(c => c.url === '/_xlate/local/prepare'))
+  })
+  it('prepares before an explicit local test even when the provider checkbox is off', async function () {
+    const panel = await mountPanel(configWith({ openai: { ...ollama, enabled: false } }, ['openai']))
+    assert.equal(panel.calls.some(c => c.url === '/_xlate/local/prepare'), false)
+    click(button(panel.tree, '测试'))
+    const tree = await panel.runtime.mount(panel.registered)
+    const prepare = panel.calls.findIndex(c => c.url === '/_xlate/local/prepare')
+    const test = panel.calls.findIndex(c => c.url === '/_xlate/translate')
+    assert.ok(prepare >= 0 && test > prepare)
+    assert.equal(JSON.parse(panel.calls[test].init.body).provider, 'openai')
+    assert.match(textOf(tree), /连通 ✓/)
+  })
+  it('shows missing-model guidance and grants installation/download only from the setup button', async function () {
+    const status = { id: 'setup', origin: 'http://localhost:11434', model: 'test-model', phase: 'needs_model', running: false, canInstall: true, percent: null }
+    const panel = await mountPanel(configWith({ openai: ollama }, ['openai']), undefined, null, {}, status)
+    assert.match(textOf(panel.tree), /所选模型尚未下载/)
+    click(button(panel.tree, '一键安装并准备'))
+    await panel.runtime.mount(panel.registered)
+    const calls = panel.calls.filter(c => c.url === '/_xlate/local/prepare')
+    assert.deepEqual(JSON.parse(calls[calls.length - 1].init.body), { allowInstall: true, allowDownload: true })
+  })
+  it('shows the real download percentage and byte counts', async function () {
+    const status = { id: 'progress', origin: 'http://localhost:11434', model: 'test-model', phase: 'downloading_model', running: true, percent: 50, completed: 1048576, total: 2097152 }
+    const panel = await mountPanel(configWith({ openai: ollama }, ['openai']), undefined, null, {}, status)
+    assert.match(textOf(panel.tree), /下载模型.*50%.*1\.0 MB \/ 2\.0 MB/)
+  })
+
   it('paints the section and lists the DSH providers it can use', async function () {
     const panel = await mountPanel(configWith({ google: { type: 'google', enabled: true }, 'a-dsh': DSH_PROVIDER }, ['google']))
     const text = textOf(panel.tree)
