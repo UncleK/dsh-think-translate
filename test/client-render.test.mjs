@@ -414,6 +414,24 @@ describe('DSH 0.2 conversation component props', function () {
 })
 
 describe('settings panel renders (real bundle, mini React)', function () {
+  it('does not let an older failed probe overwrite a newer successful probe', async function () {
+    let reject
+    const pending = new Promise((resolve, fail) => { reject = fail })
+    let count = 0
+    const first = { type: 'openai', enabled: true, baseURL: 'https://first.example/v1', model: 'first-model' }
+    const panel = await mountPanel(configWith({ first }, ['first']), undefined, null, {}, null,
+      () => ++count === 1 ? pending : { ok: true })
+    click(button(panel.tree, '测试'))
+    click(button(panel.tree, '测试'))
+    let tree = await panel.runtime.mount(panel.registered)
+    assert.match(textOf(tree), /连通 ✓/)
+    reject(new Error('old network failure'))
+    tree = await panel.runtime.mount(panel.registered)
+    assert.match(textOf(tree), /连通 ✓/)
+    assert.doesNotMatch(textOf(tree), /old network failure/)
+    assert.match(textOf(flatten(tree).find(n => cls(n) === 'xl-kv-value')), /first-model/)
+  })
+
   it('ignores an older successful test after the model was changed', async function () {
     let resolve
     const pending = new Promise(done => { resolve = done })
