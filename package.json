@@ -13,6 +13,7 @@
     "lib/index.js",
     "lib/client.js",
     "lib/ollama.js",
+    "lib/transport.js",
     "cordis.patch.yml",
     "demo/demo.gif",
     "demo/demo2.gif"
