@@ -75,6 +75,8 @@ Para DSH **0.2.0-rc.2**, usa **dsh-think-translate 1.2.5 o posterior**. La versi
 
 **1.2.8 transporte y recuperación:** las traducciones HTTP/HTTPS normales usan la red nativa de Node en lugar de iniciar curl por cada lote de texto. Los proxies SOCKS y el instalador de Ollama conservan la compatibilidad con curl. Los fallos permanecen en memoria durante 30 segundos y después se reintentan automáticamente las traducciones del razonamiento y las respuestas. Los tiempos de espera permiten cargar modelos locales y probar proveedores alternativos.
 
+**1.2.9 correcciones de idioma:** las pistas de vocabulario japonés solo se aplican al japonés; OpenAI/Anthropic reciben el nombre completo del idioma. Bing usa `auto-detect` y `zh-Hans`/`zh-Hant`. La detección del chino excluye rutas, código y JSON: omite la prosa ya simplificada, solicita conversión al detectar caracteres tradicionales frecuentes y traduce la prosa japonesa/coreana. Se elimina una vez la caché de traducciones anterior, conservando los ajustes.
+
 ## 🚀 Uso
 
 1. Abre **Ajustes → Traducción de cadena de pensamiento**
