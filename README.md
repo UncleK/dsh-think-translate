@@ -25,12 +25,12 @@ DeepSeek-class models often reason in Chinese — or in whatever language they h
 - **🔗 Dynamic provider chain** — order providers by drag-and-drop and enable/disable each one. Built-ins (google gtx, bing, local Ollama) plus any number of custom providers; the chain already ends with the free providers, so a second fallback pass is a config-file option, not a UI one
 - **🔌 Custom providers (OpenAI & Anthropic)** — add arbitrary OpenAI-compatible endpoints (any `/v1/chat/completions` gateway) or native **Anthropic Messages API** endpoints (Claude) from the settings panel: name, type, base URL, API key, model
 - **🪄 DSH provider discovery** — providers already configured in DSH's `settings.yaml` (`llm-pi-ai.providers`, e.g. linuxdo-hub, coding-hub) are auto-discovered and appear in the chain as read-only "DSH" entries, and **one button in settings rescans and adds them all at once**; keys are resolved from `.credentials.yaml` at runtime and never written to the plugin's config. The harness's own default route counts too: when `agent-default-model` points at `deepseek-official`, DeepSeek's API is offered as one more DSH entry
-- **🔒 Private & offline-first** — local Ollama (qwen2.5:7b / 14b or custom) is a first-class provider: free, unlimited, nothing leaves your machine. First local-model selection **auto-downloads** the model with a live progress bar and enables it when done
+- **🔒 Local Ollama** — reuse an existing installation and model. When enabled Ollama is first in priority, or you click Test, the plugin starts the service and loads the model as needed. Missing software/models require the setup button before installation/download, with live progress
 - **🧠 Zero context cost** — pure display layer: the model still sees the original text, and translated text never consumes the context window
 - **☁️ Google / Bing fallback** — automatic switch when other providers are unavailable (google goes through a Node CONNECT tunnel using the system proxy, bypassing anti-bot blocks)
 - **🛡️ Code-safe** — file paths, commands, URLs, regexes and pure-code lines are never translated
 - **🧩 Paragraph & sentence-aware chunking** — long thinking chains are split on blank lines (paragraph structure preserved) and further batched by sentence, so even a small local model keeps quality
-- **⏱️ Resilient** — 3× backoff retries, per-provider test buttons, failed results never cached
+- **⏱️ Resilient** — failed translations are cached in memory for 30 seconds to prevent retry storms, then retried automatically; each provider has its own Test button
 - **🎚️ Adjustable translation timing** — pre-translate everything, lazy-load historical chains (default), or translate only the expanded chain
 
 ## 📦 Installation
@@ -70,12 +70,14 @@ Version **1.2.6** fixes duplicated thinking and answer text in DSH 0.2: the assi
 
 **1.2.7 local setup:** enabled Ollama in first priority, or its Test button, finds an existing installation and starts/loads it automatically. Missing software/models require the labelled setup action, with staged download/install/load progress. Automatic software installation supports Windows; other systems link to the official guide. “In use” follows the first enabled, verified provider in priority order; testing a lower row does not override a verified higher row.
 
+**1.2.8 transport and recovery:** ordinary HTTP/HTTPS translation requests use native Node networking instead of spawning curl per text batch; SOCKS proxies and the Ollama installer retain curl compatibility. Failures stay in memory for 30 seconds, then reasoning and answer translation resume automatically. Request deadlines allow time for local-model loading and provider fallback.
+
 ## 🚀 Usage
 
 1. Open **Settings → Think Translation**
 2. Pick the **target language** (e.g. 日本語) — the settings panel, thinking rows and task cards all switch to it
 3. **Manage the provider chain** — the list below it *is* the delivery order; drag rows to reorder, and the checkbox is the on/off switch:
-   - Built-ins: **google gtx / bing** (free, works out of the box via system proxy) and **local Ollama** — on first local-model selection a download prompt appears (qwen2.5:7b / 14b or custom); it auto-enables when finished. Built-ins are permanent: uncheck one to stop using it, there is nothing to delete
+   - Built-ins: **google gtx / bing** (free, via the system proxy) and **local Ollama** — existing software/models are reused; missing components require the setup button (qwen2.5:7b / 14b or custom), with progress displayed. Built-ins are permanent: uncheck one to stop using it, there is nothing to delete
    - **DSH providers**: endpoints already configured in DSH (`llm-pi-ai.providers`) appear automatically as read-only entries (badge "DSH"); their checkbox adds/removes them from the chain. The **Import from DSH config** button right below the list rescans on click and adds all of them in one go — there is no base URL and no key to retype, because the key is resolved from DSH's own credentials at request time
    - **Custom providers**: "Add custom provider" registers any **OpenAI-compatible** or **Anthropic Messages** endpoint; the form offers **presets** for common low-cost models (DeepSeek, OpenAI, Qwen, GLM, Kimi, SiliconFlow, OpenRouter, Anthropic) that fill base URL + model + env name, all still editable; the model lists were checked against the vendors' documentation in September 2026 and are suggestions only — any model id can be typed in. Each row has a **test** button, an edit form and a **×** to delete it (a DSH row cannot be deleted — it is managed by the harness)
    - A provider can name an **environment variable** (`apiKeyEnv`) instead of carrying the key: presets fill that in, and a DSH row brings its own. The key is resolved per request and never written to `config.json`, and such a row shows an `env:NAME` badge. The edit form has no env field (the value survives an edit untouched), but emptying a field really removes it — the field is sent as an explicit delete
@@ -89,8 +91,8 @@ browser → POST /_xlate/translate (same-origin, no CORS)
   → host provider chain (fail-open, user-ordered):
       chain: [provider1, provider2, ...]   ← drag-reordered in settings
         each provider is one of:
-          google   (gtx via Node CONNECT tunnel / curl through system proxy)
-          bing     (ttranslatev3 via curl)
+          google   (gtx via native Node HTTP/HTTPS and the system proxy)
+          bing     (ttranslatev3 via native Node HTTP/HTTPS)
           openai   (OpenAI-compatible /chat/completions — Ollama local or any gateway)
           anthropic(Anthropic Messages API /v1/messages)
       fallback chain (config-only, off by default) tried when the primary chain fails entirely

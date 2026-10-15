@@ -23,7 +23,7 @@ Les modèles de la famille DeepSeek raisonnent souvent en chinois — ou dans la
 - **🕵️ Lisez n'importe quelle chaîne de raisonnement** — raisonnement, chaîne de pensée, cartes de tâches et réponses traduits en temps réel, par lots
 - **8 langues cibles** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
 - **Interface monolingue** — panneau de réglages, lignes de réflexion et cartes de tâches suivent la langue cible (pas de mélange zh/en) ; le choix persiste
-- **Modèle local d'abord** — utilise votre modèle Ollama local (qwen, etc.) : privé, hors ligne, gratuit. La première sélection **déclenche le téléchargement automatique** avec barre de progression ; le modèle est configuré et activé à la fin
+- **Ollama local** — réutilise les installations et modèles existants. Si Ollama est activé en première position ou si vous cliquez sur Test, le service démarre et le modèle se charge au besoin. Les logiciels ou modèles manquants nécessitent le bouton de préparation avant installation/téléchargement, avec progression en direct
 - **🧠 Coût de contexte nul** — couche d'affichage pure : le modèle voit toujours le texte original et le texte traduit ne consomme jamais la fenêtre de contexte
 - **Repli Google / Bing** — bascule automatique si le modèle local est indisponible (google passe par un tunnel CONNECT Node avec le proxy système)
 - **Artefacts de code ignorés** — chemins, commandes, URL, regex et lignes de code pur ne sont jamais traduits
@@ -34,7 +34,7 @@ Les modèles de la famille DeepSeek raisonnent souvent en chinois — ou dans la
 - **🔗 Chaîne de fournisseurs dynamique** — l'ordre de la liste est l'ordre d'exécution : glissez pour réordonner, activez ou désactivez chaque ligne. Intégrés google gtx / bing / Ollama local, plus tout endpoint personnalisé
 - **🔌 Fournisseurs personnalisés (OpenAI et Anthropic)** — ajoutez depuis le panneau tout endpoint compatible OpenAI (`/v1/chat/completions`) ou l'**Anthropic Messages API** (Claude) : type, préréglage, URL de base, clé API et modèle
 - **🪄 Hérite des fournisseurs configurés dans DSH** — détecte les lignes DSH en lecture seule depuis `settings.yaml` (`llm-pi-ai.providers`), et un bouton relance l'analyse et les ajoute toutes à la chaîne ; la clé est résolue à chaque requête depuis `.credentials.yaml` et n'est jamais écrite dans la config du plugin. La route par défaut du harness compte aussi : si `agent-default-model` désigne `deepseek-official`, l'API officielle DeepSeek apparaît comme une ligne DSH de plus
-- **⏱️ Résilient** — 3 tentatives avec backoff + secours direct du navigateur, bouton de test par ligne, les échecs ne sont jamais mis en cache
+- **⏱️ Résilient** — les échecs sont conservés en mémoire pendant 30 secondes pour éviter les tentatives répétées, puis réessayés automatiquement ; chaque fournisseur dispose de son bouton de test
 
 ## 📦 Installation
 
@@ -73,12 +73,14 @@ Pour DSH **0.2.0-rc.2**, utilisez **dsh-think-translate 1.2.5 ou une version ult
 
 **1.2.7 préparation locale :** Ollama activé en première position, ou son test, détecte une installation existante, démarre le service et charge le modèle. Le bouton de préparation autorise les installations et téléchargements manquants, avec progression par étapes. Installation automatique du logiciel sur Windows ; guide officiel ailleurs. Le fournisseur utilisé respecte la priorité des fournisseurs activés et vérifiés.
 
+**1.2.8 transport et reprise :** les traductions HTTP/HTTPS ordinaires utilisent le réseau natif de Node au lieu de lancer curl pour chaque lot de texte. Les proxys SOCKS et l’installateur Ollama conservent curl. Les échecs restent en mémoire pendant 30 secondes, puis les traductions du raisonnement et des réponses sont réessayées automatiquement. Les délais tiennent compte du chargement des modèles locaux et du recours à d’autres fournisseurs.
+
 ## 🚀 Utilisation
 
 1. Ouvrez **Réglages → Traduction de chaîne de réflexion**
 2. Choisissez la **langue cible** (p. ex. Français) — le panneau, les lignes et les cartes basculent dans cette langue
 3. Gérez la **chaîne de fournisseurs** (glisser pour ordonner, cocher pour activer) :
-   - Intégrés : **google gtx / bing** (gratuits, prêts à l'emploi, proxy système) et **modèle local (Ollama)** (au premier choix, téléchargement de 7b/14b ou d'un modèle personnalisé)
+   - Intégrés : **google gtx / bing** (gratuits, via le proxy système) et **Ollama local** ; les logiciels et modèles existants sont réutilisés. Les composants manquants nécessitent le bouton de préparation, avec progression (7b/14b ou modèle personnalisé)
    - **Fournisseurs DSH** : les endpoints déjà configurés dans `settings.yaml` apparaissent seuls (lecture seule ; cochez pour les ajouter à la chaîne). Le bouton **Importer depuis la config DSH**, juste sous la liste, relance l'analyse et les ajoute tous d'un coup : ni baseURL ni clé à ressaisir, la clé étant résolue depuis les identifiants de DSH
    - La clé se saisit à la main ou arrive via **`apiKeyEnv`** depuis un préréglage ou une ligne DSH : cette ligne affiche le badge `env:NAME`, et la clé est résolue à chaque requête sans jamais être écrite dans `config.json`. Le formulaire d'édition n'a pas de champ de variable d'environnement (la valeur est conservée telle quelle), mais vider un champ le supprime réellement (envoyé comme suppression explicite)
    - Décocher un fournisseur l'ignore. Détails dans [README.md](README.md)
