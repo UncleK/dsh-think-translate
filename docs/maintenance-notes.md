@@ -26,7 +26,17 @@ pnpm install --frozen-lockfile 完成，pnpm run build 的 9 个 gate 全部通�
 重新扫描读到 web/cordis.patch.yml 的两个 DSH 提供方；官方 DeepSeek 路线实测返回中文译文。
 页面 Ollama/Google 测试通过；测试第二位 Google 后，当前使用仍为首位已验证的 Ollama。
 扫描接口和写盘无 DSH apiKey；profile 补丁、凭据及用户的原有配置项保持不变。
-Desktop 路径/格式有回归覆盖，本机没有另行启动官方原生 Desktop 客户端。
+随后启动官方源码的原生 Windows Desktop 开发构建（同为 0.2.1-alpha.4，Electron 44.7.0），
+通过 Desktop 插件界面安装并启用同一份 1.2.10 tgz。原生界面运行于 dsh-app://app/，
+重新扫描实际读取 desktop/cordis.patch.yml，发现 Desktop 独有的 desktop-deepseek 和继承的 deepseek-official。
+界面重新扫描显示 2 个提供方，desktop-deepseek 的 deepseek-flash 连通测试通过。
+Web 仍只导入其 openrouter-ox 和 deepseek-official；两者未串用 profile。
+Desktop 配置响应及写盘均无解析出的 DSH apiKey，凭据文件校验值未变，安装文件与发布源码一致。
+这是原生应用的源码开发构建验证；未另测签名安装器。详细记录保存在 releases/1.2.10/NATIVE_DESKTOP_VALIDATION.json。
+
+首次启动时修复了源码升级后 node_modules/.pnpm/node_modules 中遗留的失效 workspace 索引，
+仅删除无有效 package.json 的旧链接，并将已搬迁的 workspace 链接指向当前目录；未修改 DSH 源码。
+官方 primary-runtime 准备及 Office smoke checks 均通过。
 
 本机 OpenRouter 的 stealth/ox-alpha 实测 404，响应说明测试期结束并指向 z-ai/glm-5.3-flash；
 这是已有模型配置的上游退役状态，不改动用户模型选择。当前本地安装使用 1.2.10 tgz，npm 由维护者发布。
