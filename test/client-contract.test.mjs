@@ -311,7 +311,7 @@ describe('settings UI contracts', function () {
     // The heading names the rows when they are all DSH entries.
     assert.match(src, /allDsh \? t\.providerDshList : t\.providerUnused/)
     // An empty scan reports the file it read rather than a bare "nothing found".
-    assert.match(src, /t\.dshImportEmpty \+ \(d\.home \? " · " \+ d\.home \+ "\/settings\.yaml" : ""\)/)
+    assert.match(src, /t\.dshImportEmpty \+ \(d\.sourcePath \?/)
     // Ordering: this reads provs/chain, which the same function assigns further
     // down. The render test is the real guard; this keeps the intent visible.
     assert.ok(src.indexOf('var dshAll = Object.keys(provs)') > src.indexOf('var provs = cfg.providers || {}'),

@@ -33,7 +33,7 @@ DeepSeek 系模型经常用中文思考——或者用它们碰巧习惯的语�
 - **🎚️ 可调翻译时机** — 三档：全部预翻译 / 懒加载历史（默认）/ 仅展开时翻译
 - **🔗 动态提供方链** — 列表顺序就是投递顺序：拖动排序、逐行开关；内置 google gtx / bing / 本地 Ollama，外加任意数量的自定义端点
 - **🔌 自定义提供方（OpenAI 与 Anthropic）** — 设置面板里可添加任意 OpenAI 兼容端点（任何 `/v1/chat/completions` 网关）或原生 **Anthropic Messages API**（Claude）：类型、预设、接口地址、API 密钥、模型
-- **🪄 继承 DSH 已配置的提供方** — 自动发现 `settings.yaml`（`llm-pi-ai.providers`）里的只读 DSH 行，一个按钮重新扫描并全部加入链；密钥在请求时从 `.credentials.yaml` 解析，绝不写入插件配置；harness 自己的默认路线也算：`agent-default-model` 指向 `deepseek-official` 时，DeepSeek 官方 API 也会作为一条 DSH 条目提供
+- **🪄 继承 DSH 已配置的提供方** — 自动发现 `profiles/<profile>/cordis.patch.yml` / 旧版 `settings.yaml`（`llm-pi-ai.providers`）里的只读 DSH 行，一个按钮重新扫描并全部加入链；密钥在请求时从 `.credentials.yaml` 解析，绝不写入插件配置；harness 自己的默认路线也算：`default-model` / `agent-default-model` 指向 `deepseek-official` 时，DeepSeek 官方 API 也会作为一条 DSH 条目提供
 - **⏱️ 失败韧性** — 失败结果仅在内存缓存 30 秒，避免频繁重试；冷却结束后自动重试，每行保留独立的测试按钮
 
 ## 📦 安装
@@ -75,6 +75,8 @@ DSH **0.2.0-rc.2** 请使用 **dsh-think-translate 1.2.5 或更新版本**。1.2
 
 **1.2.8 传输与恢复：**普通 HTTP/HTTPS 翻译请求改用 Node 原生网络，不再为每个文本批次启动 curl；SOCKS 代理和 Ollama 安装器保留 curl 兼容路径。失败结果在内存缓存 30 秒，冷却结束后思考与回答翻译会自动恢复重试。请求超时为本地模型加载和提供方回退留出时间。
 
+**1.2.10 DSH 配置兼容：**发现提供方时跟随当前 Desktop/Web profile，读取 `profiles/<profile>/cordis.patch.yml`（`id` + `config`），随后应用 home 补丁与启动覆盖；继续支持旧版 `settings.yaml`。默认模型行支持 `default-model`，凭据仍从 DSH home 的 `.credentials.yaml` 解析且只留在内存；重新扫描会显示实际读取的配置路径。
+
 **1.2.9 语言修复：**日语词汇提示仅用于日语目标，OpenAI/Anthropic 请求带上完整语言名称。Bing 使用 `auto-detect`，并将中文目标映射为 `zh-Hans`/`zh-Hant`。中文检测先排除路径、代码和 JSON：已是简体的正文跳过，常用繁体区别字触发转换请求，日语/韩语正文正常翻译。升级时一次性清理旧译文缓存，保留设置。
 
 ## 🚀 使用
@@ -83,7 +85,7 @@ DSH **0.2.0-rc.2** 请使用 **dsh-think-translate 1.2.5 或更新版本**。1.2
 2. 选择**目标语言**（比如日本語）——设置面板、思考行、任务卡片全部切换为该语言
 3. 管理**供应商链**（拖动排序，勾选即启用）：
    - 内置：**google gtx / bing**（免费，使用系统代理）与**本地模型（Ollama）**；复用已有软件和模型，缺少时点击准备按钮后才安装/下载，并显示进度（支持 7b/14b 或自定义模型）
-   - **DSH 供应商**：`settings.yaml` 里已配置的端点会自动出现（只读，勾选即加入链）；列表下方的 **继承 DSH 已配置的 API** 会重新扫描并一键全部加入——不用重填 baseURL 或密钥（密钥在请求时从 DSH 自己的凭据里解析）
+   - **DSH 供应商**：`profiles/<profile>/cordis.patch.yml` / 旧版 `settings.yaml` 里已配置的端点会自动出现（只读，勾选即加入链）；列表下方的 **继承 DSH 已配置的 API** 会重新扫描并一键全部加入——不用重填 baseURL 或密钥（密钥在请求时从 DSH 自己的凭据里解析）
    - 密钥可以直接填，也可以由预设或 DSH 行带上 **`apiKeyEnv`**：那类行显示 `env:NAME` 徽标，密钥在请求时解析、绝不写入 `config.json`。编辑表单里没有环境变量输入框（值会原样保留），清空某个字段会真的删除它（以显式删除提交），所以从环境变量名切回字面密钥是可行的
    - 取消勾选即跳过该供应商；更细的说明以 [README.md](README.md) 为准
 4. 发消息让模型思考，展开 Think 行查看译文
@@ -100,7 +102,7 @@ DSH **0.2.0-rc.2** 请使用 **dsh-think-translate 1.2.5 或更新版本**。1.2
 ```
 
 - **提供方配置** 存在 `config.json`（运行期生成，已 gitignore）：`chain`（有序 id）、`fallback`（enabled + chain，仅配置文件）、`providers`（每项的 `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`）。旧的 `priority` 配置会自动迁移；声明 `apiKeyEnv` 的提供方在请求时从该环境变量解析密钥（字面 `apiKey` 作为兜底），解析出的密钥绝不写回 `config.json`；patch 里显式的 `null` 表示删除该字段，UI 就是用它清空字段的
-- **DSH 发现** 在加载时读取 harness 的 `settings.yaml`（`llm-pi-ai.providers`）与 `.credentials.yaml`（`refs`）；被发现的提供方标记为 `source: "dsh"`，解析出的密钥只留在内存中（绝不写入 `config.json`），`/_xlate/dsh-scan` 路由可按需重新读取
+- **DSH 发现** 在加载时读取 harness 的 `profiles/<profile>/cordis.patch.yml` / 旧版 `settings.yaml`（`llm-pi-ai.providers`）与 `.credentials.yaml`（`refs`）；被发现的提供方标记为 `source: "dsh"`，解析出的密钥只留在内存中（绝不写入 `config.json`），`/_xlate/dsh-scan` 路由可按需重新读取
 - **host 半边**（`lib/index.js`）：供应商适配器、LRU 缓存（600）、`/_xlate/models` 模型列表、`/_xlate/model/pull` + `pull-status` 模型下载管理（完成后自动配置启用）
 - **client 半边**（`lib/client.js`）：8 语言 UI、段落/句子分批翻译、流式 Think 行、设置与译文缓存持久化（localStorage）
 - 纯显示层：原文完整保留在会话日志与模型上下文中

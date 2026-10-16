@@ -33,7 +33,7 @@ Modelle der DeepSeek-Familie denken oft auf Chinesisch — oder in der Sprache, 
 - **🎚️ Einstellbarer Übersetzungszeitpunkt** — alles vorübersetzen / alte Ketten lazy laden (Standard) / nur beim Aufklappen
 - **🔗 Dynamische Anbieter-Kette** — die Listenreihenfolge ist die Ausführungsreihenfolge: ziehen zum Sortieren, jede Zeile einzeln ein-/ausschalten. Integriert google gtx / bing / lokales Ollama plus beliebige eigene Endpunkte
 - **🔌 Eigene Anbieter (OpenAI & Anthropic)** — im Panel jeden OpenAI-kompatiblen Endpunkt (`/v1/chat/completions`) oder die **Anthropic Messages API** (Claude) hinzufügen: Typ, Vorlage, Basis-URL, API-Schlüssel, Modell
-- **🪄 DSH-konfigurierte Anbieter übernehmen** — liest schreibgeschützte DSH-Zeilen aus `settings.yaml` (`llm-pi-ai.providers`); eine Schaltfläche liest neu ein und fügt alle der Kette hinzu. Der Schlüssel wird pro Anfrage aus `.credentials.yaml` aufgelöst und nie in der Plugin-Konfiguration gespeichert. Auch die eigene Standardroute des Harness zählt: zeigt `agent-default-model` auf `deepseek-official`, erscheint die offizielle DeepSeek-API als weitere DSH-Zeile
+- **🪄 DSH-konfigurierte Anbieter übernehmen** — liest schreibgeschützte DSH-Zeilen aus `profiles/<profile>/cordis.patch.yml` / älteres `settings.yaml` (`llm-pi-ai.providers`); eine Schaltfläche liest neu ein und fügt alle der Kette hinzu. Der Schlüssel wird pro Anfrage aus `.credentials.yaml` aufgelöst und nie in der Plugin-Konfiguration gespeichert. Auch die eigene Standardroute des Harness zählt: zeigt `default-model` / `agent-default-model` auf `deepseek-official`, erscheint die offizielle DeepSeek-API als weitere DSH-Zeile
 - **⏱️ Robust** — fehlgeschlagene Übersetzungen werden 30 Sekunden im Arbeitsspeicher zwischengespeichert und danach automatisch erneut versucht; jede Anbieterzeile hat eine Test-Schaltfläche
 
 ## 📦 Installation
@@ -75,6 +75,8 @@ Für DSH **0.2.0-rc.2** verwenden Sie **dsh-think-translate 1.2.5 oder neuer**. 
 
 **1.2.8 Übertragung und Wiederaufnahme:** Normale HTTP/HTTPS-Übersetzungen nutzen die nativen Netzwerkfunktionen von Node statt eines curl-Prozesses pro Textpaket. SOCKS-Proxys und der Ollama-Installer verwenden weiterhin curl. Fehler bleiben 30 Sekunden im Arbeitsspeicher; danach werden Denk- und Antwortübersetzungen automatisch erneut versucht. Die Zeitlimits berücksichtigen das Laden lokaler Modelle und alternative Anbieter.
 
+**1.2.10 DSH-Profilkompatibilität:** Die Erkennung folgt dem laufenden Desktop/Web-Profil und liest `profiles/<profile>/cordis.patch.yml` (`id` + `config`), danach die Home-Patches und Start-Overlays. Das ältere `settings.yaml` bleibt unterstützt. Die Standardmodell-Zeile heißt `default-model`; Zugangsdaten bleiben in `.credentials.yaml` im DSH-Home und nur im Arbeitsspeicher. Die Diagnose zeigt die tatsächlich gelesene Datei.
+
 **1.2.9 Sprachkorrekturen:** Japanische Vokabelhinweise gelten nur für Japanisch; OpenAI/Anthropic erhalten den vollständigen Sprachnamen. Bing nutzt `auto-detect` und `zh-Hans`/`zh-Hant`. Die Erkennung chinesischer Prosa blendet Pfade, Code und JSON aus: vereinfachte Prosa wird übersprungen, häufige traditionelle Schriftzeichen lösen eine Übersetzungsanfrage aus, japanische/koreanische Prosa wird übersetzt. Alte Übersetzungen werden einmalig aus dem Cache entfernt; Einstellungen bleiben erhalten.
 
 ## 🚀 Verwendung
@@ -83,7 +85,7 @@ Für DSH **0.2.0-rc.2** verwenden Sie **dsh-think-translate 1.2.5 oder neuer**. 
 2. Die **Zielsprache** wählen (z. B. Deutsch) — Einstellungen, Denkzeilen und Karten wechseln in diese Sprache
 3. Die **Anbieterkette** verwalten (ziehen zum Sortieren, ankreuzen zum Aktivieren):
    - Integriert: **google gtx / bing** (kostenlos, über den Systemproxy) und **lokales Ollama**; vorhandene Software/Modelle werden wiederverwendet. Fehlende Komponenten werden erst über die Vorbereitungsschaltfläche installiert/heruntergeladen, mit Fortschritt (7b/14b oder eigenes Modell)
-   - **DSH-Anbieter**: in `settings.yaml` konfigurierte Endpunkte erscheinen automatisch (schreibgeschützt; ankreuzen fügt sie der Kette hinzu). Die Schaltfläche **Aus DSH-Konfiguration übernehmen** direkt unter der Liste liest die Konfiguration neu ein und fügt alle auf einmal hinzu – keine baseURL und kein Schlüssel zum Neutippen, denn der Schlüssel wird aus den DSH-Credentials aufgelöst
+   - **DSH-Anbieter**: in `profiles/<profile>/cordis.patch.yml` / älteres `settings.yaml` konfigurierte Endpunkte erscheinen automatisch (schreibgeschützt; ankreuzen fügt sie der Kette hinzu). Die Schaltfläche **Aus DSH-Konfiguration übernehmen** direkt unter der Liste liest die Konfiguration neu ein und fügt alle auf einmal hinzu – keine baseURL und kein Schlüssel zum Neutippen, denn der Schlüssel wird aus den DSH-Credentials aufgelöst
    - Der Schlüssel wird eingetippt oder kommt als **`apiKeyEnv`** aus einer Vorlage bzw. einer DSH-Zeile: diese Zeile zeigt das `env:NAME`-Abzeichen, und der Schlüssel wird pro Anfrage aufgelöst und nie in `config.json` geschrieben. Das Bearbeitungsformular hat kein Feld für die Umgebungsvariable (der Wert bleibt erhalten), aber ein geleertes Feld wird wirklich gelöscht (als explizite Löschung gesendet)
    - Abgewählte Anbieter werden übersprungen. Details stehen in [README.md](README.md)
 4. Nachricht senden und die Think-Zeile aufklappen, um die Übersetzung zu sehen
@@ -100,7 +102,7 @@ Browser → POST /_xlate/translate (gleiche Origin, kein CORS)
 ```
 
 - Die **Anbieter-Konfiguration** liegt in `config.json` (zur Laufzeit erzeugt, gitignoriert): `chain` (geordnete IDs), `fallback` (enabled + chain, nur Datei), `providers` (je Anbieter `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). Alte `priority`-Konfigurationen werden automatisch migriert; ein Anbieter mit `apiKeyEnv` löst seinen Schlüssel pro Anfrage aus dieser Umgebungsvariable auf (der literale `apiKey` bleibt als Rückfall) und kein aufgelöster Schlüssel wird je in `config.json` zurückgeschrieben; ein `null` in einem Patch löscht das Feld — so leert die Oberfläche eines
-- Die **DSH-Erkennung** liest beim Laden `settings.yaml` (`llm-pi-ai.providers`) und `.credentials.yaml` (`refs`) des Harness; erkannte Anbieter tragen `source: "dsh"`, aufgelöste Schlüssel bleiben im Speicher (nie in `config.json`), und die Route `/_xlate/dsh-scan` liest sie bei Bedarf neu ein
+- Die **DSH-Erkennung** liest beim Laden `profiles/<profile>/cordis.patch.yml` / älteres `settings.yaml` (`llm-pi-ai.providers`) und `.credentials.yaml` (`refs`) des Harness; erkannte Anbieter tragen `source: "dsh"`, aufgelöste Schlüssel bleiben im Speicher (nie in `config.json`), und die Route `/_xlate/dsh-scan` liest sie bei Bedarf neu ein
 - **Host-Hälfte** (`lib/index.js`): Anbieteradapter, LRU-Cache (600), `/_xlate/models`, `/_xlate/model/pull` + `pull-status` (automatische Konfiguration am Ende)
 - **Client-Hälfte** (`lib/client.js`): 8-sprachige UI, satzweise Batch-Übersetzung, Streaming-Think-Zeilen, localStorage-Persistenz
 - Reine Anzeigeschicht: Originale bleiben im Verlauf und im Modellkontext erhalten

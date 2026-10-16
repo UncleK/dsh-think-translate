@@ -589,6 +589,18 @@ describe('settings panel renders (real bundle, mini React)', function () {
     assert.match(text, /settings\.yaml/, 'and it names the file it looked at')
   })
 
+  it('shows the Desktop profile file and sanitized scan error for a modern empty scan', async function () {
+    const config = configWith({ google: { type: 'google', enabled: true } }, ['google'])
+    config.dshScan.sourcePath = 'C:/Users/test/.dsh/profiles/desktop/cordis.patch.yml'
+    config.dshScan.error = 'Invalid DSH YAML'
+    const panel = await mountPanel(config)
+    click(button(panel.tree, '重新扫描 DSH 配置'))
+    const text = textOf(await panel.runtime.mount(panel.registered))
+    assert.ok(text.includes(config.dshScan.sourcePath))
+    assert.ok(text.includes('Invalid DSH YAML'))
+    assert.ok(!text.includes('/settings.yaml'))
+  })
+
   it('keeps a half-typed provider form across the remount a language change causes', async function () {
     // The section is re-registered on a language change so its nav title follows, and
     // the shell keys list rows by registration identity — so the panel is unmounted

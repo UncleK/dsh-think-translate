@@ -4,6 +4,35 @@
 
 ---
 
+## 2026-10-16 — 1.2.10：跟随当前 DSH profile 发现提供方（issue #11）
+
+DSH 已将 settings.yaml 迁入 profile 的 cordis.patch.yml，旧正则既读错路径，也不认识 id/config 行。
+新增 discovery.js，使用明确声明的 js-yaml 依赖读取 YAML；优先使用运行时 profileContext，
+只读取当前 profile，应用 profile/home 补丁与启动覆盖，保留旧版 settings.yaml 路径。
+可使用 configEditor 的当前行补全 bundle 继承值；编辑器服务在扫描时获取，避免插件启动顺序影响。
+支持默认模型的 default-model/agent-default-model 行，以及原有 DeepSeek 官方 API 路线。
+配置行的 config 按 DSH 语义整块替换，不合并已删掉的继承提供方；禁用行不导入。
+
+密钥引用仍从 DSH home 的 .credentials.yaml 读取；literal/ref 密钥只留在内存，
+所有配置响应和写盘继续经过 stripResolvedKeys。!!js 保留为不执行的标记，动态端点不猜值。
+YAML 错误不返回可能含密钥的源行；失败扫描不触发旧 DSH 条目清理，页面显示实际配置路径。
+
+277 项测试通过，覆盖 Desktop/Web 隔离、现代/旧版配置、层次替换、禁用项、凭据和页面诊断。
+八份 README 同步路径与结构说明。npm 1.2.9 已核实发布，SHA-1 与上一份交付包一致。
+
+本机 DSH 源码从 5badb15009 快进到官方 dsh-v0.2.1-alpha.4（86a402200d），
+pnpm install --frozen-lockfile 完成，pnpm run build 的 9 个 gate 全部通过。
+在真实 Web profile 安装 1.2.10 tgz 并启动前后端：页面显示 0.2.1-alpha.4，
+重新扫描读到 web/cordis.patch.yml 的两个 DSH 提供方；官方 DeepSeek 路线实测返回中文译文。
+页面 Ollama/Google 测试通过；测试第二位 Google 后，当前使用仍为首位已验证的 Ollama。
+扫描接口和写盘无 DSH apiKey；profile 补丁、凭据及用户的原有配置项保持不变。
+Desktop 路径/格式有回归覆盖，本机没有另行启动官方原生 Desktop 客户端。
+
+本机 OpenRouter 的 stealth/ox-alpha 实测 404，响应说明测试期结束并指向 z-ai/glm-5.3-flash；
+这是已有模型配置的上游退役状态，不改动用户模型选择。当前本地安装使用 1.2.10 tgz，npm 由维护者发布。
+
+---
+
 ## 2026-10-16 — 1.2.9：目标语言与 Bing 修复（issues #8、#9、#10）
 
 OpenAI/Anthropic 的日语词汇提示仅用于日语目标；系统和用户提示都明确完整语言名称，

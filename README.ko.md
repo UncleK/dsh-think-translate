@@ -33,7 +33,7 @@ DeepSeek 계열 모델은 중국어로, 또는 우연히 생각에 쓰는 언어
 - **🎚️ 번역 시점 조절** — 모두 사전 번역 / 이전 체인 지연 로딩（기본）/ 펼친 체인만 번역
 - **🔗 동적 제공자 체인** — 목록 순서가 곧 실행 순서. 끌어서 정렬하고 행마다 켜고 끄기. 내장 google gtx / bing / 로컬 Ollama에 더해 임의의 사용자 지정 엔드포인트
 - **🔌 사용자 지정 제공자(OpenAI / Anthropic)** — 설정 패널에서 OpenAI 호환 엔드포인트(`/v1/chat/completions`)나 **Anthropic Messages API**(Claude)를 추가: 유형, 프리셋, 베이스 URL, API 키, 모델
-- **🪄 DSH 설정의 제공자 상속** — `settings.yaml`(`llm-pi-ai.providers`)에서 읽기 전용 DSH 행을 자동 발견하고, 버튼 한 번으로 다시 검사해 모두 체인에 추가. 키는 요청 시 `.credentials.yaml`에서 해석되며 플러그인 설정에 저장되지 않음. harness 자체의 기본 경로도 포함됩니다: `agent-default-model`이 `deepseek-official`을 가리키면 DeepSeek 공식 API도 DSH 행으로 제공됩니다
+- **🪄 DSH 설정의 제공자 상속** — `profiles/<profile>/cordis.patch.yml` / 이전 `settings.yaml`(`llm-pi-ai.providers`)에서 읽기 전용 DSH 행을 자동 발견하고, 버튼 한 번으로 다시 검사해 모두 체인에 추가. 키는 요청 시 `.credentials.yaml`에서 해석되며 플러그인 설정에 저장되지 않음. harness 자체의 기본 경로도 포함됩니다: `default-model` / `agent-default-model`이 `deepseek-official`을 가리키면 DeepSeek 공식 API도 DSH 행으로 제공됩니다
 - **⏱️ 실패 후 복구** — 실패 결과를 메모리에 30초간 캐시해 반복 요청을 줄이고 이후 자동으로 재시도합니다. 제공자마다 테스트 버튼이 있습니다
 
 ## 📦 설치
@@ -75,6 +75,8 @@ DSH **0.2.0-rc.2**에서는 **dsh-think-translate 1.2.5 이상**을 사용하세
 
 **1.2.8 전송 및 복구:** 일반 HTTP/HTTPS 번역은 텍스트 배치마다 curl을 실행하는 대신 Node 기본 네트워크 기능을 사용합니다. SOCKS 프록시와 Ollama 설치 프로그램은 curl 호환 경로를 유지합니다. 실패 결과를 메모리에 30초간 보관한 뒤 사고·답변 번역을 자동 재시도합니다. 타임아웃은 로컬 모델 로드와 다른 제공자로의 전환 시간을 고려합니다.
 
+**1.2.10 DSH 프로필 호환:** 실행 중인 Desktop/Web 프로필의 `profiles/<profile>/cordis.patch.yml`(`id` + `config`)을 읽고 DSH 홈 패치와 시작 오버레이를 순서대로 적용합니다. 이전 `settings.yaml`도 지원합니다. 기본 모델 행은 `default-model`을 지원하며 자격 증명은 DSH 홈의 `.credentials.yaml`에서 읽어 메모리에만 유지합니다. 다시 검사하면 실제 설정 경로가 표시됩니다.
+
 **1.2.9 언어 수정:** 일본어 어휘 힌트는 일본어 대상에만 적용하며 OpenAI/Anthropic에 전체 언어 이름을 전달합니다. Bing은 `auto-detect`와 `zh-Hans`/`zh-Hant`를 사용합니다. 중국어 감지 시 경로·코드·JSON을 제외하고, 이미 간체인 본문은 건너뛰며 자주 쓰는 번체 글자를 감지하면 변환을 요청합니다. 일본어·한국어 본문은 번역합니다. 이전 번역 캐시만 한 번 삭제하고 설정은 유지합니다.
 
 ## 🚀 사용법
@@ -83,7 +85,7 @@ DSH **0.2.0-rc.2**에서는 **dsh-think-translate 1.2.5 이상**을 사용하세
 2. **대상 언어** 선택(예: 한국어) — 설정 패널, 사고 행, 작업 카드가 모두 전환
 3. **제공자 체인** 관리(드래그로 순서 변경, 체크로 사용):
    - 내장: **google gtx / bing**(무료, 시스템 프록시 경유)과 **로컬 Ollama**. 기존 소프트웨어와 모델은 재사용하고, 없는 항목은 준비 버튼을 누른 뒤 설치·다운로드하며 진행률을 표시합니다(7b/14b 또는 사용자 지정 모델)
-   - **DSH 제공자**: `settings.yaml`에 설정된 엔드포인트가 자동 표시(읽기 전용, 체크하면 체인에 추가). 목록 아래의 **DSH 설정에서 가져오기**는 다시 검사해 한 번에 모두 추가합니다(baseURL과 키를 다시 입력할 필요가 없고, 키는 DSH 자체 자격 증명에서 해석됩니다)
+   - **DSH 제공자**: `profiles/<profile>/cordis.patch.yml` / 이전 `settings.yaml`에 설정된 엔드포인트가 자동 표시(읽기 전용, 체크하면 체인에 추가). 목록 아래의 **DSH 설정에서 가져오기**는 다시 검사해 한 번에 모두 추가합니다(baseURL과 키를 다시 입력할 필요가 없고, 키는 DSH 자체 자격 증명에서 해석됩니다)
    - 키는 직접 입력하거나 프리셋·DSH 행이 가진 **`apiKeyEnv`** 로 지정할 수 있습니다. 그런 행에는 `env:NAME` 배지가 붙고 키는 요청 시 해석되며 `config.json`에 저장되지 않습니다. 편집 폼에는 환경 변수 입력란이 없지만(값은 그대로 유지) 필드를 비우면 실제로 삭제됩니다(명시적 삭제로 전송)
    - 체크를 해제하면 해당 제공자는 건너뜁니다. 자세한 내용은 [README.md](README.md)
 4. 메시지를 보내고 Think 행을 펼쳐 번역 확인
@@ -100,7 +102,7 @@ DSH **0.2.0-rc.2**에서는 **dsh-think-translate 1.2.5 이상**을 사용하세
 ```
 
 - **제공자 설정**은 `config.json`(런타임 생성, gitignore 대상)에 있습니다: `chain`(순서 있는 id), `fallback`(enabled + chain, 설정 파일 전용), `providers`(각 항목의 `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). 예전 `priority` 형식은 자동 마이그레이션됩니다. `apiKeyEnv`를 선언한 제공자는 요청 시 해당 환경 변수에서 키를 해석하며(리터럴 `apiKey`는 폴백), 해석된 키를 `config.json`에 다시 쓰지 않습니다. 패치의 `null`은 해당 필드 삭제를 뜻하며 UI가 그렇게 비웁니다
-- **DSH 자동 발견**은 로드 시 harness의 `settings.yaml`(`llm-pi-ai.providers`)과 `.credentials.yaml`(`refs`)을 읽습니다. 발견된 제공자는 `source: "dsh"`로 표시되고 해석된 키는 메모리에만 남으며(`config.json`에 기록되지 않음), `/_xlate/dsh-scan`으로 필요할 때 다시 읽습니다
+- **DSH 자동 발견**은 로드 시 harness의 `profiles/<profile>/cordis.patch.yml` / 이전 `settings.yaml`(`llm-pi-ai.providers`)과 `.credentials.yaml`(`refs`)을 읽습니다. 발견된 제공자는 `source: "dsh"`로 표시되고 해석된 키는 메모리에만 남으며(`config.json`에 기록되지 않음), `/_xlate/dsh-scan`으로 필요할 때 다시 읽습니다
 - **host 측**(`lib/index.js`): 제공자 어댑터, LRU 캐시(600), `/_xlate/models` 모델 목록, `/_xlate/model/pull` + `pull-status` 모델 다운로드 관리(완료 시 자동 설정)
 - **client 측**(`lib/client.js`): 8개 언어 UI, 문장 배치 번역, 스트리밍 Think 행, localStorage 영구 저장
 - 순수 표시 계층: 원문은 대화 기록과 모델 컨텍스트에 완전 보존

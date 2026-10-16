@@ -2,3 +2,4 @@
 config.json
 lib/config.json
 lib/config.json.corrupt-*
+node_modules/

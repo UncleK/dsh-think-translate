@@ -33,7 +33,7 @@ DeepSeek 系モデルは中国語で考えることが多く、あるいはた�
 - **🎚️ 翻訳タイミングを調整可能** — すべて事前翻訳 / 履歴を遅延ロード（既定）/ 展開時のみ翻訳
 - **🔗 動的プロバイダーチェーン** — 一覧の順序がそのまま実行順。ドラッグで並べ替え、行ごとにオン/オフ。組み込みの google gtx / bing / ローカル Ollama に加えて任意のカスタム端点
 - **🔌 カスタムプロバイダー（OpenAI / Anthropic）** — 設定パネルから任意の OpenAI 互換端点（`/v1/chat/completions`）や **Anthropic Messages API**（Claude）を追加：種類・プリセット・ベース URL・API キー・モデル
-- **🪄 DSH 設定のプロバイダーを引き継ぐ** — `settings.yaml`（`llm-pi-ai.providers`）から読み取り専用の DSH 行を自動検出し、ボタン1つで再スキャンしてまとめてチェーンに追加。キーは `.credentials.yaml` からリクエスト時に解決され、プラグインの設定には保存されません。harness 自身の既定ルートも対象です：`agent-default-model` が `deepseek-official` を指していれば、DeepSeek の公式 API も DSH 行として提供されます
+- **🪄 DSH 設定のプロバイダーを引き継ぐ** — `profiles/<profile>/cordis.patch.yml` / 旧形式 `settings.yaml`（`llm-pi-ai.providers`）から読み取り専用の DSH 行を自動検出し、ボタン1つで再スキャンしてまとめてチェーンに追加。キーは `.credentials.yaml` からリクエスト時に解決され、プラグインの設定には保存されません。harness 自身の既定ルートも対象です：`default-model` / `agent-default-model` が `deepseek-official` を指していれば、DeepSeek の公式 API も DSH 行として提供されます
 - **⏱️ 失敗からの復帰** — 失敗結果はメモリ内で30秒間キャッシュして連続再試行を抑え、期限後に自動再試行。各プロバイダーにテストボタンを用意
 
 ## 📦 インストール
@@ -75,6 +75,8 @@ DSH **0.2.0-rc.2** では **dsh-think-translate 1.2.5 以降**を使用してく
 
 **1.2.8 通信と復帰：**通常の HTTP/HTTPS 翻訳は、テキストのバッチごとに curl を起動せず Node の標準ネットワーク機能を使います。SOCKS プロキシと Ollama インストーラーは引き続き curl に対応します。失敗結果をメモリ内に30秒間保持し、その後は思考・回答の翻訳を自動再試行します。タイムアウトはローカルモデルのロードと代替プロバイダーへの切り替えを考慮しています。
 
+**1.2.10 DSH プロファイル対応：**実行中の Desktop/Web プロファイルに従い、`profiles/<profile>/cordis.patch.yml`（`id` + `config`）、DSH home のパッチ、起動時のオーバーレイを順に読み込みます。旧形式の `settings.yaml` も対応。既定モデル行は `default-model` に対応し、資格情報は DSH home の `.credentials.yaml` から解決してメモリ内だけに保持します。再スキャン時に実際の設定パスを表示します。
+
 **1.2.9 言語修正：**日本語の語彙ヒントは日本語の翻訳先に限定し、OpenAI/Anthropic に完全な言語名を渡します。Bing は `auto-detect` と `zh-Hans`/`zh-Hant` を使用。中国語の判定ではパス・コード・JSON を除外し、簡体字の本文はスキップ、よく使われる繁体字を検出すると変換を依頼、日本語・韓国語の本文は翻訳します。旧訳文キャッシュを一度削除し、設定は保持します。
 
 ## 🚀 使い方
@@ -83,7 +85,7 @@ DSH **0.2.0-rc.2** では **dsh-think-translate 1.2.5 以降**を使用してく
 2. **対象言語**を選択（例：日本語）— 設定パネル・思考行・タスクカードがすべてその言語に切替
 3. **プロバイダーチェーン**を管理（ドラッグで並べ替え、チェックで有効化）：
    - 組み込み：**google gtx / bing**（無料、システムプロキシ経由）と**ローカル Ollama**。既存のソフト・モデルを再利用し、不足分は準備ボタンを押してからインストール・ダウンロード、進捗を表示（7b/14b または任意のモデル）
-   - **DSH プロバイダー**：`settings.yaml` に設定済みのエンドポイントが自動表示（読み取り専用、チェックでチェーンに追加）。リスト下の **DSH の設定から取り込む** は再スキャンしてまとめて追加します（baseURL もキーも入力不要。キーは DSH 側の資格情報から解決されます）
+   - **DSH プロバイダー**：`profiles/<profile>/cordis.patch.yml` / 旧形式 `settings.yaml` に設定済みのエンドポイントが自動表示（読み取り専用、チェックでチェーンに追加）。リスト下の **DSH の設定から取り込む** は再スキャンしてまとめて追加します（baseURL もキーも入力不要。キーは DSH 側の資格情報から解決されます）
    - キーは直接入力するほか、プリセットや DSH 行が持つ **`apiKeyEnv`** でも指定できます。その行には `env:NAME` バッジが付き、キーはリクエスト時に解決されて `config.json` には保存されません。編集フォームに環境変数の入力欄はありません（値はそのまま保持されます）が、フィールドを空にすると本当に削除されます（明示的な削除として送信）
    - チェックを外すとそのプロバイダーは使われません。詳細は [README.md](README.md)
 4. メッセージを送信し、Think 行を展開して訳文を確認
@@ -100,7 +102,7 @@ DSH **0.2.0-rc.2** では **dsh-think-translate 1.2.5 以降**を使用してく
 ```
 
 - **プロバイダー設定** は `config.json`（実行時生成・gitignore 対象）にあります：`chain`（順序付き ID）、`fallback`（enabled と chain、設定ファイル専用）、`providers`（各項目の `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`）。旧 `priority` 形式は自動移行されます。`apiKeyEnv` を宣言した提供元はリクエスト時にその環境変数からキーを解決し（リテラル `apiKey` はフォールバック）、解決したキーを `config.json` に書き戻すことはありません。パッチ内の `null` はそのフィールドの削除を意味し、UI のクリアはこれを使っています
-- **DSH の自動検出** は読み込み時に harness の `settings.yaml`（`llm-pi-ai.providers`）と `.credentials.yaml`（`refs`）を読みます。検出された提供元は `source: "dsh"` が付き、解決済みのキーはメモリ内のみ（`config.json` には書き込まれません）。`/_xlate/dsh-scan` でいつでも再読み込みできます
+- **DSH の自動検出** は読み込み時に harness の `profiles/<profile>/cordis.patch.yml` / 旧形式 `settings.yaml`（`llm-pi-ai.providers`）と `.credentials.yaml`（`refs`）を読みます。検出された提供元は `source: "dsh"` が付き、解決済みのキーはメモリ内のみ（`config.json` には書き込まれません）。`/_xlate/dsh-scan` でいつでも再読み込みできます
 - **host 側**（`lib/index.js`）：プロバイダーアダプタ、LRU キャッシュ（600）、`/_xlate/models` モデル一覧、`/_xlate/model/pull` + `pull-status` モデルダウンロード管理（完了時自動設定）
 - **client 側**（`lib/client.js`）：8 言語 UI、文単位バッチ翻訳、ストリーミング Think 行、localStorage 永続化
 - 純表示層：原文は会話履歴とモデルコンテキストに完全保持
