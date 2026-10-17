@@ -75,6 +75,8 @@ DSH **0.2.0-rc.2** 请使用 **dsh-think-translate 1.2.5 或更新版本**。1.2
 
 **1.2.8 传输与恢复：**普通 HTTP/HTTPS 翻译请求改用 Node 原生网络，不再为每个文本批次启动 curl；SOCKS 代理和 Ollama 安装器保留 curl 兼容路径。失败结果在内存缓存 30 秒，冷却结束后思考与回答翻译会自动恢复重试。请求超时为本地模型加载和提供方回退留出时间。
 
+**1.2.12：**提供方开关统一由 Host 执行，失败后浏览器不再直连 Google。围栏代码、缩进代码和行内代码不发送给翻译服务，按原文精确拼回；流式输出中尚未闭合的代码同样保护。清理旧译文缓存，保留设置。 升级后请完整重启 DSH Web 或 Desktop；仅刷新页面可能继续引用旧客户端资源。
+
 **1.2.11 Bing 修复：**保留免费 Bing 通道。翻译请求跟随会话页最终域名，避免国内 `www.bing.com` → `cn.bing.com` 跳转丢失 POST 正文；SOCKS/curl 同步原生浏览器请求头，修复 HTTP 401。空响应和非 JSON 响应给出明确错误。
 
 **1.2.10 DSH 配置兼容：**发现提供方时跟随当前 Desktop/Web profile，读取 `profiles/<profile>/cordis.patch.yml`（`id` + `config`），随后应用 home 补丁与启动覆盖；继续支持旧版 `settings.yaml`。默认模型行支持 `default-model`，凭据仍从 DSH home 的 `.credentials.yaml` 解析且只留在内存；重新扫描会显示实际读取的配置路径。
@@ -100,7 +102,7 @@ DSH **0.2.0-rc.2** 请使用 **dsh-think-translate 1.2.5 或更新版本**。1.2
       chain: [provider1, provider2, ...]   ← 设置里拖拽排序
         google / bing / openai 兼容 / anthropic 任选
       fallback 链（可选，默认关闭，配置里开启）
-  → 浏览器直连兜底
+  → 所有已启用提供方失败时保留原文
 ```
 
 - **提供方配置** 存在 `config.json`（运行期生成，已 gitignore）：`chain`（有序 id）、`fallback`（enabled + chain，仅配置文件）、`providers`（每项的 `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`）。旧的 `priority` 配置会自动迁移；声明 `apiKeyEnv` 的提供方在请求时从该环境变量解析密钥（字面 `apiKey` 作为兜底），解析出的密钥绝不写回 `config.json`；patch 里显式的 `null` 表示删除该字段，UI 就是用它清空字段的

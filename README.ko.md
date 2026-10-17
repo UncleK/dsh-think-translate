@@ -75,6 +75,8 @@ DSH **0.2.0-rc.2**에서는 **dsh-think-translate 1.2.5 이상**을 사용하세
 
 **1.2.8 전송 및 복구:** 일반 HTTP/HTTPS 번역은 텍스트 배치마다 curl을 실행하는 대신 Node 기본 네트워크 기능을 사용합니다. SOCKS 프록시와 Ollama 설치 프로그램은 curl 호환 경로를 유지합니다. 실패 결과를 메모리에 30초간 보관한 뒤 사고·답변 번역을 자동 재시도합니다. 타임아웃은 로컬 모델 로드와 다른 제공자로의 전환 시간을 고려합니다.
 
+**1.2.12:** 제공자 설정을 준수하며 Host 실패 후 브라우저에서 Google로 직접 요청하지 않습니다. 코드 블록, 들여쓰기 코드, 인라인 코드는 번역 서비스에 보내지 않고 원문 그대로 복원합니다. 스트리밍 중 닫히지 않은 코드도 보호하며, 이전 번역 캐시만 삭제하고 설정은 유지합니다. 업데이트 후 DSH Web 또는 Desktop을 완전히 다시 시작하세요. 페이지 새로고침만으로는 이전 클라이언트 리소스가 남을 수 있습니다.
+
 **1.2.11 Bing 수정:** 무료 Bing 제공자를 유지합니다. 세션 페이지의 최종 출처로 번역 요청을 보내 중국 본토의 `www.bing.com` → `cn.bing.com` 리디렉션에서 POST 본문이 사라지는 문제를 방지합니다. SOCKS/curl도 네이티브 통신과 같은 브라우저 헤더를 사용해 HTTP 401을 수정하며, 빈 응답과 JSON이 아닌 응답에 명확한 오류를 표시합니다.
 
 **1.2.10 DSH 프로필 호환:** 실행 중인 Desktop/Web 프로필의 `profiles/<profile>/cordis.patch.yml`(`id` + `config`)을 읽고 DSH 홈 패치와 시작 오버레이를 순서대로 적용합니다. 이전 `settings.yaml`도 지원합니다. 기본 모델 행은 `default-model`을 지원하며 자격 증명은 DSH 홈의 `.credentials.yaml`에서 읽어 메모리에만 유지합니다. 다시 검사하면 실제 설정 경로가 표시됩니다.
@@ -100,7 +102,7 @@ DSH **0.2.0-rc.2**에서는 **dsh-think-translate 1.2.5 이상**을 사용하세
       chain: [provider1, provider2, ...]   ← 설정에서 드래그로 정렬
         google / bing / OpenAI 호환 / Anthropic 중 선택
       fallback 체인(선택, 기본 비활성, 설정에서 활성화)
-  → 브라우저 직접 연결 폴백
+  → 활성 제공자가 모두 실패하면 원문 유지
 ```
 
 - **제공자 설정**은 `config.json`(런타임 생성, gitignore 대상)에 있습니다: `chain`(순서 있는 id), `fallback`(enabled + chain, 설정 파일 전용), `providers`(각 항목의 `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). 예전 `priority` 형식은 자동 마이그레이션됩니다. `apiKeyEnv`를 선언한 제공자는 요청 시 해당 환경 변수에서 키를 해석하며(리터럴 `apiKey`는 폴백), 해석된 키를 `config.json`에 다시 쓰지 않습니다. 패치의 `null`은 해당 필드 삭제를 뜻하며 UI가 그렇게 비웁니다

@@ -75,6 +75,8 @@ Für DSH **0.2.0-rc.2** verwenden Sie **dsh-think-translate 1.2.5 oder neuer**. 
 
 **1.2.8 Übertragung und Wiederaufnahme:** Normale HTTP/HTTPS-Übersetzungen nutzen die nativen Netzwerkfunktionen von Node statt eines curl-Prozesses pro Textpaket. SOCKS-Proxys und der Ollama-Installer verwenden weiterhin curl. Fehler bleiben 30 Sekunden im Arbeitsspeicher; danach werden Denk- und Antwortübersetzungen automatisch erneut versucht. Die Zeitlimits berücksichtigen das Laden lokaler Modelle und alternative Anbieter.
 
+**1.2.12:** Die Anbieterschalter gelten verbindlich; nach einem Host-Fehler fragt der Browser Google nicht mehr direkt ab. Eingezäunter, eingerückter und Inline-Code wird nicht an Übersetzungsdienste gesendet und exakt wiederhergestellt, auch bei unvollständigem Streaming. Alte Übersetzungs-Caches werden entfernt, Einstellungen bleiben erhalten. Nach dem Update DSH Web oder Desktop vollständig neu starten; bloßes Neuladen kann weiterhin alte Client-Ressourcen verwenden.
+
 **1.2.11 Bing-Korrekturen:** Der kostenlose Bing-Anbieter bleibt erhalten. Übersetzungsanfragen gehen an den endgültigen Origin der Sitzungsseite, damit die Weiterleitung `www.bing.com` → `cn.bing.com` in Festlandchina den POST-Body nicht verwirft. SOCKS/curl verwendet dieselben Browser-Header wie der native Transport und behebt damit HTTP 401; leere Antworten und Antworten ohne JSON melden klare Fehler.
 
 **1.2.10 DSH-Profilkompatibilität:** Die Erkennung folgt dem laufenden Desktop/Web-Profil und liest `profiles/<profile>/cordis.patch.yml` (`id` + `config`), danach die Home-Patches und Start-Overlays. Das ältere `settings.yaml` bleibt unterstützt. Die Standardmodell-Zeile heißt `default-model`; Zugangsdaten bleiben in `.credentials.yaml` im DSH-Home und nur im Arbeitsspeicher. Die Diagnose zeigt die tatsächlich gelesene Datei.
@@ -100,7 +102,7 @@ Browser → POST /_xlate/translate (gleiche Origin, kein CORS)
       chain: [provider1, provider2, ...]   ← Reihenfolge per Drag in den Einstellungen
         google / bing / OpenAI-kompatibel / Anthropic
       Fallback-Kette (optional, standardmäßig aus, in der Config aktivierbar)
-  → direkter Browser-Fallback
+  → Originaltext, wenn alle aktivierten Anbieter fehlschlagen
 ```
 
 - Die **Anbieter-Konfiguration** liegt in `config.json` (zur Laufzeit erzeugt, gitignoriert): `chain` (geordnete IDs), `fallback` (enabled + chain, nur Datei), `providers` (je Anbieter `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). Alte `priority`-Konfigurationen werden automatisch migriert; ein Anbieter mit `apiKeyEnv` löst seinen Schlüssel pro Anfrage aus dieser Umgebungsvariable auf (der literale `apiKey` bleibt als Rückfall) und kein aufgelöster Schlüssel wird je in `config.json` zurückgeschrieben; ein `null` in einem Patch löscht das Feld — so leert die Oberfläche eines

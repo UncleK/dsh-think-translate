@@ -4,6 +4,7 @@ import http from 'node:http'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { ADAPTERS, needsTranslate } from '../lib/index.js'
+import { protectedTextParts, translateProtectedText } from '../lib/text.js'
 
 const hostSource = readFileSync(new URL('../lib/index.js', import.meta.url), 'utf8')
 const clientSource = readFileSync(new URL('../lib/client.js', import.meta.url), 'utf8')
@@ -12,8 +13,8 @@ function between(source, from, to) {
   assert.ok(start >= 0 && end > start, 'missing source section: ' + from)
   return source.slice(start, end)
 }
-const client = vm.createContext({})
-vm.runInContext(between(clientSource, 'function isCjk(', 'function chunkText('), client)
+const client = vm.createContext({ protectedTextParts })
+vm.runInContext(between(clientSource, 'function isCjk(', 'function sleepMs('), client)
 
 const cases = [
   ['Simplified Chinese', '现在需要检查这个问题，确认构建结果。', 'zh-CN', false],
@@ -150,7 +151,7 @@ it('client returns already-Simplified prose before consulting an old translated 
 
 it('explicit provider tests still bypass language detection', async () => {
   const sandbox = vm.createContext({
-    Date, Map, needsTranslate, ollamaOrigin: () => null, providerFingerprint: () => 'test-signature',
+    Date, Map, needsTranslate, translateProtectedText, chunkText: value => [value], ollamaOrigin: () => null, providerFingerprint: () => 'test-signature',
     loadConfig: async () => ({ providers: { test: { enabled: true, type: 'test' } } }),
     ADAPTERS: { test: async () => 'provider reached' },
   })

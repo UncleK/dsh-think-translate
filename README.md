@@ -72,6 +72,8 @@ Version **1.2.6** fixes duplicated thinking and answer text in DSH 0.2: the assi
 
 **1.2.8 transport and recovery:** ordinary HTTP/HTTPS translation requests use native Node networking instead of spawning curl per text batch; SOCKS proxies and the Ollama installer retain curl compatibility. Failures stay in memory for 30 seconds, then reasoning and answer translation resume automatically. Request deadlines allow time for local-model loading and provider fallback.
 
+**1.2.12:** provider switches are authoritative: the browser no longer sends direct Google requests after Host failure. Fenced, indented and inline code is excluded from translation payloads and restored exactly, including unfinished streaming spans. Old translation caches are discarded; preferences are retained. After upgrading, fully restart DSH Web or Desktop; a page refresh alone may still reference old client resources.
+
 **1.2.11 Bing fixes:** the free Bing provider is retained. Translation requests use the session page's final origin, preventing the mainland China `www.bing.com` → `cn.bing.com` redirect from dropping the POST body. SOCKS/curl now shares the native browser headers to fix HTTP 401; empty and non-JSON responses report clear errors.
 
 **1.2.10 DSH profile compatibility:** discovery follows the running Desktop/Web profile and reads `profiles/<profile>/cordis.patch.yml` (`id` + `config`), with home patches and launcher overlays applied afterward. Legacy `settings.yaml` is still supported. Default model rows use `default-model`; credentials remain in the DSH home `.credentials.yaml` and stay in memory. Rescan diagnostics show the file actually read.
@@ -102,7 +104,7 @@ browser → POST /_xlate/translate (same-origin, no CORS)
           openai   (OpenAI-compatible /chat/completions — Ollama local or any gateway)
           anthropic(Anthropic Messages API /v1/messages)
       fallback chain (config-only, off by default) tried when the primary chain fails entirely
-  → browser-direct fallback
+  → original text if all enabled providers fail
 ```
 
 - **Provider config** lives in `config.json` (runtime, gitignored): `chain` (ordered ids), `fallback` (enabled + chain, config-only), `providers` (per-provider `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). Old `priority`-based configs auto-migrate. A provider that declares `apiKeyEnv` resolves its key from that environment variable at request time (the literal `apiKey` stays as the fallback), and no env-resolved key is ever written back to `config.json`. A `null` field in a config patch deletes that field, which is how the UI clears one.

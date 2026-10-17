@@ -10,6 +10,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
+import { translateProtectedText } from '../lib/text.js'
 
 const SRC = readFileSync(fileURLToPath(new URL('../lib/client.js', import.meta.url)), 'utf8')
 const FRAGMENT = Symbol('fragment')
@@ -365,6 +366,29 @@ describe('DSH 0.2 conversation component props', function () {
       })
     }
   }
+
+  it('renders long code-only batches inside translated reasoning without dropping code', async function () {
+    const payloads = []
+    const panel = await mountPanel(configWith({}, []), null, null, { mode: 'eager' }, null, async function (request) {
+      const translated = await translateProtectedText(request.text, async function (prose) { payloads.push(prose); return '译文\n' })
+      return { ok: true, text: translated, provider: 'test' }
+    })
+    const code = '```js\n' + 'const secret = "keep exactly";\n'.repeat(100) + '```\n'
+    const text = 'Please inspect the current build output. '.repeat(40) + '\n' + code + 'After the code.'
+    const node = { location: {}, data: { status: 'completed', blocks: [{ kind: 'reasoning', text }] } }
+    const original = JSON.stringify(node)
+    const props = { node, useTurnData: function () { return undefined }, t: function (key) { return key } }
+    let tree = await panel.renderView('conversation.chat.node', 'assistant-step', props)
+    click(flatten(tree).find(function (n) { return cls(n) === 'xl-think-row' }))
+    const component = panel.entries.find(function (entry) { return entry.spec.key === 'assistant-step' }).component
+    tree = await panel.runtime.mount(component, props)
+    const translation = flatten(tree).find(function (n) { return cls(n) === 'xl-trans' })
+    assert.ok(translation, 'translated reasoning must be visible')
+    assert.ok(textOf(translation).includes(code), 'a skipped code-only batch must survive the display pipeline')
+    assert.ok(payloads.length >= 2)
+    assert.ok(payloads.every(function (payload) { return !payload.includes('secret') && !payload.includes('```') }))
+    assert.equal(JSON.stringify(node), original)
+  })
 
   it('renders assistant text and reasoning without changing the original blocks', async function () {
     const panel = await mountPanel(configWith({}, []))
