@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import vm from 'node:vm'
+import { DEFAULT_HEADERS } from '../lib/transport.js'
 
 const host = readFileSync(new URL('../lib/index.js', import.meta.url), 'utf8')
 const client = readFileSync(new URL('../lib/client.js', import.meta.url), 'utf8')
@@ -36,18 +37,93 @@ it('keeps installer curl arguments usable until the actual download step', async
 it('preserves SOCKS compatibility without silently switching to direct transport', async () => {
   let calls = 0
   const sandbox = vm.createContext({
-    isLoopback: () => false, getProxy: async () => 'socks5://127.0.0.1:1080',
+    DEFAULT_HEADERS, isLoopback: () => false, getProxy: async () => 'socks5://127.0.0.1:1080',
     runProgram: async (program, args) => {
       calls++; assert.equal(program, 'curl')
       assert.ok(Array.from(args).includes('socks5://127.0.0.1:1080'))
       assert.ok(Array.from(args).includes('请求'))
+      assert.ok(Array.from(args).includes('User-Agent: ' + DEFAULT_HEADERS['User-Agent']))
+      assert.ok(Array.from(args).includes('Accept: ' + DEFAULT_HEADERS.Accept))
       return 'proxied'
     },
-    requestText: () => { throw new Error('unexpected direct request') },
+    requestTextInfo: () => { throw new Error('unexpected direct request') },
   })
   vm.runInContext(sourceBetween(host, 'async function curlArgs(', '// ---------------------------------------------------------------- providers'), sandbox)
   assert.equal(await sandbox.httpFetch('https://remote.test', { method: 'POST', body: '请求' }), 'proxied')
   assert.equal(calls, 1)
+})
+
+it('preserves the final SOCKS session URL and leaves the HTML body intact', async () => {
+  const marker = '\n__DSH_RESPONSE_INFO__\n'
+  const html = '<html>body may contain ' + marker + ' too</html>\n'
+  const sandbox = vm.createContext({
+    DEFAULT_HEADERS, isLoopback: () => false, getProxy: async () => 'socks5://127.0.0.1:1080',
+    runProgram: async (program, args) => {
+      assert.equal(program, 'curl')
+      const list = Array.from(args)
+      assert.ok(list.includes('socks5://127.0.0.1:1080'))
+      assert.ok(list.includes('-L'))
+      assert.ok(list.includes('User-Agent: ' + DEFAULT_HEADERS['User-Agent']))
+      assert.equal(list[list.indexOf('-w') + 1], marker + '%{url_effective}\n%{http_code}')
+      assert.equal(list.at(-1), 'https://www.bing.com/translator')
+      return html + marker + 'https://cn.bing.com/translator\n200'
+    },
+    requestTextInfo: () => { throw new Error('unexpected direct request') },
+  })
+  vm.runInContext(sourceBetween(host, 'async function curlArgs(', '// ---------------------------------------------------------------- providers'), sandbox)
+  const result = await sandbox.curlGetInfo('https://www.bing.com/translator')
+  assert.equal(result.text, html)
+  assert.equal(result.url, 'https://cn.bing.com/translator')
+  assert.equal(result.status, 200)
+})
+
+for (const output of ['page without metadata', 'page\n__DSH_RESPONSE_INFO__\n\n200']) {
+  it('rejects missing or invalid SOCKS metadata instead of guessing the original URL: ' + JSON.stringify(output), async () => {
+    const sandbox = vm.createContext({
+      DEFAULT_HEADERS, isLoopback: () => false, getProxy: async () => 'socks5://127.0.0.1:1080',
+      runProgram: async () => output,
+      requestTextInfo: () => { throw new Error('unexpected direct request') },
+    })
+    vm.runInContext(sourceBetween(host, 'async function curlArgs(', '// ---------------------------------------------------------------- providers'), sandbox)
+    await assert.rejects(sandbox.curlGetInfo('https://www.bing.com/translator'), /curl response metadata (?:missing|invalid)/)
+  })
+}
+
+it('keeps explicit SOCKS headers while applying native browser defaults', async () => {
+  const sandbox = vm.createContext({
+    DEFAULT_HEADERS, isLoopback: () => false, getProxy: async () => 'socks5://127.0.0.1:1080',
+    runProgram: async (program, args) => {
+      const headers = Array.from(args).filter((value, i, list) => list[i - 1] === '-H')
+      assert.ok(headers.includes('User-Agent: custom-agent'))
+      assert.ok(!headers.includes('User-Agent: ' + DEFAULT_HEADERS['User-Agent']))
+      assert.ok(headers.includes('Content-Type: application/x-www-form-urlencoded'))
+      assert.ok(headers.includes('Accept: ' + DEFAULT_HEADERS.Accept))
+      return 'translated'
+    },
+  })
+  vm.runInContext(sourceBetween(host, 'async function curlArgs(', '// ---------------------------------------------------------------- providers'), sandbox)
+  assert.equal(await sandbox.httpFetch('https://cn.bing.com/ttranslatev3', {
+    method: 'POST', headers: { 'User-Agent': 'custom-agent', 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'text=source',
+  }), 'translated')
+})
+
+it('keeps native text callers compatible while exposing the final URL to session callers', async () => {
+  let proxyGets = 0
+  const sandbox = vm.createContext({
+    isLoopback: url => url.startsWith('http://127.0.0.1'),
+    getProxy: async () => { proxyGets++; return 'http://127.0.0.1:10809' },
+    requestTextInfo: async (url, options) => {
+      assert.equal(options.proxy, url.startsWith('http://127.0.0.1') ? null : 'http://127.0.0.1:10809')
+      return { text: 'session HTML', url: 'https://cn.bing.com/translator', status: 200 }
+    },
+  })
+  vm.runInContext(sourceBetween(host, 'async function httpFetch(', '// ---------------------------------------------------------------- providers'), sandbox)
+  assert.equal(await sandbox.curlGet('http://127.0.0.1/test'), 'session HTML')
+  assert.equal(proxyGets, 0)
+  const result = await sandbox.curlGetInfo('https://www.bing.com/translator')
+  assert.equal(result.url, 'https://cn.bing.com/translator')
+  assert.equal(result.text, 'session HTML')
+  assert.equal(proxyGets, 1)
 })
 
 it('reuses a host failure during cooldown, then performs a real retry at expiry', async () => {

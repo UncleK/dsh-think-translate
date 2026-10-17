@@ -4,6 +4,45 @@
 
 ---
 
+## 2026-10-17 — 1.2.11：Bing 国内重定向修复（issue #12）
+
+保留 Bing 免费通道。会话页可能从 www.bing.com 跳转到 cn.bing.com；
+新增 requestTextInfo 返回最终 URL，原 requestText 继续返回字符串。
+Bing 缓存最终 origin 与页面 rich_tta 的 data-iid，翻译 POST 直接回到会话 origin，
+避免提交时的 302 将 POST 改为无正文 GET。IID 属性顺序及引号变化均可识别，缺少时回退 SERP。
+空响应、非 JSON 响应现在分别报告明确的 Bing 错误。
+
+SOCKS/curl 通过 write-out 读取最终 URL 和状态；缺少元信息时明确失败，不猜测原域名。
+真实 SOCKS 验证另发现默认 curl User-Agent 会收到 HTTP 401；
+统一原生与 curl 的默认浏览器请求头后，www/cn 两个域名均能实际翻译，并保留显式请求头覆盖。
+安装器的 curlArgs 入口保持原有行为。
+
+回归先在旧 Bing 逻辑上复现原错误（Unexpected end of JSON input），修复后通过。
+全套 296 项测试通过，较原 277 项新增 19 项，覆盖区域会话与缓存、真实本地 HTTP 302 链路、
+最终 URL、SOCKS 元信息及请求头、空响应/非 JSON 错误，并保留 301/302/303 与 307/308 的标准语义。
+node --check 与 git diff --check 通过。
+
+真实 Bing 验证使用本次工作区代码与合成文本：
+
+| 路径 | www.bing.com 会话 | cn.bing.com 会话 |
+| --- | --- | --- |
+| Node 原生直连 | 中、日译文成功 | 中、日译文成功 |
+| Node 原生 HTTP 代理 | 中、日译文成功 | 中、日译文成功 |
+| SOCKS 代理 / curl | 中、日译文成功 | 中、日译文成功 |
+
+直接调用导出的 ADAPTERS.bing，简体、繁体、英、日、韩、俄、德、法、西九种目标均返回译文。
+直接调用导出的 runChainFor，Bing 单提供方链的八段长文分块翻译成功，结果 provider=bing。
+英文样例 The build failed because the proxy returned an empty translation.
+实际译为“构建失败，因为代理返回了空的翻译。”及“プロキシが空の翻訳を返したため、ビルドは失敗しました。”。
+
+验证边界：本机 VPN 环境没有自然触发 www 到 cn 的国内地域跳转；该跳转由本地 HTTP 服务复现。
+表中的 cn 会话验证显式从真实 cn.bing.com 获取页面，再由未改写的适配器按最终 origin 提交，
+不是关闭 VPN 后的纯大陆网络验收。代理验证以测试上下文注入实际本机代理，未改动 DSH 设置或安装包；
+导出适配器和链路验证不等同于 Desktop/Web 界面验收。
+package.json、锁文件、客户端版本与八份 README 已同步至 1.2.11；npm 发布包交由维护者发布。
+
+---
+
 ## 2026-10-16 — 1.2.10：跟随当前 DSH profile 发现提供方（issue #11）
 
 DSH 已将 settings.yaml 迁入 profile 的 cordis.patch.yml，旧正则既读错路径，也不认识 id/config 行。

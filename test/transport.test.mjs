@@ -4,7 +4,7 @@ import http from 'node:http'
 import https from 'node:https'
 import net from 'node:net'
 import { readFileSync } from 'node:fs'
-import { requestText, isLoopback } from '../lib/transport.js'
+import { requestText, requestTextInfo, isLoopback } from '../lib/transport.js'
 
 // Public test-only key/certificate. No production credentials are used.
 const key = readFileSync(new URL('./fixtures/proxy-test-key.pem', import.meta.url))
@@ -122,13 +122,13 @@ it('bounds a response body even while the server keeps sending bytes', async t =
   await assert.rejects(requestText('http://127.0.0.1:' + port, { timeoutMs: 60 }), /request timeout/)
 })
 
-it('preserves POST on a redirect and strips credentials across origins', async t => {
+for (const status of [307, 308]) it('preserves POST on a ' + status + ' redirect and strips credentials across origins', async t => {
   let requests = 0
   const port = await serve(t, http.createServer(async (req, res) => {
     requests++
     if (requests === 1) {
       assert.equal(req.headers.authorization, 'Bearer private')
-      res.writeHead(307, { Location: 'http://other.test/completions' }); res.end()
+      res.writeHead(status, { Location: 'http://other.test/completions' }); res.end()
     } else {
       assert.equal(req.method, 'POST')
       assert.equal(req.headers.authorization, undefined)
@@ -141,6 +141,44 @@ it('preserves POST on a redirect and strips credentials across origins', async t
     proxy: 'http://127.0.0.1:' + port,
   }), 'preserved')
   assert.equal(requests, 2)
+})
+
+it('reports the final session URL after cross-origin and relative GET redirects', async t => {
+  const port = await serve(t, http.createServer((req, res) => {
+    if (req.url === 'http://remote.test/translator') {
+      res.writeHead(302, { Location: 'http://cn.remote.test/landing' }); res.end()
+    } else if (req.url === 'http://cn.remote.test/landing') {
+      res.writeHead(302, { Location: '/translator?region=CN' }); res.end()
+    } else {
+      assert.equal(req.url, 'http://cn.remote.test/translator?region=CN')
+      res.writeHead(201); res.end('regional session')
+    }
+  }))
+  const options = { proxy: 'http://127.0.0.1:' + port }
+  assert.deepEqual(await requestTextInfo('http://remote.test/translator', options), {
+    text: 'regional session', url: 'http://cn.remote.test/translator?region=CN', status: 201,
+  })
+  assert.equal(await requestText('http://remote.test/translator', options), 'regional session')
+})
+
+for (const status of [301, 302, 303]) it('keeps standard POST-to-GET behavior for a ' + status + ' redirect', async t => {
+  const port = await serve(t, http.createServer(async (req, res) => {
+    if (req.url === 'http://remote.test/translate') {
+      assert.equal(req.method, 'POST')
+      assert.equal(await bodyOf(req), 'original form')
+      res.writeHead(status, { Location: 'http://cn.remote.test/translate' }); res.end()
+    } else {
+      assert.equal(req.method, 'GET')
+      assert.equal(req.headers['content-type'], undefined)
+      assert.equal(req.headers['content-length'], undefined)
+      assert.equal(await bodyOf(req), '')
+      res.end('body was dropped')
+    }
+  }))
+  assert.deepEqual(await requestTextInfo('http://remote.test/translate', {
+    method: 'POST', body: 'original form', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    proxy: 'http://127.0.0.1:' + port,
+  }), { text: 'body was dropped', url: 'http://cn.remote.test/translate', status: 200 })
 })
 
 it('follows GET redirects and rejects non-success HTTP status', async t => {

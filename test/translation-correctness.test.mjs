@@ -80,8 +80,8 @@ for (const [target, expected] of Object.entries({ zh: 'zh-Hans', 'zh-CN': 'zh-Ha
   'zh_Hant_TW': 'zh-Hant', 'zh-Hans-HK': 'zh-Hans', ja: 'ja', en: 'en', ko: 'ko', es: 'es', fr: 'fr', de: 'de', ru: 'ru' })) {
   it('Bing sends auto-detect and its own target code: ' + target, async () => {
     const sandbox = vm.createContext({
-      bingCache: null, Date, URLSearchParams,
-      curlGet: async () => 'IG:"test-session"; params_AbusePreventionHelper = [123,"test-token"]',
+      bingCache: null, Date, URL, URLSearchParams,
+      curlGetInfo: async () => ({ text: 'IG:"test-session"; params_AbusePreventionHelper = [123,"test-token"]', url: 'https://www.bing.com/translator' }),
       curlPostForm: async (url, body) => {
         const form = new URLSearchParams(body)
         assert.equal(form.get('fromLang'), 'auto-detect')
@@ -97,7 +97,7 @@ for (const [target, expected] of Object.entries({ zh: 'zh-Hans', 'zh-CN': 'zh-Ha
 
 it('Bing reports an API error instead of hiding it as empty translation', async () => {
   const sandbox = vm.createContext({
-    bingCache: { ig: 'test', key: 'test', token: 'test', exp: Date.now() + 60000 }, Date,
+    bingCache: { ig: 'test', key: 'test', token: 'test', origin: 'https://www.bing.com', iid: 'SERP', exp: Date.now() + 60000 }, Date,
     curlPostForm: async () => '{"statusCode":400,"errorMessage":"invalid language"}',
   })
   vm.runInContext(between(hostSource, 'async function bingSession(', 'function resolveApiKey('), sandbox)

@@ -75,6 +75,8 @@ DSH **0.2.0-rc.2** 请使用 **dsh-think-translate 1.2.5 或更新版本**。1.2
 
 **1.2.8 传输与恢复：**普通 HTTP/HTTPS 翻译请求改用 Node 原生网络，不再为每个文本批次启动 curl；SOCKS 代理和 Ollama 安装器保留 curl 兼容路径。失败结果在内存缓存 30 秒，冷却结束后思考与回答翻译会自动恢复重试。请求超时为本地模型加载和提供方回退留出时间。
 
+**1.2.11 Bing 修复：**保留免费 Bing 通道。翻译请求跟随会话页最终域名，避免国内 `www.bing.com` → `cn.bing.com` 跳转丢失 POST 正文；SOCKS/curl 同步原生浏览器请求头，修复 HTTP 401。空响应和非 JSON 响应给出明确错误。
+
 **1.2.10 DSH 配置兼容：**发现提供方时跟随当前 Desktop/Web profile，读取 `profiles/<profile>/cordis.patch.yml`（`id` + `config`），随后应用 home 补丁与启动覆盖；继续支持旧版 `settings.yaml`。默认模型行支持 `default-model`，凭据仍从 DSH home 的 `.credentials.yaml` 解析且只留在内存；重新扫描会显示实际读取的配置路径。
 
 **1.2.9 语言修复：**日语词汇提示仅用于日语目标，OpenAI/Anthropic 请求带上完整语言名称。Bing 使用 `auto-detect`，并将中文目标映射为 `zh-Hans`/`zh-Hant`。中文检测先排除路径、代码和 JSON：已是简体的正文跳过，常用繁体区别字触发转换请求，日语/韩语正文正常翻译。升级时一次性清理旧译文缓存，保留设置。
