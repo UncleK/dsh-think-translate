@@ -29,6 +29,7 @@ DeepSeek-class models often reason in Chinese — or in whatever language they h
 - **🧠 Zero context cost** — pure display layer: the model still sees the original text, and translated text never consumes the context window
 - **☁️ Google / Bing fallback** — automatic switch when other providers are unavailable (google goes through a Node CONNECT tunnel using the system proxy, bypassing anti-bot blocks)
 - **🛡️ Code-safe** — file paths, commands, URLs, regexes and pure-code lines are never translated
+- **🚨 Auto-review reasons** — when Auto review denies a tool call, the approval card appends the reviewer's reason in your target language, so the decision prompt is readable before choosing Reject / Allow once
 - **🧩 Paragraph & sentence-aware chunking** — long thinking chains are split on blank lines (paragraph structure preserved) and further batched by sentence, so even a small local model keeps quality
 - **⏱️ Resilient** — failed translations are cached in memory for 30 seconds to prevent retry storms, then retried automatically; each provider has its own Test button
 - **🎚️ Adjustable translation timing** — pre-translate everything, lazy-load historical chains (default), or translate only the expanded chain
@@ -71,6 +72,8 @@ Version **1.2.6** fixes duplicated thinking and answer text in DSH 0.2: the assi
 **1.2.7 local setup:** enabled Ollama in first priority, or its Test button, finds an existing installation and starts/loads it automatically. Missing software/models require the labelled setup action, with staged download/install/load progress. Automatic software installation supports Windows; other systems link to the official guide. “In use” follows the first enabled, verified provider in priority order; testing a lower row does not override a verified higher row.
 
 **1.2.8 transport and recovery:** ordinary HTTP/HTTPS translation requests use native Node networking instead of spawning curl per text batch; SOCKS proxies and the Ollama installer retain curl compatibility. Failures stay in memory for 30 seconds, then reasoning and answer translation resume automatically. Request deadlines allow time for local-model loading and provider fallback.
+
+**1.2.13:** Auto review rejection cards retain the original reason and asynchronously append its translation. An independent, default-on switch controls this feature. Disabling it, changing the target language or removing the card discards stale results; non-English reasons translate correctly to English. Thanks to [llg1634](https://github.com/llg1634) for the report, initial patch and tests in [#13](https://github.com/UncleK/dsh-think-translate/issues/13). Fully restart DSH Web or Desktop after upgrading.
 
 **1.2.12:** provider switches are authoritative: the browser no longer sends direct Google requests after Host failure. Fenced, indented and inline code is excluded from translation payloads and restored exactly, including unfinished streaming spans. Old translation caches are discarded; preferences are retained. After upgrading, fully restart DSH Web or Desktop; a page refresh alone may still reference old client resources.
 

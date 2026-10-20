@@ -20,6 +20,7 @@
 
 Modelle der DeepSeek-Familie denken oft auf Chinesisch — oder in der Sprache, in der sie gerade denken. dsh-think-translate zeigt die Think-Zeile, Aufgabenkarten und die Antwort live in *Ihrer* Sprache an, wie Untertitel für das Denken des Modells.
 
+- **Ablehnungsgründe der automatischen Prüfung** — ergänzt die Genehmigungskarte asynchron um eine Übersetzung, behält das Original und bietet einen eigenen Schalter.
 - **🕵️ Jede Gedankenkette lesbar** — Reasoning, Gedankenkette, Aufgabenkarten und Antworten in Echtzeit übersetzt, in Stapeln gestreamt
 - **8 Zielsprachen** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
 - **Einsprachige Oberfläche** — Einstellungsbereich, Denkzeilen und Aufgabenkarten folgen der Zielsprache (kein zh/en-Gemisch); die Auswahl bleibt erhalten
@@ -74,6 +75,8 @@ Für DSH **0.2.0-rc.2** verwenden Sie **dsh-think-translate 1.2.5 oder neuer**. 
 **1.2.7 lokale Vorbereitung:** Aktiviertes Ollama an erster Stelle oder dessen Test findet vorhandene Installationen und startet/lädt das Modell. Fehlende Software und Modelle werden erst über die Vorbereitungsschaltfläche installiert/heruntergeladen, mit Fortschritt je Phase. Automatische Softwareinstallation unter Windows, sonst offizielle Anleitung. Der aktuelle Anbieter folgt der Priorität aktivierter, geprüfter Anbieter.
 
 **1.2.8 Übertragung und Wiederaufnahme:** Normale HTTP/HTTPS-Übersetzungen nutzen die nativen Netzwerkfunktionen von Node statt eines curl-Prozesses pro Textpaket. SOCKS-Proxys und der Ollama-Installer verwenden weiterhin curl. Fehler bleiben 30 Sekunden im Arbeitsspeicher; danach werden Denk- und Antwortübersetzungen automatisch erneut versucht. Die Zeitlimits berücksichtigen das Laden lokaler Modelle und alternative Anbieter.
+
+**1.2.13:** Auto-review-Ablehnungskarten behalten den Originaltext und ergänzen asynchron eine Übersetzung; ein eigener Schalter ist standardmäßig aktiviert. Nach Deaktivierung, Sprachwechsel oder Entfernen der Karte werden alte Ergebnisse verworfen. Nicht englische Gründe werden ebenfalls ins Englische übersetzt. Vielen Dank an [llg1634](https://github.com/llg1634) für den Bericht, den ursprünglichen Patch und die Tests in [#13](https://github.com/UncleK/dsh-think-translate/issues/13). DSH Web oder Desktop nach dem Update vollständig neu starten.
 
 **1.2.12:** Die Anbieterschalter gelten verbindlich; nach einem Host-Fehler fragt der Browser Google nicht mehr direkt ab. Eingezäunter, eingerückter und Inline-Code wird nicht an Übersetzungsdienste gesendet und exakt wiederhergestellt, auch bei unvollständigem Streaming. Alte Übersetzungs-Caches werden entfernt, Einstellungen bleiben erhalten. Nach dem Update DSH Web oder Desktop vollständig neu starten; bloßes Neuladen kann weiterhin alte Client-Ressourcen verwenden.
 

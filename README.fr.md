@@ -20,6 +20,7 @@ Traduction au niveau de l'affichage pour l'interface web de [DeepSeek Harness](h
 
 Les modèles de la famille DeepSeek raisonnent souvent en chinois — ou dans la langue qu'ils utilisent pour penser. dsh-think-translate affiche la ligne Think, les cartes de tâches et la réponse dans *votre* langue en direct, comme des sous-titres pour la réflexion du modèle.
 
+- **Motifs de refus Auto review** — conserve le texte original et ajoute sa traduction de façon asynchrone dans la carte d’approbation, avec un réglage indépendant.
 - **🕵️ Lisez n'importe quelle chaîne de raisonnement** — raisonnement, chaîne de pensée, cartes de tâches et réponses traduits en temps réel, par lots
 - **8 langues cibles** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
 - **Interface monolingue** — panneau de réglages, lignes de réflexion et cartes de tâches suivent la langue cible (pas de mélange zh/en) ; le choix persiste
@@ -74,6 +75,8 @@ Pour DSH **0.2.0-rc.2**, utilisez **dsh-think-translate 1.2.5 ou une version ult
 **1.2.7 préparation locale :** Ollama activé en première position, ou son test, détecte une installation existante, démarre le service et charge le modèle. Le bouton de préparation autorise les installations et téléchargements manquants, avec progression par étapes. Installation automatique du logiciel sur Windows ; guide officiel ailleurs. Le fournisseur utilisé respecte la priorité des fournisseurs activés et vérifiés.
 
 **1.2.8 transport et reprise :** les traductions HTTP/HTTPS ordinaires utilisent le réseau natif de Node au lieu de lancer curl pour chaque lot de texte. Les proxys SOCKS et l’installateur Ollama conservent curl. Les échecs restent en mémoire pendant 30 secondes, puis les traductions du raisonnement et des réponses sont réessayées automatiquement. Les délais tiennent compte du chargement des modèles locaux et du recours à d’autres fournisseurs.
+
+**1.2.13 :** les cartes de refus Auto review conservent l’original et ajoutent une traduction asynchrone, avec un réglage indépendant activé par défaut. Les anciens résultats sont ignorés après désactivation, changement de langue ou retrait de la carte. Les motifs non anglais sont également traduits en anglais. Merci à [llg1634](https://github.com/llg1634) pour le signalement, le correctif initial et les tests dans [#13](https://github.com/UncleK/dsh-think-translate/issues/13). Redémarrez complètement DSH Web ou Desktop après la mise à jour.
 
 **1.2.12 :** les choix de fournisseurs sont respectés ; le navigateur ne contacte plus Google directement après un échec du Host. Le code délimité, indenté ou en ligne est exclu des requêtes et conservé exactement, y compris pendant un flux incomplet. Les anciennes traductions en cache sont supprimées, les préférences conservées. Après la mise à jour, redémarrez entièrement DSH Web ou Desktop ; une simple actualisation peut encore référencer les anciennes ressources du client.
 
