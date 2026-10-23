@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import vm from 'node:vm'
 import { DEFAULT_HEADERS } from '../lib/transport.js'
+import { translationLanguageError } from '../lib/index.js'
 
 const host = readFileSync(new URL('../lib/index.js', import.meta.url), 'utf8')
 const client = readFileSync(new URL('../lib/client.js', import.meta.url), 'utf8')
@@ -130,7 +131,7 @@ it('reuses a host failure during cooldown, then performs a real retry at expiry'
   let now = 100000, calls = 0
   const sandbox = vm.createContext({
     Date: { now: () => now }, Map,
-    loadConfig: async () => ({}), needsTranslate: () => true,
+    loadConfig: async () => ({}), needsTranslate: () => true, translationLanguageError,
     translateViaChain: async () => { calls++; return calls === 1 ? { ok: false, text: 'original', error: 'offline' } : { ok: true, text: 'translated' } },
   })
   vm.runInContext(sourceBetween(host, 'const cache = new Map()', 'function isCjk('), sandbox)
@@ -148,7 +149,7 @@ it('reuses a host failure during cooldown, then performs a real retry at expiry'
 function pipeline() {
   let now = 100000, recovered = false, hostCalls = 0, directCalls = 0, writes = 0
   const sandbox = vm.createContext({
-    Date: { now: () => now }, Map, Promise,
+    Date: { now: () => now }, Map, Promise, translationLanguageError,
     localStorage: { getItem: () => null, setItem: () => { writes++ } },
     fnv: value => value, needsTranslate: () => true, chunkText: value => [value], recordCheck: () => {},
     hostAttempt: async () => {
@@ -231,6 +232,7 @@ it('retries mounted answer text with a cached failure and cancels retry on unmou
 it('allows a slow host chain to complete instead of imposing an 8-second browser limit', async () => {
   let timeout
   const sandbox = vm.createContext({
+    translationLanguageError,
     fetchWithTimeout: async (url, opts, ms) => {
       timeout = ms
       return { ok: true, json: async () => ({ ok: true, text: 'translated' }) }

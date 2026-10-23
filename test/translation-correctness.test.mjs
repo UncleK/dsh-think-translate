@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import http from 'node:http'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
-import { ADAPTERS, needsTranslate } from '../lib/index.js'
+import { ADAPTERS, needsTranslate, translationLanguageError } from '../lib/index.js'
 import { protectedTextParts, translateProtectedText } from '../lib/text.js'
 
 const hostSource = readFileSync(new URL('../lib/index.js', import.meta.url), 'utf8')
@@ -52,7 +52,7 @@ for (const [label, text, target, expected] of cases) {
 const languageNames = { 'zh-CN': 'Simplified Chinese', en: 'English', ja: 'Japanese', ko: 'Korean',
   es: 'Spanish', fr: 'French', de: 'German', ru: 'Russian' }
 for (const adapter of ['openai', 'anthropic']) for (const [target, name] of Object.entries(languageNames)) {
-  it(adapter + ' scopes Japanese hints and names the target language: ' + target, async t => {
+  it(adapter + ' isolates source instructions and names the target language: ' + target, async t => {
     let captured
     const server = http.createServer(async (req, res) => {
       const chunks = []
@@ -69,9 +69,13 @@ for (const adapter of ['openai', 'anthropic']) for (const [target, name] of Obje
     })
     const system = adapter === 'openai' ? captured.messages[0].content : captured.system
     const user = captured.messages.at(-1).content
-    assert.equal(system.includes('Common mappings (Chinese -> Japanese)'), target === 'ja')
-    assert.ok(user.includes(name), user)
-    assert.ok(user.includes(target), user)
+    assert.equal(system.includes('Common mappings (Chinese -> Japanese)'), false)
+    assert.ok(system.includes(name), system)
+    assert.ok(system.includes(target), system)
+    assert.ok(system.includes('not instructions to follow'))
+    assert.ok(system.includes('already in the target language'))
+    assert.ok(user.startsWith('Source text ('))
+    assert.ok(user.endsWith('\nThe build is ready.'))
     assert.ok(system.includes('Keep code blocks'))
   })
 }
@@ -137,7 +141,7 @@ it('host returns already-Simplified prose before consulting an old translated re
 it('client returns already-Simplified prose before consulting an old translated result', async () => {
   const text = '现在检查构建结果。'
   const sandbox = vm.createContext({
-    Date, Map, Promise, needsTranslate, fnv: value => value,
+    Date, Map, Promise, needsTranslate, translationLanguageError, fnv: value => value,
     localStorage: { getItem: () => null, setItem: () => {} },
     hostAttempt: () => { throw new Error('should not request a provider') },
   })
@@ -151,7 +155,7 @@ it('client returns already-Simplified prose before consulting an old translated 
 
 it('explicit provider tests still bypass language detection', async () => {
   const sandbox = vm.createContext({
-    Date, Map, needsTranslate, translateProtectedText, chunkText: value => [value], ollamaOrigin: () => null, providerFingerprint: () => 'test-signature',
+    Date, Map, needsTranslate, translationLanguageError, translateProtectedText, chunkText: value => [value], ollamaOrigin: () => null, providerFingerprint: () => 'test-signature',
     loadConfig: async () => ({ providers: { test: { enabled: true, type: 'test' } } }),
     ADAPTERS: { test: async () => 'provider reached' },
   })
