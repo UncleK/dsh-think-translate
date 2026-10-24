@@ -1,0 +1,103 @@
+name: Forward Issue and PR to local Codex
+
+on:
+  issues:
+    types: [opened, reopened, edited]
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      object_number:
+        description: Issue or PR number
+        required: true
+        type: string
+      object_kind:
+        description: Object type
+        required: true
+        type: choice
+        options: [issue, pull_request]
+      probe:
+        description: Read-only routing/test probe; do not change or release product code
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  forward:
+    if: >-
+      vars.CODEX_DISPATCH_APP_ID != '' &&
+      (github.event_name != 'issue_comment' ||
+       (startsWith(github.event.comment.body, '/codex ') &&
+        github.event.comment.user.type != 'Bot' &&
+        (github.event.comment.author_association == 'OWNER' ||
+         github.event.comment.author_association == 'MEMBER' ||
+         github.event.comment.author_association == 'COLLABORATOR' ||
+         github.event.comment.user.login == github.event.issue.user.login)))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Trusted default-branch workflow only. Never checkout or execute PR code here.
+      - name: Mint short-lived token for the private dispatcher only
+        id: dispatch-auth
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ vars.CODEX_DISPATCH_APP_ID }}
+          private-key: ${{ secrets.CODEX_DISPATCH_APP_PRIVATE_KEY }}
+          owner: UncleK
+          repositories: codex-dispatch
+      - name: Forward normalized event
+        env:
+          DISPATCH_TOKEN: ${{ steps.dispatch-auth.outputs.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, time, urllib.request, urllib.error
+          with open(os.environ['GITHUB_EVENT_PATH']) as source:
+              event = json.load(source)
+          name = os.environ['GITHUB_EVENT_NAME']
+          extra = ''
+          head = ''
+          if name == 'workflow_dispatch':
+              inputs = event['inputs']
+              number = int(inputs['object_number'])
+              kind = inputs['object_kind']
+              probe = str(inputs.get('probe', '')).lower() == 'true'
+              delivery = 'manual:' + os.environ['GITHUB_RUN_ID']
+          elif name == 'pull_request_target':
+              obj = event['pull_request']
+              number, kind, head = obj['number'], 'pull_request', obj['head']['sha']
+              probe = obj['title'].startswith('[dispatch-check]') and obj['user']['login'] == 'UncleK'
+              delivery = f"pr:{obj['id']}:{event['action']}:{head}"
+          else:
+              obj = event['issue']
+              number = obj['number']
+              kind = 'pull_request' if 'pull_request' in obj else 'issue'
+              probe = obj['title'].startswith('[dispatch-check]') and obj['user']['login'] == 'UncleK'
+              if name == 'issue_comment':
+                  extra = event['comment']['body'][7:]
+                  delivery = f"comment:{event['comment']['id']}"
+              else:
+                  delivery = f"issue:{obj['id']}:{event['action']}:{obj['updated_at']}"
+          envelope = dict(schema_version=1, target_repository=event['repository']['full_name'],
+              repository_id=event['repository']['id'], issue_number=number, object_kind=kind,
+              source_event=name, source_action=event.get('action', ''),
+              source_run_id=os.environ['GITHUB_RUN_ID'], head_sha=head, probe=probe,
+              delivery_key=delivery, extra=extra)
+          data = json.dumps({'ref':'main', 'inputs':{'dispatch_payload':json.dumps(envelope)}}).encode()
+          request = urllib.request.Request('https://api.github.com/repos/UncleK/codex-dispatch/actions/workflows/local-codex.yml/dispatches',
+              data=data, method='POST', headers={'Authorization':'Bearer '+os.environ['DISPATCH_TOKEN'],
+              'Accept':'application/vnd.github+json','Content-Type':'application/json','User-Agent':'codex-dispatch-forwarder'})
+          for attempt in range(4):
+              try:
+                  with urllib.request.urlopen(request, timeout=45) as response:
+                      print(f"Forwarded {envelope['target_repository']} {kind} #{number}: HTTP {response.status}")
+                  break
+              except urllib.error.HTTPError as error:
+                  if error.code not in (429,500,502,503,504) or attempt == 3:
+                      raise
+                  time.sleep(2 ** attempt * 2)
+          PY
