@@ -24,7 +24,8 @@ Los modelos de la familia DeepSeek suelen razonar en chino — o en el idioma en
 - **🕵️ Lee cualquier cadena de pensamiento** — razonamiento, cadena de pensamiento, tarjetas de tareas y respuestas traducidos en tiempo real, por lotes
 - **8 idiomas de destino** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
 - **Interfaz en un solo idioma** — panel de ajustes, filas de pensamiento y tarjetas de tareas siguen el idioma de destino (sin mezclar zh/en); la elección persiste
-- **Ollama local** — reutiliza la instalación y los modelos existentes. Si Ollama está habilitado en primera posición o pulsas Probar, inicia el servicio y carga el modelo cuando sea necesario. El software o los modelos que falten solo se instalan/descargan mediante el botón de preparación, con progreso en tiempo real
+- **Ollama local** — reutiliza la instalación y los modelos al traducir o probar. Reordenar o volver a abrir los ajustes no carga el modelo. Los componentes que falten requieren el botón de preparación.
+- **1.2.15: memoria y compatibilidad** — libera el modelo seleccionado manualmente o al desactivar el proveedor, después de terminar las traducciones activas. La siguiente traducción lo recarga. La liberación por inactividad usa 5 minutos por defecto, con 1/5/10/30/60 minutos o desactivada; los cambios se aplican desde el próximo uso sin modificar ajustes globales. Adapta las imágenes, el plegado de Turn y la selección del original en DSH 0.2.2-alpha.2. No actives simultáneamente la traducción oficial del razonamiento.
 - **🧠 Coste de contexto cero** — capa de visualización pura: el modelo sigue viendo el texto original y el texto traducido nunca consume la ventana de contexto
 - **Respaldo Google / Bing** — cambio automático si el modelo local no está disponible (google usa un túnel CONNECT de Node con el proxy del sistema)
 - **Artefactos de código omitidos** — rutas, comandos, URL, regex y líneas de código puro nunca se traducen

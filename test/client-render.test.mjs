@@ -185,7 +185,7 @@ function configWith(providers, chain) {
   }
 }
 
-async function mountPanel(config, scanConfig, officialTodoFirst = null, preferences = {}, localResponse = null, testResponse = null) {
+async function mountPanel(config, scanConfig, officialTodoFirst = null, preferences = {}, localResponse = null, testResponse = null, primitives = null) {
   // The host already merges the harness's providers into GET /_xlate/config, so the
   // panel paints them without being asked; the scan route answers with the same shape
   // (a second argument models "the harness config changed since we loaded").
@@ -217,6 +217,8 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
         body = { ok: true, name: 'dsh-think-translate', version: '1.2.0', repo: 'https://github.com/UncleK/dsh-think-translate' }
       } else if (url === '/_xlate/translate') {
         body = testResponse ? testResponse(JSON.parse(init.body)) : { ok: true, text: '已翻译的任务', provider: 'test' }
+      } else if (url === '/_xlate/local/release') {
+        body = { ok: true, job: { id: 'release-1', model: served.providers.openai.model, origin: 'http://localhost:11434', phase: 'unloaded', running: false } }
       } else if (url === '/_xlate/local/prepare' || url.startsWith('/_xlate/local/status')) {
         body = { ok: true, job: localResponse || { id: '1', origin: 'http://localhost:11434', model: 'test-model', phase: 'ready', running: false, percent: 100, completed: 0, total: 0, platform: 'win32', canInstall: true } }
       }
@@ -230,6 +232,7 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
 
   const plugin = captured.spec.factory(function (name) {
     if (name === 'react') return { default: runtime.React }
+    if (name === '@deepseek-ai/dsh-client-ui-primitives' && primitives) return primitives
     throw new Error('the test only provides react, not ' + name)
   })
 
@@ -299,6 +302,55 @@ describe('todo_write slot composition (issue #4)', function () {
 })
 
 describe('DSH 0.2 conversation component props', function () {
+  it('renders the official image Factory with its session image loader and keeps the answer', async function () {
+    const panel = await mountPanel(configWith({}, []))
+    const galleries = []
+    const loadImage = () => 'authorized-image'
+    const tree = await panel.renderView('conversation.chat.node', 'assistant-step', {
+      node: { location: {}, data: { status: 'settled', blocks: [
+        { kind: 'text', text: 'Answer before images.' },
+        { kind: 'image', attachment: 'a' }, { kind: 'image', attachment: 'b' },
+      ] } }, useTurnData: () => undefined, loadImage,
+      renderFactorySlot: (name, props) => { galleries.push({ name, props }); return panel.runtime.React.createElement('span', null, 'gallery') },
+    })
+    assert.match(textOf(tree), /Answer before images/)
+    assert.match(textOf(tree), /gallery/)
+    assert.equal(galleries.length, 1)
+    assert.equal(galleries[0].name, 'conversation.images.content')
+    assert.deepEqual(Array.from(galleries[0].props.images, image => image.attachment), ['a', 'b'])
+    assert.equal(galleries[0].props.loadImage, loadImage)
+    assert.equal(panel.specs.find(spec => spec.key === 'assistant-step').children, undefined)
+  })
+
+  it('joins the Turn fold and exposes the reveal action without hiding reply text', async function () {
+    const panel = await mountPanel(configWith({}, []))
+    let folded, reveal, opened
+    const tree = await panel.renderView('conversation.chat.node', 'assistant-step', {
+      node: { location: {}, data: { status: 'settled', blocks: [
+        { kind: 'reasoning', text: '检查原文。' }, { kind: 'text', text: 'Visible reply.' },
+      ] } }, useTurnData: () => undefined,
+      turnProcess: { foldable: true, open: false, setOpen: value => { opened = value } },
+      useGroupAction: (hidden, action) => { folded = hidden; reveal = action; return { current: null } },
+    })
+    assert.equal(folded, true)
+    assert.match(textOf(tree), /Visible reply/)
+    assert.equal(flatten(tree).filter(node => node.props && node.props['data-turn-process-inline'] === true).length, 1)
+    reveal()
+    assert.equal(opened, true)
+  })
+
+  it('passes file links and durable original text selection to official Markdown', async function () {
+    const seen = []
+    const panel = await mountPanel(configWith({}, []), null, null, {}, null, null, { MarkdownText: props => { seen.push(props); return props.text } })
+    const mentions = { resolve: () => undefined }
+    const finalNode = { seq: 12, messageId: 'message-1' }
+    await panel.renderView('conversation.chat.node', 'assistant-step', {
+      node: { location: { kind: 'step', turn: { status: 'closed' } }, data: { status: 'settled', finalNode, blocks: [{ kind: 'text', text: 'Original answer.' }] } },
+      useTurnData: () => ({ closing: { finalNode } }), fileMentions: () => mentions,
+    })
+    assert.equal(seen[0].fileMentions, mentions)
+    assert.equal(seen[0].textInteractionSource, true)
+  })
   it('keeps the stopped marker when an interrupted step has only reasoning', async function () {
     const panel = await mountPanel(configWith({}, []), undefined, null, { mode: 'expanded' })
     const tree = await panel.renderView('conversation.chat.node', 'assistant-step', {
@@ -496,20 +548,40 @@ describe('settings panel renders (real bundle, mini React)', function () {
   })
 
   const ollama = { type: 'openai', enabled: true, baseURL: 'http://localhost:11434/v1', model: 'test-model' }
-  it('prepares Ollama automatically when it is the first enabled provider', async function () {
+  it('releases the selected local model without changing its enabled state or order', async function () {
+    const panel = await mountPanel(configWith({ openai: ollama }, ['openai']))
+    click(button(panel.tree, '释放模型内存'))
+    await panel.runtime.mount(panel.registered)
+    const release = panel.calls.find(c => c.url === '/_xlate/local/release')
+    assert.deepEqual(JSON.parse(release.init.body), { model: ollama.model, baseURL: ollama.baseURL })
+    assert.equal(panel.calls.some(c => c.url === '/_xlate/config' && c.init), false)
+    assert.equal(panel.calls.some(c => c.url === '/_xlate/local/prepare'), false)
+  })
+
+  it('persists idle time and can turn automatic release off', async function () {
+    const panel = await mountPanel(configWith({ openai: ollama }, ['openai']))
+    const input = flatten(panel.tree).find(node => node.props && node.props['aria-label'] === '空闲后自动释放')
+    input.props.onChange({ target: { value: '0' } })
+    await panel.runtime.mount(panel.registered)
+    const save = panel.calls.find(c => c.url === '/_xlate/config' && c.init)
+    assert.deepEqual(JSON.parse(save.init.body), { localModel: { idleMinutes: 0 } })
+    assert.equal(panel.calls.some(c => c.url === '/_xlate/local/prepare'), false)
+  })
+  it('reads memory status without loading the first local provider, including after reopening settings', async function () {
     const panel = await mountPanel(configWith({ openai: ollama }, ['openai']))
     const preparation = panel.calls.filter(c => c.url === '/_xlate/local/prepare')
-    assert.equal(preparation.length, 1)
-    assert.deepEqual(JSON.parse(preparation[0].init.body), { allowInstall: false, allowDownload: false })
-    assert.match(textOf(panel.tree), /本地模型已就绪/)
+    assert.equal(preparation.length, 0)
+    await panel.remount()
+    assert.equal(panel.calls.filter(c => c.url === '/_xlate/local/prepare').length, 0)
+    assert.ok(panel.calls.some(c => c.url === '/_xlate/local/status'))
   })
-  it('prepares Ollama when its row is moved above the other provider', async function () {
+  it('defers loading until use when its row is moved above the other provider', async function () {
     const panel = await mountPanel(configWith({ google: { type: 'google', enabled: true }, openai: ollama }, ['google', 'openai']))
     assert.equal(panel.calls.some(c => c.url === '/_xlate/local/prepare'), false)
     const up = flatten(panel.tree).filter(n => n.type === 'button' && textOf(n) === '↑')[1]
     click(up)
     await panel.runtime.mount(panel.registered)
-    assert.ok(panel.calls.some(c => c.url === '/_xlate/local/prepare'))
+    assert.equal(panel.calls.some(c => c.url === '/_xlate/local/prepare'), false)
   })
   it('prepares before an explicit local test even when the provider checkbox is off', async function () {
     const panel = await mountPanel(configWith({ openai: { ...ollama, enabled: false } }, ['openai']))

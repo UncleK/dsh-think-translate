@@ -1,0 +1,25 @@
+{
+  "checkedOn": "2026-10-29",
+  "timezone": "Asia/Shanghai",
+  "definition": "First public, installable npm version, excluding staging versions",
+  "ours": {
+    "name": "dsh-think-translate",
+    "version": "1.0.0",
+    "publishedAt": "2026-08-25T15:51:07.117Z",
+    "localDate": "2026-08-25",
+    "source": "https://registry.npmjs.org/dsh-think-translate"
+  },
+  "official": {
+    "name": "@deepseek-ai/dsh-experimental-cot-translation-bundle",
+    "version": "0.2.1-alpha.2",
+    "publishedAt": "2026-10-09T08:09:26.898Z",
+    "localDate": "2026-10-09",
+    "source": "https://registry.npmjs.org/@deepseek-ai%2Fdsh-experimental-cot-translation-bundle",
+    "releaseSource": "https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-alpha.2",
+    "releasePublishedAt": "2026-10-09T11:09:26Z",
+    "firstSourceCommit": "cfc6be809c3c6520fc6e9e29a216a7fff3761029",
+    "firstSourceCommitDate": "2026-10-06"
+  },
+  "calendarDaysEarlier": 45,
+  "featureVersions": { "ours": "1.2.15", "officialDsh": "0.2.2-alpha.2" }
+}

@@ -18,6 +18,10 @@ Translate the **reasoning / thinking chain (chain-of-thought), task cards and an
 
 ## ✨ Why dsh-think-translate
 
+![Comparison: dsh-think-translate first available 2026-08-25; official reasoning translation first available 2026-10-09](https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.en.png)
+
+First available means the first public non-staging npm version, using Asia/Shanghai dates. See the [comparison and dated sources](docs/official-translation-comparison.md).
+
 DeepSeek-class models often reason in Chinese — or in whatever language they happen to think in. dsh-think-translate renders the **Think row, task cards and answer** in *your* language while you watch, like subtitles for the model's thinking.
 
 - **🕵️ Read any thinking chain** — reasoning, chain-of-thought, task cards and answers translated in real time, streamed batch by batch
@@ -25,7 +29,10 @@ DeepSeek-class models often reason in Chinese — or in whatever language they h
 - **🔗 Dynamic provider chain** — order providers by drag-and-drop and enable/disable each one. Built-ins (google gtx, bing, local Ollama) plus any number of custom providers; the chain already ends with the free providers, so a second fallback pass is a config-file option, not a UI one
 - **🔌 Custom providers (OpenAI & Anthropic)** — add arbitrary OpenAI-compatible endpoints (any `/v1/chat/completions` gateway) or native **Anthropic Messages API** endpoints (Claude) from the settings panel: name, type, base URL, API key, model
 - **🪄 DSH provider discovery** — providers already configured in DSH's `profiles/<profile>/cordis.patch.yml` / legacy `settings.yaml` (`llm-pi-ai.providers`, e.g. linuxdo-hub, coding-hub) are auto-discovered and appear in the chain as read-only "DSH" entries, and **one button in settings rescans and adds them all at once**; keys are resolved from `.credentials.yaml` at runtime and never written to the plugin's config. The harness's own default route counts too: when `default-model` / `agent-default-model` points at `deepseek-official`, DeepSeek's API is offered as one more DSH entry
-- **🔒 Local Ollama** — reuse an existing installation and model. When enabled Ollama is first in priority, or you click Test, the plugin starts the service and loads the model as needed. Missing software/models require the setup button before installation/download, with live progress
+- **🔒 Local Ollama** — reuse an existing installation and model. Actual translations and Test load it on demand; ranking, reopening settings and restarting DSH do not preload it. Missing software/models require the setup button before installation/download, with live progress
+- **Model memory** — release the selected model without deleting its download or changing priority. Disabling the local provider also releases it. Active translations finish first; after re-enabling, the next translation reloads it. Automatic idle release defaults to 5 minutes, with 1/5/10/30/60 minutes or disabled. Changes apply from the next use through per-model Ollama requests, without modifying global settings.
+
+**1.2.15:** supports DSH `0.2.2-alpha.2`'s official image Factory, Turn reasoning folds and original-text selection. Demand loading replaces the 1.2.7 ranking preload. Use either this plugin or the official Reasoning translation bundle, since this plugin owns the Assistant renderer. See the [comparison](docs/official-translation-comparison.md).
 - **🧠 Zero context cost** — pure display layer: the model still sees the original text, and translated text never consumes the context window
 - **☁️ Google / Bing fallback** — automatic switch when other providers are unavailable (google goes through a Node CONNECT tunnel using the system proxy, bypassing anti-bot blocks)
 - **🛡️ Code-safe** — file paths, commands, URLs, regexes and pure-code lines are never translated
