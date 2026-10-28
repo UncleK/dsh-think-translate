@@ -1,128 +1,217 @@
-<div align="center">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.ko.png?v=1.2.16" alt="dsh-think-translate — AI의 생각을 당신의 언어로" width="100%" />
+</p>
 
-# 🐋 dsh-think-translate
+<p align="center">
+  <b>DeepSeek Harness를 위한 표시 계층 번역.</b><br />
+  사고를 읽고, 작업을 따라가고, 답변을 이해하세요. 원문은 보존되며 번역문은 모델 컨텍스트에 들어가지 않습니다.
+</p>
 
-**언어:** [English](README.md) · [中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Русский](README.ru.md)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.ko.svg?v=1.2.16" alt="MIT License" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.ko.svg?v=1.2.16" alt="로컬 Ollama" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.ko.svg?v=1.2.16" alt="원문 보존" />
+</p>
 
-[![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
-[![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
-[![dsh](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
+<p align="center">
+  <a href="README.zh-CN.md">中文</a> · <a href="README.md">English</a> · <a href="README.ja.md">日本語</a> · <b>한국어</b> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.de.md">Deutsch</a> · <a href="README.ru.md">Русский</a> · <a href="README.pt.md">Português</a>
+</p>
 
-<img src="demo/demo.gif?v=2" width="46%" alt="dsh-think-translate demo" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="demo/demo2.gif?v=2" width="41%" alt="dsh-think-translate demo 2" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
-
-</div>
+<p align="center">
+  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.ko.svg?v=1.2.16" alt="빠른 설치" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.ko.svg?v=1.2.16" alt="실제 데모" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.ko.svg?v=1.2.16" alt="핵심 기능" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.ko.svg?v=1.2.16" alt="공식 비교" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.ko.svg?v=1.2.16" alt="자주 묻는 질문" height="24" /></a>
+</p>
 
 ---
 
-[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI용 **표시 계층 번역** 플러그인: **사고 체인(Think 행), 작업 카드, 답변 본문**을 선택한 대상 언어로 표시합니다. 원문은 대화 기록에 완전히 보존되며, 번역문은 **모델 컨텍스트에 전혀 들어가지 않습니다**.
+<a id="demo"></a>
+## 생각이 펼쳐지는 순간
 
-## ✨ 기능
+<table>
+<tr>
+<td width="50%" align="center" valign="bottom">
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.16" alt="데모 1 · 사고 과정과 답변 번역" width="100%" />
+</td>
+<td width="50%" align="center" valign="bottom">
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.16" alt="데모 2 · 더 많은 실제 조작" width="100%" />
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><sub>데모 1 · 사고 과정과 답변 번역</sub></td>
+<td align="center" valign="top"><sub>데모 2 · 더 많은 실제 조작</sub></td>
+</tr>
+</table>
 
-DeepSeek 계열 모델은 중국어로, 또는 우연히 생각에 쓰는 언어로 추론하는 경우가 많습니다. dsh-think-translate는 모델의 사고에 자막을 다는 것처럼 Think 행·작업 카드·답변을 *여러분의* 언어로 실시간 표시합니다.
+<a id="comparison"></a>
+## 공식 번역 플러그인과 비교
 
-- **자동 검토 거부 사유** — 승인 카드의 원문을 유지하고 번역을 비동기로 추가합니다. 별도 설정으로 끌 수 있습니다.
-- **🕵️ 어떤 사고 체인도 읽기** — 추론, 사고 체인, 작업 카드, 답변을 실시간으로 번역해 배치 단위로 스트리밍
-- **8개 대상 언어** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
-- **단일 언어 UI** — 설정 패널, 사고 행, 작업 카드가 모두 대상 언어를 따름(중·영 혼용 없음), 선택 영구 저장
-- **로컬 Ollama** — 실제 번역이나 테스트 시 기존 서비스와 모델을 시작하고 로드합니다. 순서 변경이나 설정 재열기만으로는 로드하지 않습니다. 없는 소프트웨어와 모델은 준비 버튼으로 설치합니다.
-- **1.2.15: 메모리 및 호환성** — 수동 해제나 제공자 비활성화 시 진행 중인 번역이 끝난 후 선택 모델을 해제하고 다음 번역에서 다시 로드합니다. 유휴 해제는 기본 5분이며 1/5/10/30/60분 또는 끄기를 선택할 수 있습니다. 변경은 다음 사용부터 적용되며 전역 설정은 바꾸지 않습니다. DSH 0.2.2-alpha.2의 이미지, Turn 접기, 원문 선택을 지원합니다. 공식 사고 번역과 동시에 활성화하지 마세요.
-- **🧠 컨텍스트 비용 0** — 순수 표시 계층: 모델은 여전히 원문을 보고, 번역문은 컨텍스트 창을 전혀 소비하지 않음
-- **Google / Bing 폴백** — 로컬 모델 사용 불가 시 자동 전환(google은 Node CONNECT 터널로 시스템 프록시 경유, 안티봇 우회)
-- **코드류 자동 스킵** — 파일 경로, 명령어, URL, 정규식, 순수 코드 줄은 번역하지 않음
-- **문장 배치 번역** — 긴 사고 체인을 짧은 문장 배치로 순차 번역하여 로컬 소형 모델도 품질 유지
-- **🧩 문단·문장 인식 분할** — 긴 사고 체인을 빈 줄로 분할(문단 구조 유지)하고 다시 문장 단위로 배치 처리해 로컬 소형 모델도 품질 유지
-- **스트리밍 출력** — 사고 중 번역이 배치 단위로 표시, Think 행을 펼쳐 원문과 비교
-- **🎚️ 번역 시점 조절** — 모두 사전 번역 / 이전 체인 지연 로딩（기본）/ 펼친 체인만 번역
-- **🔗 동적 제공자 체인** — 목록 순서가 곧 실행 순서. 끌어서 정렬하고 행마다 켜고 끄기. 내장 google gtx / bing / 로컬 Ollama에 더해 임의의 사용자 지정 엔드포인트
-- **🔌 사용자 지정 제공자(OpenAI / Anthropic)** — 설정 패널에서 OpenAI 호환 엔드포인트(`/v1/chat/completions`)나 **Anthropic Messages API**(Claude)를 추가: 유형, 프리셋, 베이스 URL, API 키, 모델
-- **🪄 DSH 설정의 제공자 상속** — `profiles/<profile>/cordis.patch.yml` / 이전 `settings.yaml`(`llm-pi-ai.providers`)에서 읽기 전용 DSH 행을 자동 발견하고, 버튼 한 번으로 다시 검사해 모두 체인에 추가. 키는 요청 시 `.credentials.yaml`에서 해석되며 플러그인 설정에 저장되지 않음. harness 자체의 기본 경로도 포함됩니다: `default-model` / `agent-default-model`이 `deepseek-official`을 가리키면 DeepSeek 공식 API도 DSH 행으로 제공됩니다
-- **⏱️ 실패 후 복구** — 실패 결과를 메모리에 30초간 캐시해 반복 요청을 줄이고 이후 자동으로 재시도합니다. 제공자마다 테스트 버튼이 있습니다
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.ko.png?v=1.2.16" alt="공식 번역 플러그인과 비교" width="100%" />
+</p>
 
-## 📦 설치
+이 플러그인과 공식 사고 번역 중 하나만 활성화하세요. 둘 다 사고 화면을 담당합니다.
+
+<a id="quick-start"></a>
+## 명령 하나로 시작
 
 ```bash
-# 방법 1: npm (권장)
 dsh plugin --profile web add dsh-think-translate
-# 그 후 web 재시작
+```
 
-# 방법 2: GitHub
+설치 후 DSH Web을 완전히 다시 시작하세요. **설정 → 사고 체인 번역**에서 대상 언어와 제공자를 선택합니다.
+
+<details>
+<summary><b>GitHub 설치, 업데이트 및 기타 방법</b></summary>
+
+GitHub에서 설치:
+
+```bash
 dsh plugin --profile web add github:UncleK/dsh-think-translate
-
-# 방법 3: 수동 (junction + patch)
-#  1. 패키지를 profile의 node_modules에 링크
-New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-translate" `
-  -Target "<저장소 경로>"
-#  2. "$HOME\.dsh\profiles\web\cordis.patch.yml"에 추가:
-# - insert:
-#     - id: dsh-think-translate
-#       name: dsh-think-translate
-#  3. web 재시작
 ```
 
-## 🧯 DSH 업그레이드 후
+npm 버전 업데이트:
 
-서드파티 클라이언트 플러그인은 DSH의 클라이언트 모듈 그래프를 통해 로드되며, 이 그래프는 **프로세스 시작 시 한 번만** 구성됩니다. 실패한 구성은 재시작 전까지 메모리에 남습니다. 그래서 업그레이드 직후에는 보통 다음 세 가지가 발생합니다.
-
-- **소스에서 시작하면 실패**: `client bundles not found; run \`pnpm run build\` before launch` —— 새 클라이언트 패키지가 아직 빌드되지 않은 상태입니다. harness 체크아웃에서 `pnpm run build`를 실행한 뒤 `dsh web`을 다시 시작하세요.
-- **플러그인 UI가 사라짐** (Think 행에 번역이 없고, 설정에 "사고 체인 번역"이 없음) —— **`dsh web`을 한 번 재시작**하세요. 페이지를 새로고침하는 것만으로는 부족할 때가 있습니다.
-- **로컬 모델 목록이 비어 있음** —— `ollama` 서비스가 해당 모델 디렉터리를 보고 있지 않습니다: `ollama list`(또는 `GET /api/tags`)와 실행 중인 서비스가 실제로 사용하는 `OLLAMA_MODELS`를 확인하세요. 모델 파일이 다른 드라이브에 있다면 디렉터리 정션으로 기본 디렉터리를 그쪽으로 연결할 수 있습니다.
-
-플러그인 쪽에서 설정할 것은 없습니다. DSH 내부 패키지의 로드 순서에 의존하지 않고(`slots` 서비스만 사용하며 `@deepseek-ai/dsh-client-ui-primitives`는 선택 사항), 구버전(≤ 0.1.1-rc)과 현재 라인(≥ 0.1.2-alpha.1, 0.1.5-rc.1 포함) 모두에서 동작합니다.
-
-DSH **0.2.0-rc.2**에서는 **dsh-think-translate 1.2.5 이상**을 사용하세요. 1.2.5는 `todo_write` slot 등록 충돌을 수정하고 0.2 peer 버전 범위를 선언합니다. `dsh plugin --profile web add dsh-think-translate@latest`를 실행한 뒤 DSH를 다시 시작하세요. 버전 예외 설정은 필요 없습니다.
-
-**1.2.6**은 DSH 0.2에서 사고와 답변이 중복 표시되는 문제를 수정합니다. 어시스턴트 렌더링과 오류 시 원문 표시 모두 reasoning/response 그룹을 따릅니다.
-
-**1.2.7 로컬 준비:** 활성 Ollama를 첫 순위로 두거나 테스트하면 기존 설치를 찾아 시작하고 모델을 로드합니다. 누락된 소프트웨어와 모델은 준비 버튼을 눌러 설치/다운로드하며 단계별 진행 상황을 표시합니다. 자동 설치는 Windows에서 지원하며 다른 OS는 공식 안내를 제공합니다. 현재 사용 표시는 우선순위가 가장 높은 검증된 제공자를 유지합니다.
-
-**1.2.8 전송 및 복구:** 일반 HTTP/HTTPS 번역은 텍스트 배치마다 curl을 실행하는 대신 Node 기본 네트워크 기능을 사용합니다. SOCKS 프록시와 Ollama 설치 프로그램은 curl 호환 경로를 유지합니다. 실패 결과를 메모리에 30초간 보관한 뒤 사고·답변 번역을 자동 재시도합니다. 타임아웃은 로컬 모델 로드와 다른 제공자로의 전환 시간을 고려합니다.
-
-**1.2.14:** 대상 언어와 원문 경계를 명확히 하고, 명백히 잘못된 언어의 번역은 거부한 뒤 다음 활성 제공자를 시도합니다. 잘못된 번역은 성공 캐시에 저장하지 않으며 설정을 유지하고 이전 번역 캐시를 삭제합니다. 코드, 인용 용어와 언어를 확정하기 어려운 짧은 문장은 보존합니다. 업데이트 후 DSH Web 또는 Desktop을 완전히 다시 시작하세요. [#14](https://github.com/UncleK/dsh-think-translate/issues/14).
-
-**1.2.13:** 자동 검토 거부 카드에 원문을 유지하고 번역을 비동기로 추가합니다. 별도 스위치는 기본으로 켜집니다. 스위치를 끄거나 대상 언어를 바꾸거나 카드를 제거하면 이전 결과를 표시하지 않습니다. 영어가 아닌 사유도 영어로 번역합니다. [#13](https://github.com/UncleK/dsh-think-translate/issues/13)의 제보, 초기 패치와 테스트를 제공한 [llg1634](https://github.com/llg1634) 님께 감사드립니다. 업데이트 후 DSH Web 또는 Desktop을 완전히 다시 시작하세요.
-
-**1.2.12:** 제공자 설정을 준수하며 Host 실패 후 브라우저에서 Google로 직접 요청하지 않습니다. 코드 블록, 들여쓰기 코드, 인라인 코드는 번역 서비스에 보내지 않고 원문 그대로 복원합니다. 스트리밍 중 닫히지 않은 코드도 보호하며, 이전 번역 캐시만 삭제하고 설정은 유지합니다. 업데이트 후 DSH Web 또는 Desktop을 완전히 다시 시작하세요. 페이지 새로고침만으로는 이전 클라이언트 리소스가 남을 수 있습니다.
-
-**1.2.11 Bing 수정:** 무료 Bing 제공자를 유지합니다. 세션 페이지의 최종 출처로 번역 요청을 보내 중국 본토의 `www.bing.com` → `cn.bing.com` 리디렉션에서 POST 본문이 사라지는 문제를 방지합니다. SOCKS/curl도 네이티브 통신과 같은 브라우저 헤더를 사용해 HTTP 401을 수정하며, 빈 응답과 JSON이 아닌 응답에 명확한 오류를 표시합니다.
-
-**1.2.10 DSH 프로필 호환:** 실행 중인 Desktop/Web 프로필의 `profiles/<profile>/cordis.patch.yml`(`id` + `config`)을 읽고 DSH 홈 패치와 시작 오버레이를 순서대로 적용합니다. 이전 `settings.yaml`도 지원합니다. 기본 모델 행은 `default-model`을 지원하며 자격 증명은 DSH 홈의 `.credentials.yaml`에서 읽어 메모리에만 유지합니다. 다시 검사하면 실제 설정 경로가 표시됩니다.
-
-**1.2.9 언어 수정:** 일본어 어휘 힌트는 일본어 대상에만 적용하며 OpenAI/Anthropic에 전체 언어 이름을 전달합니다. Bing은 `auto-detect`와 `zh-Hans`/`zh-Hant`를 사용합니다. 중국어 감지 시 경로·코드·JSON을 제외하고, 이미 간체인 본문은 건너뛰며 자주 쓰는 번체 글자를 감지하면 변환을 요청합니다. 일본어·한국어 본문은 번역합니다. 이전 번역 캐시만 한 번 삭제하고 설정은 유지합니다.
-
-## 🚀 사용법
-
-1. **설정 → 사고 체인 번역** 열기
-2. **대상 언어** 선택(예: 한국어) — 설정 패널, 사고 행, 작업 카드가 모두 전환
-3. **제공자 체인** 관리(드래그로 순서 변경, 체크로 사용):
-   - 내장: **google gtx / bing**(무료, 시스템 프록시 경유)과 **로컬 Ollama**. 기존 소프트웨어와 모델은 재사용하고, 없는 항목은 준비 버튼을 누른 뒤 설치·다운로드하며 진행률을 표시합니다(7b/14b 또는 사용자 지정 모델)
-   - **DSH 제공자**: `profiles/<profile>/cordis.patch.yml` / 이전 `settings.yaml`에 설정된 엔드포인트가 자동 표시(읽기 전용, 체크하면 체인에 추가). 목록 아래의 **DSH 설정에서 가져오기**는 다시 검사해 한 번에 모두 추가합니다(baseURL과 키를 다시 입력할 필요가 없고, 키는 DSH 자체 자격 증명에서 해석됩니다)
-   - 키는 직접 입력하거나 프리셋·DSH 행이 가진 **`apiKeyEnv`** 로 지정할 수 있습니다. 그런 행에는 `env:NAME` 배지가 붙고 키는 요청 시 해석되며 `config.json`에 저장되지 않습니다. 편집 폼에는 환경 변수 입력란이 없지만(값은 그대로 유지) 필드를 비우면 실제로 삭제됩니다(명시적 삭제로 전송)
-   - 체크를 해제하면 해당 제공자는 건너뜁니다. 자세한 내용은 [README.md](README.md)
-4. 메시지를 보내고 Think 행을 펼쳐 번역 확인
-
-## ⚙️ 작동 원리
-
-```
-브라우저 → POST /_xlate/translate(동일 출처, CORS 없음)
-  → host 제공자 체인(fail-open, 순서 변경 가능):
-      chain: [provider1, provider2, ...]   ← 설정에서 드래그로 정렬
-        google / bing / OpenAI 호환 / Anthropic 중 선택
-      fallback 체인(선택, 기본 비활성, 설정에서 활성화)
-  → 활성 제공자가 모두 실패하면 원문 유지
+```bash
+dsh plugin --profile web add dsh-think-translate@latest
 ```
 
-- **제공자 설정**은 `config.json`(런타임 생성, gitignore 대상)에 있습니다: `chain`(순서 있는 id), `fallback`(enabled + chain, 설정 파일 전용), `providers`(각 항목의 `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). 예전 `priority` 형식은 자동 마이그레이션됩니다. `apiKeyEnv`를 선언한 제공자는 요청 시 해당 환경 변수에서 키를 해석하며(리터럴 `apiKey`는 폴백), 해석된 키를 `config.json`에 다시 쓰지 않습니다. 패치의 `null`은 해당 필드 삭제를 뜻하며 UI가 그렇게 비웁니다
-- **DSH 자동 발견**은 로드 시 harness의 `profiles/<profile>/cordis.patch.yml` / 이전 `settings.yaml`(`llm-pi-ai.providers`)과 `.credentials.yaml`(`refs`)을 읽습니다. 발견된 제공자는 `source: "dsh"`로 표시되고 해석된 키는 메모리에만 남으며(`config.json`에 기록되지 않음), `/_xlate/dsh-scan`으로 필요할 때 다시 읽습니다
-- **host 측**(`lib/index.js`): 제공자 어댑터, LRU 캐시(600), `/_xlate/models` 모델 목록, `/_xlate/model/pull` + `pull-status` 모델 다운로드 관리(완료 시 자동 설정)
-- **client 측**(`lib/client.js`): 8개 언어 UI, 문장 배치 번역, 스트리밍 Think 행, localStorage 영구 저장
-- 순수 표시 계층: 원문은 대화 기록과 모델 컨텍스트에 완전 보존
+설치나 업데이트 후 DSH를 완전히 다시 시작하세요. 수동 배포는 패키지를 profile에 연결하고 `cordis.patch.yml`에 등록합니다. 일반적으로 위 명령을 권장합니다.
 
-## 🛠 개발
+</details>
 
-- 빌드 불필요: `lib/client.js`는 브라우저 번들(소스=결과물), `lib/index.js`는 host ESM
-- client 변경은 페이지 새로고침으로 반영, host 변경은 web 재시작 필요
-- 8개 언어 문구는 `lib/client.js`의 `UI_TEXT` 사전에 있음
+<a id="features"></a>
+## 이해해야 할 것은 사고 과정만이 아닙니다
 
-## 📄 License
+<table>
+<tr>
+<td width="50%" valign="top">
+<h3>사고를 실시간으로 읽기</h3>
+<p>전체 사전 번역, 이전 기록 지연 로딩, 펼칠 때만 번역</p>
+</td>
+<td width="50%" valign="top">
+<h3>작업과 답변 함께 보기</h3>
+<p>사고 과정, 작업 카드, 입력 영역 작업 목록. 답변 본문과 자동 검토 거부 사유는 선택 번역</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<h3>검토 사유 이해하기</h3>
+<p>자동 검토가 도구 호출을 거부하면 원문 옆에 사유 번역을 표시합니다. 기존 결정 버튼은 계속 사용할 수 있습니다.</p>
+</td>
+<td width="50%" valign="top">
+<h3>원문과 코드 보존</h3>
+<p>원문 보존. 번역문은 모델 컨텍스트에 들어가지 않음. Markdown 구성 요소 재사용. 번역 전에 코드, 경로, 명령 보호.</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<h3>필요할 때 로컬 모델 로드</h3>
+<p>수동 해제, 체크 해제 시 해제, 유휴 후 자동 해제. 다음 번역 시 다시 로드</p>
+</td>
+<td width="50%" valign="top">
+<h3>원하는 순서로 제공자 사용</h3>
+<p>활성화된 순서로 자동 대체. 명백히 잘못된 언어이면 다음 제공자 시도. 대기 후 재시도</p>
+</td>
+</tr>
+</table>
 
-MIT
+### 이미 사용하는 제공자 연결
+
+**Ollama · Google · Bing · OpenAI · Anthropic Messages API**
+
+DSH에 설정된 제공자를 검색하므로 엔드포인트와 키를 다시 입력할 필요가 없습니다. 각 행을 개별 테스트하고 목록 순서대로 시도합니다.
+
+```text
+첫 번째 제공자 → 다음 활성 제공자 → … → 모두 실패하면 원문 유지
+```
+
+<details>
+<summary><b>사용자 지정 엔드포인트, 인증 및 복구</b></summary>
+
+- OpenAI 호환 `/v1/chat/completions`와 기본 Anthropic Messages API를 지원합니다.
+- 현재 DSH profile 및 덮어쓰기 설정에서 제공자를 검색하고 번역 체인에 추가할 수 있습니다.
+- `apiKeyEnv`는 요청 시 해석하며 해석한 키를 플러그인 설정에 다시 쓰지 않습니다.
+- 실패는 Host 메모리에서 30초간 대기 후 다음 번역 요청에서 재시도합니다. 명백한 언어 오류는 다음 제공자로 넘어갑니다.
+- 이미 대상 언어로 인식되는 본문은 건너뜁니다. 제공자 테스트는 실제 요청을 보냅니다.
+
+</details>
+
+### 로컬 번역 모델: 필요할 때 로드하고 해제
+
+| 사용자 조작 | 플러그인 동작 |
+|---|---|
+| 번역 또는 테스트 | 필요할 때 서비스를 시작하고 선택한 모델 로드 |
+| 모델 메모리 해제 | 진행 중인 번역 후 해제. 파일, 스위치, 순서 유지 |
+| 로컬 제공자 체크 해제 | 비활성화하고 선택한 모델 해제 |
+| 다시 활성화하거나 설정 열기 | 미리 로드하지 않고 다음 실제 번역 시 로드 |
+| 유휴 해제 설정 | 기본 5분. 1 / 5 / 10 / 30 / 60분 또는 끄기 |
+
+시간은 다음 사용부터 적용됩니다. Ollama가 선택한 모델의 유휴 시간을 관리하며 전역 환경 변수는 바꾸지 않습니다. 소프트웨어나 모델이 없으면 준비 버튼을 눌러야 설치·다운로드하며 진행률을 표시합니다.
+
+<a id="languages"></a>
+### 언어 설정도 함께
+
+中文 · English · 日本語 · 한국어 · Español · Français · Deutsch · Русский · Português
+
+번역 대상, 설정 화면, 작업 문구를 포르투갈어 포함 9개 언어로 제공합니다. 새로고침 후에도 선택이 유지됩니다.
+
+<a id="faq"></a>
+## 자주 묻는 질문
+
+<details>
+<summary><b>설치·업데이트 후 번역 설정이 보이지 않음</b></summary>
+
+`dsh web`을 완전히 다시 시작하세요. 클라이언트 모듈 구성은 프로세스 시작 시 만들어져 새로고침만으로는 부족할 수 있습니다. 설정 하단에 설치된 패키지 버전이 표시됩니다.
+
+</details>
+
+<details>
+<summary><b>로컬 모델 목록이 비어 있음</b></summary>
+
+`ollama list` 또는 `/api/tags`, 실제 모델 경로 및 서비스의 `OLLAMA_MODELS`를 확인하세요. 기존 파일은 다시 다운로드하지 않아도 됩니다.
+
+</details>
+
+<details>
+<summary><b>DSH 업데이트 후 client bundles not found 오류</b></summary>
+
+DeepSeek Harness 저장소에서 `pnpm run build`를 실행한 뒤 DSH Web을 다시 시작하세요.
+
+</details>
+
+<details>
+<summary><b>번역 실패가 대화에 영향을 주나요?</b></summary>
+
+모든 활성 제공자가 실패해도 원문을 유지합니다. 설정에서 개별 제공자를 테스트하고 최근 오류를 확인하세요. 대기 시간이 지나면 다음 번역 요청이 재시도할 수 있습니다.
+
+</details>
+
+<details>
+<summary><b>최근 변경 및 호환성</b></summary>
+
+**1.2.16**: 포르투갈어 번역 대상과 UI 추가. 9개 언어 README와 비교 이미지 갱신, 마켓 이미지 3장 선언.
+
+**1.2.15**: 로컬 모델 메모리 관리 추가. DSH `0.2.2-alpha.2`의 이미지 표시, 사고 묶음 접기, 원문 선택에 대응.
+
+**1.2.13**: 자동 검토 거부 사유 번역 추가. 제보, 초기 패치, 테스트를 제공한 [llg1634](https://github.com/llg1634)에게 감사드립니다.
+
+이전 버전: [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases).
+
+</details>
+
+<details>
+<summary><b>개발 및 동작 원리</b></summary>
+
+- `lib/index.js`: Host 라우트, 제공자, 설정, 메모리 캐시와 로컬 모델 관리.
+- `lib/client.js`: 설정, 표시 계층 번역, 스트리밍 분할 및 브라우저 캐시.
+- `lib/config.json`: 실행 설정. Git 및 npm에서 제외합니다.
+- 추가 빌드 없이 소스가 결과물입니다. Host 수정 후 DSH를 다시 시작합니다.
+- 검사: `npm test`. 검색 및 인증 처리는 [유지보수 노트](https://github.com/UncleK/dsh-think-translate/blob/main/docs/maintenance-notes.md)를 참고하세요.
+
+</details>
+
+---
+
+<p align="center">
+  <b>dsh-think-translate</b><br />
+  <a href="https://github.com/UncleK/dsh-think-translate/issues">문제 제보</a> &nbsp;·&nbsp; <a href="https://github.com/UncleK/dsh-think-translate/releases">릴리스</a> &nbsp;·&nbsp; <a href="https://github.com/UncleK/dsh-think-translate/blob/main/LICENSE">MIT License</a>
+</p>

@@ -50,7 +50,7 @@ for (const [label, text, target, expected] of cases) {
 }
 
 const languageNames = { 'zh-CN': 'Simplified Chinese', en: 'English', ja: 'Japanese', ko: 'Korean',
-  es: 'Spanish', fr: 'French', de: 'German', ru: 'Russian' }
+  es: 'Spanish', fr: 'French', de: 'German', ru: 'Russian', pt: 'Portuguese' }
 for (const adapter of ['openai', 'anthropic']) for (const [target, name] of Object.entries(languageNames)) {
   it(adapter + ' isolates source instructions and names the target language: ' + target, async t => {
     let captured
@@ -82,7 +82,7 @@ for (const adapter of ['openai', 'anthropic']) for (const [target, name] of Obje
 
 for (const [target, expected] of Object.entries({ zh: 'zh-Hans', 'zh-CN': 'zh-Hans', 'ZH_cn': 'zh-Hans',
   'zh-Hans': 'zh-Hans', 'zh-TW': 'zh-Hant', 'zh-HK': 'zh-Hant', 'zh-MO': 'zh-Hant',
-  'zh_Hant_TW': 'zh-Hant', 'zh-Hans-HK': 'zh-Hans', ja: 'ja', en: 'en', ko: 'ko', es: 'es', fr: 'fr', de: 'de', ru: 'ru' })) {
+  'zh_Hant_TW': 'zh-Hant', 'zh-Hans-HK': 'zh-Hans', ja: 'ja', en: 'en', ko: 'ko', es: 'es', fr: 'fr', de: 'de', ru: 'ru', pt: 'pt' })) {
   it('Bing sends auto-detect and its own target code: ' + target, async () => {
     const sandbox = vm.createContext({
       bingCache: null, Date, URL, URLSearchParams,

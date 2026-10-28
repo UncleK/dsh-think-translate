@@ -1,136 +1,217 @@
-<div align="center">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.en.png?v=1.2.16" alt="dsh-think-translate — AI thinking, in your language" width="100%" />
+</p>
 
-# 🐋 dsh-think-translate
+<p align="center">
+  <b>Display-layer translation for DeepSeek Harness.</b><br />
+  Read the reasoning, follow the tasks, and understand the answers. Originals are preserved; translations stay out of model context.
+</p>
 
-**Languages:** [English](README.md) · [中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Русский](README.ru.md)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.en.svg?v=1.2.16" alt="MIT License" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.en.svg?v=1.2.16" alt="Local Ollama" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.en.svg?v=1.2.16" alt="Originals preserved" />
+</p>
 
-[![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
-[![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
-[![dsh](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
+<p align="center">
+  <a href="README.zh-CN.md">中文</a> · <b>English</b> · <a href="README.ja.md">日本語</a> · <a href="README.ko.md">한국어</a> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.de.md">Deutsch</a> · <a href="README.ru.md">Русский</a> · <a href="README.pt.md">Português</a>
+</p>
 
-<img src="demo/demo.gif?v=2" width="46%" alt="dsh-think-translate demo" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="demo/demo2.gif?v=2" width="41%" alt="dsh-think-translate demo 2" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
-
-</div>
+<p align="center">
+  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.en.svg?v=1.2.16" alt="Quick install" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.en.svg?v=1.2.16" alt="Live demos" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.en.svg?v=1.2.16" alt="Features" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.en.svg?v=1.2.16" alt="Official comparison" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.en.svg?v=1.2.16" alt="FAQ" height="24" /></a>
+</p>
 
 ---
 
-Translate the **reasoning / thinking chain (chain-of-thought), task cards and answers** of the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI into one of **8 target languages** — in real time, on the display layer only. The originals stay untouched in the transcript, and the translated text **never enters the model context**.
+<a id="demo"></a>
+## See thinking unfold
 
-## ✨ Why dsh-think-translate
+<table>
+<tr>
+<td width="50%" align="center" valign="bottom">
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.16" alt="Demo 1 · Reasoning and answers" width="100%" />
+</td>
+<td width="50%" align="center" valign="bottom">
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.16" alt="Demo 2 · More live operations" width="100%" />
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><sub>Demo 1 · Reasoning and answers</sub></td>
+<td align="center" valign="top"><sub>Demo 2 · More live operations</sub></td>
+</tr>
+</table>
 
-![Comparison: dsh-think-translate first available 2026-08-25; official reasoning translation first available 2026-10-09](https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.en.png)
+<a id="comparison"></a>
+## Comparison with the official translation plugin
 
-First available means the first public non-staging npm version, using Asia/Shanghai dates. See the [comparison and dated sources](docs/official-translation-comparison.md).
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.en.png?v=1.2.16" alt="Comparison with the official translation plugin" width="100%" />
+</p>
 
-DeepSeek-class models often reason in Chinese — or in whatever language they happen to think in. dsh-think-translate renders the **Think row, task cards and answer** in *your* language while you watch, like subtitles for the model's thinking.
+Enable either this plugin or the official reasoning translator. Both take over the reasoning interface.
 
-- **🕵️ Read any thinking chain** — reasoning, chain-of-thought, task cards and answers translated in real time, streamed batch by batch
-- **🌍 8 languages, one consistent UI** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский; the settings panel, thinking rows and task cards all follow your choice, and it persists across reloads
-- **🔗 Dynamic provider chain** — order providers by drag-and-drop and enable/disable each one. Built-ins (google gtx, bing, local Ollama) plus any number of custom providers; the chain already ends with the free providers, so a second fallback pass is a config-file option, not a UI one
-- **🔌 Custom providers (OpenAI & Anthropic)** — add arbitrary OpenAI-compatible endpoints (any `/v1/chat/completions` gateway) or native **Anthropic Messages API** endpoints (Claude) from the settings panel: name, type, base URL, API key, model
-- **🪄 DSH provider discovery** — providers already configured in DSH's `profiles/<profile>/cordis.patch.yml` / legacy `settings.yaml` (`llm-pi-ai.providers`, e.g. linuxdo-hub, coding-hub) are auto-discovered and appear in the chain as read-only "DSH" entries, and **one button in settings rescans and adds them all at once**; keys are resolved from `.credentials.yaml` at runtime and never written to the plugin's config. The harness's own default route counts too: when `default-model` / `agent-default-model` points at `deepseek-official`, DeepSeek's API is offered as one more DSH entry
-- **🔒 Local Ollama** — reuse an existing installation and model. Actual translations and Test load it on demand; ranking, reopening settings and restarting DSH do not preload it. Missing software/models require the setup button before installation/download, with live progress
-- **Model memory** — release the selected model without deleting its download or changing priority. Disabling the local provider also releases it. Active translations finish first; after re-enabling, the next translation reloads it. Automatic idle release defaults to 5 minutes, with 1/5/10/30/60 minutes or disabled. Changes apply from the next use through per-model Ollama requests, without modifying global settings.
-
-**1.2.15:** supports DSH `0.2.2-alpha.2`'s official image Factory, Turn reasoning folds and original-text selection. Demand loading replaces the 1.2.7 ranking preload. Use either this plugin or the official Reasoning translation bundle, since this plugin owns the Assistant renderer. See the [comparison](docs/official-translation-comparison.md).
-- **🧠 Zero context cost** — pure display layer: the model still sees the original text, and translated text never consumes the context window
-- **☁️ Google / Bing fallback** — automatic switch when other providers are unavailable (google goes through a Node CONNECT tunnel using the system proxy, bypassing anti-bot blocks)
-- **🛡️ Code-safe** — file paths, commands, URLs, regexes and pure-code lines are never translated
-- **🚨 Auto-review reasons** — when Auto review denies a tool call, the approval card appends the reviewer's reason in your target language, so the decision prompt is readable before choosing Reject / Allow once
-- **🧩 Paragraph & sentence-aware chunking** — long thinking chains are split on blank lines (paragraph structure preserved) and further batched by sentence, so even a small local model keeps quality
-- **⏱️ Resilient** — failed translations are cached in memory for 30 seconds to prevent retry storms, then retried automatically; each provider has its own Test button
-- **🎚️ Adjustable translation timing** — pre-translate everything, lazy-load historical chains (default), or translate only the expanded chain
-
-## 📦 Installation
+<a id="quick-start"></a>
+## One command to get started
 
 ```bash
-# Option 1: npm (recommended)
 dsh plugin --profile web add dsh-think-translate
-# then restart web
+```
 
-# Option 2: GitHub
+After installation, fully restart DSH Web. Open **Settings → Think Translation**, then choose the target language and providers.
+
+<details>
+<summary><b>GitHub installation, updates and other methods</b></summary>
+
+Install from GitHub:
+
+```bash
 dsh plugin --profile web add github:UncleK/dsh-think-translate
-
-# Option 3: manual (junction + patch)
-#  1. link the package into the profile's node_modules
-New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-translate" `
-  -Target "<repo path>"
-#  2. add to "$HOME\.dsh\profiles\web\cordis.patch.yml":
-# - insert:
-#     - id: dsh-think-translate
-#       name: dsh-think-translate
-#  3. restart web
 ```
 
-## 🧯 After a DSH upgrade
+Update from npm:
 
-Third-party client plugins load through DSH's client module graph, and that graph is composed **once per process** — a composition that failed is remembered in memory until the process restarts. So these three things commonly bite right after an upgrade:
-
-- **Starting from a source checkout fails with** `client bundles not found; run \`pnpm run build\` before launch` — the new client packages ship unbuilt: run `pnpm run build` in the harness checkout, then start `dsh web` again.
-- **The plugin's UI is gone** (no translated Think row, no *Think Translation* section in Settings) — **restart `dsh web`**; refreshing the page alone is sometimes not enough.
-- **The local model list is empty** — the `ollama` service is not serving that model directory: check `ollama list` (or `GET /api/tags`) and the `OLLAMA_MODELS` the running service actually uses. When the model files live on another drive, a directory junction can point the service's default directory at them.
-
-Nothing to configure on the plugin side: it declares no ordering dependency on DSH internals (it binds only to the `slots` service, plus an optional `@deepseek-ai/dsh-client-ui-primitives`), so it runs on both older DSH (≤ 0.1.1-rc) and the current line (≥ 0.1.2-alpha.1, 0.1.5-rc.1 included).
-
-For DSH **0.2.0-rc.2**, use **dsh-think-translate 1.2.5 or later**. Version 1.2.5 fixes the `todo_write` slot collision and declares the 0.2 peer range. Run `dsh plugin --profile web add dsh-think-translate@latest`, then restart DSH; no version exemption is needed.
-
-Version **1.2.6** fixes duplicated thinking and answer text in DSH 0.2: the assistant renderer now respects the separate reasoning/response groups, including its original-text error fallback.
-
-**1.2.7 local setup:** enabled Ollama in first priority, or its Test button, finds an existing installation and starts/loads it automatically. Missing software/models require the labelled setup action, with staged download/install/load progress. Automatic software installation supports Windows; other systems link to the official guide. “In use” follows the first enabled, verified provider in priority order; testing a lower row does not override a verified higher row.
-
-**1.2.8 transport and recovery:** ordinary HTTP/HTTPS translation requests use native Node networking instead of spawning curl per text batch; SOCKS proxies and the Ollama installer retain curl compatibility. Failures stay in memory for 30 seconds, then reasoning and answer translation resume automatically. Request deadlines allow time for local-model loading and provider fallback.
-
-**1.2.14:** clearer target-language prompts and conservative output checks reject obvious language mismatches and try the next enabled provider. Invalid translations are not kept as successful cache entries; old translation caches are cleared while preferences remain. Code, quoted terms and ambiguous short text are preserved. Fully restart DSH Web or Desktop after upgrading. See [#14](https://github.com/UncleK/dsh-think-translate/issues/14).
-
-**1.2.13:** Auto review rejection cards retain the original reason and asynchronously append its translation. An independent, default-on switch controls this feature. Disabling it, changing the target language or removing the card discards stale results; non-English reasons translate correctly to English. Thanks to [llg1634](https://github.com/llg1634) for the report, initial patch and tests in [#13](https://github.com/UncleK/dsh-think-translate/issues/13). Fully restart DSH Web or Desktop after upgrading.
-
-**1.2.12:** provider switches are authoritative: the browser no longer sends direct Google requests after Host failure. Fenced, indented and inline code is excluded from translation payloads and restored exactly, including unfinished streaming spans. Old translation caches are discarded; preferences are retained. After upgrading, fully restart DSH Web or Desktop; a page refresh alone may still reference old client resources.
-
-**1.2.11 Bing fixes:** the free Bing provider is retained. Translation requests use the session page's final origin, preventing the mainland China `www.bing.com` → `cn.bing.com` redirect from dropping the POST body. SOCKS/curl now shares the native browser headers to fix HTTP 401; empty and non-JSON responses report clear errors.
-
-**1.2.10 DSH profile compatibility:** discovery follows the running Desktop/Web profile and reads `profiles/<profile>/cordis.patch.yml` (`id` + `config`), with home patches and launcher overlays applied afterward. Legacy `settings.yaml` is still supported. Default model rows use `default-model`; credentials remain in the DSH home `.credentials.yaml` and stay in memory. Rescan diagnostics show the file actually read.
-
-**1.2.9 language fixes:** Japanese vocabulary hints now apply only to Japanese targets; OpenAI/Anthropic requests include a full language name. Bing uses `auto-detect` and maps Chinese targets to `zh-Hans`/`zh-Hant`. Chinese detection examines prose after removing paths, code and JSON: already-Simplified prose is skipped, common Traditional script cues request conversion, and Japanese/Korean prose is translated. Old persisted translation results are cleared once; settings remain intact.
-
-## 🚀 Usage
-
-1. Open **Settings → Think Translation**
-2. Pick the **target language** (e.g. 日本語) — the settings panel, thinking rows and task cards all switch to it
-3. **Manage the provider chain** — the list below it *is* the delivery order; drag rows to reorder, and the checkbox is the on/off switch:
-   - Built-ins: **google gtx / bing** (free, via the system proxy) and **local Ollama** — existing software/models are reused; missing components require the setup button (qwen2.5:7b / 14b or custom), with progress displayed. Built-ins are permanent: uncheck one to stop using it, there is nothing to delete
-   - **DSH providers**: endpoints already configured in DSH (`llm-pi-ai.providers`) appear automatically as read-only entries (badge "DSH"); their checkbox adds/removes them from the chain. The **Import from DSH config** button right below the list rescans on click and adds all of them in one go — there is no base URL and no key to retype, because the key is resolved from DSH's own credentials at request time
-   - **Custom providers**: "Add custom provider" registers any **OpenAI-compatible** or **Anthropic Messages** endpoint; the form offers **presets** for common low-cost models (DeepSeek, OpenAI, Qwen, GLM, Kimi, SiliconFlow, OpenRouter, Anthropic) that fill base URL + model + env name, all still editable; the model lists were checked against the vendors' documentation in September 2026 and are suggestions only — any model id can be typed in. Each row has a **test** button, an edit form and a **×** to delete it (a DSH row cannot be deleted — it is managed by the harness)
-   - A provider can name an **environment variable** (`apiKeyEnv`) instead of carrying the key: presets fill that in, and a DSH row brings its own. The key is resolved per request and never written to `config.json`, and such a row shows an `env:NAME` badge. The edit form has no env field (the value survives an edit untouched), but emptying a field really removes it — the field is sent as an explicit delete
-   - The former **fallback chain** option is gone: it was redundant once the chain itself ends with the free providers, and unchecking a provider is how you opt out of it. `fallback` still exists in `config.json` for anyone who wants it (off by default)
-4. Send a message that makes the model think, then expand the **Think row** to read the translation and compare with the original
-
-## ⚙️ How it works
-
-```
-browser → POST /_xlate/translate (same-origin, no CORS)
-  → host provider chain (fail-open, user-ordered):
-      chain: [provider1, provider2, ...]   ← drag-reordered in settings
-        each provider is one of:
-          google   (gtx via native Node HTTP/HTTPS and the system proxy)
-          bing     (ttranslatev3 via native Node HTTP/HTTPS)
-          openai   (OpenAI-compatible /chat/completions — Ollama local or any gateway)
-          anthropic(Anthropic Messages API /v1/messages)
-      fallback chain (config-only, off by default) tried when the primary chain fails entirely
-  → original text if all enabled providers fail
+```bash
+dsh plugin --profile web add dsh-think-translate@latest
 ```
 
-- **Provider config** lives in `config.json` (runtime, gitignored): `chain` (ordered ids), `fallback` (enabled + chain, config-only), `providers` (per-provider `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). Old `priority`-based configs auto-migrate. A provider that declares `apiKeyEnv` resolves its key from that environment variable at request time (the literal `apiKey` stays as the fallback), and no env-resolved key is ever written back to `config.json`. A `null` field in a config patch deletes that field, which is how the UI clears one.
-- **DSH discovery** reads the harness `profiles/<profile>/cordis.patch.yml` / legacy `settings.yaml` (`llm-pi-ai.providers`) and `.credentials.yaml` (`refs`) on load; discovered providers are marked `source: "dsh"`, resolved keys stay in memory (never written to `config.json`), and a `/_xlate/dsh-scan` route re-reads them on demand.
-- **Host half** (`lib/index.js`): provider adapters, ordered chain + fallback execution, LRU cache (600), per-provider override for tests, `/_xlate/models` listing, `/_xlate/model/pull` + `pull-status` model download management (auto-configures on completion)
-- **Client half** (`lib/client.js`): 8-language UI, drag-reorderable provider list, add/edit/delete custom providers, per-provider test buttons, sentence/paragraph-batched translation, streaming Think rows, localStorage persistence (settings + translation cache)
-- Pure display layer: originals remain in the transcript and model context
+Fully restart DSH after installing or updating. For manual deployment, link the package into the profile and add its entry to `cordis.patch.yml`; the commands above are recommended for everyday use.
 
-## 🛠 Development
+</details>
 
-- No build step: `lib/client.js` is the browser bundle (source = artifact), `lib/index.js` is the host ESM
-- Client changes apply on page refresh; host changes need a web restart
-- The 8-language strings live in the `UI_TEXT` dictionary in `lib/client.js`
+<a id="features"></a>
+## More than reasoning to understand
 
-## 📄 License
+<table>
+<tr>
+<td width="50%" valign="top">
+<h3>Reasoning, as it happens</h3>
+<p>Pre-translate all, lazy-load history, or translate only when expanded</p>
+</td>
+<td width="50%" valign="top">
+<h3>Tasks and answers, together</h3>
+<p>Reasoning, task cards and composer task lists; optional answers and auto-review denial reasons</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<h3>Understand review decisions</h3>
+<p>When auto-review rejects a tool call, its reason is translated alongside the original. The existing decision buttons remain available.</p>
+</td>
+<td width="50%" valign="top">
+<h3>Preserve originals and code</h3>
+<p>Originals preserved; translations stay out of model context. Reuses Markdown rendering; protects code, paths and commands before translation.</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<h3>Local models, loaded on demand</h3>
+<p>Manual release, release when unchecked, idle auto-release; reloads on the next translation</p>
+</td>
+<td width="50%" valign="top">
+<h3>Providers in your preferred order</h3>
+<p>Automatic fallback in enabled order; clearly wrong-language output tries the next provider; retry after cooldown</p>
+</td>
+</tr>
+</table>
 
-MIT
+### Connect providers you already use
+
+**Ollama · Google · Bing · OpenAI · Anthropic Messages API**
+
+Discover providers already configured in DSH without entering endpoints and keys again. Test each provider separately; list order controls the order of attempts.
+
+```text
+Your first choice → next enabled provider → … → originals if all fail
+```
+
+<details>
+<summary><b>Custom endpoints, credentials and recovery</b></summary>
+
+- Custom endpoints support OpenAI-compatible `/v1/chat/completions` and the native Anthropic Messages API.
+- Discovery reads the current DSH profile and overrides. Rescan and add discovered providers to the translation chain.
+- An `apiKeyEnv` key is resolved at request time; resolved credentials are never written back to plugin configuration.
+- Failures cool down in host memory for 30 seconds, then subsequent translation requests can retry. Clearly wrong-language results try the next provider.
+- Language detection skips text already recognized as the target language; explicit provider tests still make a real request.
+
+</details>
+
+### Local translation models: load and release on demand
+
+| Your action | Plugin behavior |
+|---|---|
+| Translate or test | Start the service and load the selected model on demand |
+| Release model memory | Wait for active translations, then unload; preserve files, switches and order |
+| Uncheck the local provider | Disable it and unload the selected model |
+| Re-enable it or open settings | No preload; load on the next actual translation |
+| Set idle release | 5 minutes by default; choose 1 / 5 / 10 / 30 / 60 minutes or off |
+
+Idle timing applies from the next use. Ollama tracks the selected model; global environment variables are unchanged. Missing software or models are installed or downloaded only after you click the preparation button, with progress shown.
+
+<a id="languages"></a>
+### Language settings that follow you
+
+中文 · English · 日本語 · 한국어 · Español · Français · Deutsch · Русский · Português
+
+Nine target languages, settings translations and task labels, including Portuguese. Your selection survives a page refresh.
+
+<a id="faq"></a>
+## Answers to common questions
+
+<details>
+<summary><b>No translation entry after installing or updating</b></summary>
+
+Fully restart `dsh web`. The client module graph is assembled at process start; refreshing the page alone may not load a new plugin. The settings footer shows the installed package version.
+
+</details>
+
+<details>
+<summary><b>The local model list is empty</b></summary>
+
+Check `ollama list` or `/api/tags`, the active model directory, and the service’s `OLLAMA_MODELS`. Existing model files do not need to be downloaded again.
+
+</details>
+
+<details>
+<summary><b>Source startup reports client bundles not found after a DSH update</b></summary>
+
+Run `pnpm run build` in the DeepSeek Harness repository, then restart DSH Web.
+
+</details>
+
+<details>
+<summary><b>Does a translation failure affect the conversation?</b></summary>
+
+When all enabled providers fail, the original remains. Test individual providers and inspect the latest error in settings. Translation requests can retry after cooldown.
+
+</details>
+
+<details>
+<summary><b>Recent changes and compatibility</b></summary>
+
+**1.2.16** adds Portuguese throughout the translation target and UI, refreshes all nine READMEs and localized comparison images, and declares three marketplace images.
+
+**1.2.15** adds local model memory management and adapts to DSH `0.2.2-alpha.2` image rendering, grouped reasoning collapse and original text selection.
+
+**1.2.13** adds auto-review denial-reason translation. Thanks to [llg1634](https://github.com/llg1634) for the report, initial patch and testing.
+
+Earlier versions and details: [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases).
+
+</details>
+
+<details>
+<summary><b>Development and internals</b></summary>
+
+- `lib/index.js`: host routes, providers, configuration, memory cache and local model lifecycle.
+- `lib/client.js`: settings, display-layer translation, streaming batches and browser cache.
+- `lib/config.json`: runtime configuration, excluded from Git and npm.
+- No extra build step: source files are the deliverable. Restart DSH after changing host code.
+- Run checks with `npm test`. Discovery and credential handling are documented in the [maintenance notes](https://github.com/UncleK/dsh-think-translate/blob/main/docs/maintenance-notes.md).
+
+</details>
+
+---
+
+<p align="center">
+  <b>dsh-think-translate</b><br />
+  <a href="https://github.com/UncleK/dsh-think-translate/issues">Report an issue</a> &nbsp;·&nbsp; <a href="https://github.com/UncleK/dsh-think-translate/releases">Releases</a> &nbsp;·&nbsp; <a href="https://github.com/UncleK/dsh-think-translate/blob/main/LICENSE">MIT License</a>
+</p>

@@ -1,134 +1,229 @@
-<div align="center">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.zh-CN.png?v=1.2.16" width="100%" alt="dsh-think-translate：让 AI 的思考，用你的语言呈现" />
+</p>
 
-# 🐋 dsh-think-translate
+<p align="center">
+  <b>为 DeepSeek Harness 提供显示层翻译。</b><br />
+  读懂思考，跟上任务，也看清回答。原文完整保留，译文不进入模型上下文。
+</p>
 
-**语言：** [English](README.md) · [中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Русский](README.ru.md)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.zh-CN.svg?v=1.2.16" alt="MIT License" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.zh-CN.svg?v=1.2.16" alt="支持本地 Ollama" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.zh-CN.svg?v=1.2.16" alt="保留原文与模型上下文" />
+</p>
 
-[![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
-[![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
-[![dsh](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
+<p align="center">
+  <b>中文</b> · <a href="https://github.com/UncleK/dsh-think-translate/blob/main/README.md">English</a> · <a href="https://github.com/UncleK/dsh-think-translate/blob/main/README.ja.md">日本語</a> · <a href="https://github.com/UncleK/dsh-think-translate/blob/main/README.ko.md">한국어</a> · <a href="https://github.com/UncleK/dsh-think-translate/blob/main/README.es.md">Español</a> · <a href="https://github.com/UncleK/dsh-think-translate/blob/main/README.fr.md">Français</a> · <a href="https://github.com/UncleK/dsh-think-translate/blob/main/README.de.md">Deutsch</a> · <a href="https://github.com/UncleK/dsh-think-translate/blob/main/README.ru.md">Русский</a> · <a href="README.pt.md">Português</a>
+</p>
 
-<img src="demo/demo.gif?v=2" width="46%" alt="dsh-think-translate demo" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="demo/demo2.gif?v=2" width="41%" alt="dsh-think-translate demo 2" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
-
-</div>
+<p align="center">
+  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.zh-CN.svg?v=1.2.16" alt="快速安装" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.zh-CN.svg?v=1.2.16" alt="实际演示" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.zh-CN.svg?v=1.2.16" alt="核心能力" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.zh-CN.svg?v=1.2.16" alt="官方对比" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.zh-CN.svg?v=1.2.16" alt="常见问题" height="24" /></a>
+</p>
 
 ---
 
-为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web UI 提供**显示层翻译**：把界面上的**思考链（Think 行）、任务卡片、回答正文**翻译为你选择的目标语言，原文完整保留在会话记录中，译文**绝不进入模型上下文**。
+<a id="demo"></a>
+## 看见思考发生
 
-## ✨ 特性
+<table>
+<tr>
+<td width="50%" align="center" valign="bottom">
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.16" width="100%" alt="思考链与回答翻译的实际操作演示" />
+</td>
+<td width="50%" align="center" valign="bottom">
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.16" width="100%" alt="dsh-think-translate 第二段实际操作演示" />
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<sub>演示一 · 思考链与回答翻译</sub>
+</td>
+<td align="center" valign="top">
+<sub>演示二 · 更多实际操作</sub>
+</td>
+</tr>
+</table>
 
-![功能对比：我们的插件于 2026-08-25 首次上线，官方思考翻译于 2026-10-09 首次上线](https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.zh-CN.png)
+<a id="comparison"></a>
+## 与官方翻译插件对比
 
-[完整对比与首次上线日期来源](docs/official-translation-comparison.md)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.zh-CN.png?v=1.2.16" width="100%" alt="与官方翻译插件的功能和首次上线日期对比" />
+</p>
 
-DeepSeek 系模型经常用中文思考——或者用它们碰巧习惯的语言。dsh-think-translate 在你观看时把 Think 行、任务卡片和回答渲染成*你的*语言，就像给模型的思考配上字幕。
+本插件与官方思考翻译都接管思考界面，请二选一启用。
 
-- **🕵️ 任意思考链都能读** — 推理、思维链、任务卡片与回答实时翻译，按批流式出现
-- **8 种目标语言** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
-- **单一语言界面** — 设置面板、思考行、任务卡片全部跟随目标语言（不混中英），选择持久化
-- **本地 Ollama** — 复用已有安装和模型；实际翻译或点击测试时才启动服务并加载模型。排序、重开设置和重启 DSH 不预加载。缺少软件或模型时，点击准备按钮后才安装/下载，并显示实时进度
-- **模型内存管理** — “释放模型内存”只卸载当前所选模型，保留下载文件、开关和排序；取消勾选本地提供方也会释放模型。有翻译正在执行时等待其完成；重新启用后，下次需要翻译时自动加载。空闲后自动释放默认为 5 分钟，可选 1/5/10/30/60 分钟或关闭，从下次使用起生效；由 Ollama 对当前模型计时，不修改全局环境变量
-- **🧠 零上下文成本** — 纯显示层：模型看到的仍是原文，译文绝不占用上下文窗口
-- **Google / Bing 兜底** — 本地模型不可用时自动切换（google 通过 Node CONNECT 隧道走系统代理，绕过反爬）
-- **代码工件自动跳过** — 文件路径、命令、URL、正则、纯代码行不翻译
-- **🚨 自动审查拒绝理由** — 自动审查拒绝一次调用时，审批卡片会追加目标语言的拒绝理由，看清原因再决定“拒绝 / 允许一次”
-- **句子分批翻译** — 长思考链按句子分批串行翻译，本地小模型也能保持质量
-- **🧩 段落与句子感知切分** — 长思考链按空行切分（保留段落结构）再按句分批，本地小模型也能保持质量
-- **流式输出** — 思考过程中译文逐批出现，展开 Think 行可对照原文
-- **🎚️ 可调翻译时机** — 三档：全部预翻译 / 懒加载历史（默认）/ 仅展开时翻译
-- **🔗 动态提供方链** — 列表顺序就是投递顺序：拖动排序、逐行开关；内置 google gtx / bing / 本地 Ollama，外加任意数量的自定义端点
-- **🔌 自定义提供方（OpenAI 与 Anthropic）** — 设置面板里可添加任意 OpenAI 兼容端点（任何 `/v1/chat/completions` 网关）或原生 **Anthropic Messages API**（Claude）：类型、预设、接口地址、API 密钥、模型
-- **🪄 继承 DSH 已配置的提供方** — 自动发现 `profiles/<profile>/cordis.patch.yml` / 旧版 `settings.yaml`（`llm-pi-ai.providers`）里的只读 DSH 行，一个按钮重新扫描并全部加入链；密钥在请求时从 `.credentials.yaml` 解析，绝不写入插件配置；harness 自己的默认路线也算：`default-model` / `agent-default-model` 指向 `deepseek-official` 时，DeepSeek 官方 API 也会作为一条 DSH 条目提供
-- **⏱️ 失败韧性** — 失败结果仅在内存缓存 30 秒，避免频繁重试；冷却结束后自动重试，每行保留独立的测试按钮
-
-## 📦 安装
+<a id="quick-start"></a>
+## 一条命令，开始使用
 
 ```bash
-# 方式一：npm（推荐）
 dsh plugin --profile web add dsh-think-translate
-# 然后重启 web
+```
 
-# 方式二：GitHub
+安装后**完整重启 DSH Web**，打开 **设置 → 思考链翻译**，选择目标语言和翻译提供方即可。
+
+<details>
+<summary>从 GitHub 安装、升级与其他安装方式</summary>
+
+从 GitHub 安装：
+
+```bash
 dsh plugin --profile web add github:UncleK/dsh-think-translate
-
-# 方式三：手动（junction + patch）
-#  1. 链接包到 profile 的 node_modules
-New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-translate" `
-  -Target "<仓库路径>"
-#  2. 在 "$HOME\.dsh\profiles\web\cordis.patch.yml" 加入：
-# - insert:
-#     - id: dsh-think-translate
-#       name: dsh-think-translate
-#  3. 重启 web
 ```
 
-## 🧯 DSH 升级之后
+升级 npm 版本：
 
-第三方客户端插件走 DSH 的客户端模块图，而这张图**每个进程只在启动时组合一次**，一次失败的组合会被记在内存里直到重启。于是升级 DSH 后常撞到这三件事：
-
-- **从源码启动失败**：`client bundles not found; run \`pnpm run build\` before launch` —— 新版客户端包需要先构建：在 harness 仓库根目录跑 `pnpm run build`，再重新启动 `dsh web`。
-- **插件 UI 不见了**（Think 行没有译文、设置里没有“思考链翻译”）—— **重启一次 `dsh web`**；只刷新页面有时不够。
-- **本地模型列表是空的** —— `ollama` 服务当前用的模型目录里没有模型：查 `ollama list`（或 `GET /api/tags`）以及该服务实际生效的 `OLLAMA_MODELS`；模型文件在别的盘时，可用目录联接把服务的默认目录指过去。
-
-插件侧无需任何配置：它不依赖 DSH 内部包的加载顺序（只绑定 `slots` 服务，可选使用 `@deepseek-ai/dsh-client-ui-primitives`），因此老版本（≤ 0.1.1-rc）与当前版本线（≥ 0.1.2-alpha.1，含 0.1.5-rc.1）都能直接跑。
-
-DSH **0.2.0-rc.2** 请使用 **dsh-think-translate 1.2.5 或更新版本**。1.2.5 修复了 `todo_write` 的 slot 注册冲突，并声明支持 0.2 版本范围。执行 `dsh plugin --profile web add dsh-think-translate@latest` 后重启 DSH，无需添加版本豁免。
-
-**1.2.6** 修复 DSH 0.2 中思考与回答重复显示的问题：助手渲染器现在遵守 reasoning/response 分组，出错时的原文回退也按组显示。
-
-**1.2.7 本地准备：**已启用的 Ollama 排到第一位，或点击其测试按钮时，会自动查找已有安装并启动、加载模型。缺少软件或模型时，点击首次准备入口后才安装/下载，并显示分阶段进度。自动安装软件支持 Windows，其他系统提供官方指南。“当前使用”按优先级选择第一个已启用且验证成功的提供方，测试后面的行不会覆盖已成功的前面一行。
-
-**1.2.8 传输与恢复：**普通 HTTP/HTTPS 翻译请求改用 Node 原生网络，不再为每个文本批次启动 curl；SOCKS 代理和 Ollama 安装器保留 curl 兼容路径。失败结果在内存缓存 30 秒，冷却结束后思考与回答翻译会自动恢复重试。请求超时为本地模型加载和提供方回退留出时间。
-
-**1.2.14：**明确目标语言与原文边界，保守检查明显串语言的译文并继续尝试下一家已启用提供方。错误译文不作为成功结果缓存；清理旧译文缓存并保留设置，保护代码、引用词与无法确定语言的短文本。升级后请完整重启 DSH Web 或 Desktop。见 [#14](https://github.com/UncleK/dsh-think-translate/issues/14)。
-
-**1.2.15：**适配 DSH `0.2.2-alpha.2` 的官方图片 Factory、整轮思考折叠和正文引用选择；新增本地模型手动释放、空闲计时及按需重载，替代 1.2.7 的排序预加载行为。此插件接管助手思考渲染；官方“思考过程翻译”不应与它同时启用。功能取舍见 [官方翻译对比](docs/official-translation-comparison.md)。
-
-**1.2.13：**自动审查拒绝卡片保留原文并异步追加译文，提供默认开启的独立开关。关闭开关、切换语言或移除卡片后，旧结果不再回写；俄文等非英语原因可正常翻译成英文。感谢 [llg1634](https://github.com/llg1634) 在 [#13](https://github.com/UncleK/dsh-think-translate/issues/13) 提供问题报告、初始补丁和测试。升级后请完整重启 DSH Web 或 Desktop。
-
-**1.2.12：**提供方开关统一由 Host 执行，失败后浏览器不再直连 Google。围栏代码、缩进代码和行内代码不发送给翻译服务，按原文精确拼回；流式输出中尚未闭合的代码同样保护。清理旧译文缓存，保留设置。 升级后请完整重启 DSH Web 或 Desktop；仅刷新页面可能继续引用旧客户端资源。
-
-**1.2.11 Bing 修复：**保留免费 Bing 通道。翻译请求跟随会话页最终域名，避免国内 `www.bing.com` → `cn.bing.com` 跳转丢失 POST 正文；SOCKS/curl 同步原生浏览器请求头，修复 HTTP 401。空响应和非 JSON 响应给出明确错误。
-
-**1.2.10 DSH 配置兼容：**发现提供方时跟随当前 Desktop/Web profile，读取 `profiles/<profile>/cordis.patch.yml`（`id` + `config`），随后应用 home 补丁与启动覆盖；继续支持旧版 `settings.yaml`。默认模型行支持 `default-model`，凭据仍从 DSH home 的 `.credentials.yaml` 解析且只留在内存；重新扫描会显示实际读取的配置路径。
-
-**1.2.9 语言修复：**日语词汇提示仅用于日语目标，OpenAI/Anthropic 请求带上完整语言名称。Bing 使用 `auto-detect`，并将中文目标映射为 `zh-Hans`/`zh-Hant`。中文检测先排除路径、代码和 JSON：已是简体的正文跳过，常用繁体区别字触发转换请求，日语/韩语正文正常翻译。升级时一次性清理旧译文缓存，保留设置。
-
-## 🚀 使用
-
-1. 打开 **设置 → 思考链翻译**
-2. 选择**目标语言**（比如日本語）——设置面板、思考行、任务卡片全部切换为该语言
-3. 管理**供应商链**（拖动排序，勾选即启用）：
-   - 内置：**google gtx / bing**（免费，使用系统代理）与**本地模型（Ollama）**；复用已有软件和模型，缺少时点击准备按钮后才安装/下载，并显示进度（支持 7b/14b 或自定义模型）
-   - **DSH 供应商**：`profiles/<profile>/cordis.patch.yml` / 旧版 `settings.yaml` 里已配置的端点会自动出现（只读，勾选即加入链）；列表下方的 **继承 DSH 已配置的 API** 会重新扫描并一键全部加入——不用重填 baseURL 或密钥（密钥在请求时从 DSH 自己的凭据里解析）
-   - 密钥可以直接填，也可以由预设或 DSH 行带上 **`apiKeyEnv`**：那类行显示 `env:NAME` 徽标，密钥在请求时解析、绝不写入 `config.json`。编辑表单里没有环境变量输入框（值会原样保留），清空某个字段会真的删除它（以显式删除提交），所以从环境变量名切回字面密钥是可行的
-   - 取消勾选即跳过该供应商；更细的说明以 [README.md](README.md) 为准
-4. 发消息让模型思考，展开 Think 行查看译文
-
-## ⚙️ 工作原理
-
-```
-浏览器 → POST /_xlate/translate（同源，无 CORS）
-  → host 供应商链（fail-open，可排序）：
-      chain: [provider1, provider2, ...]   ← 设置里拖拽排序
-        google / bing / openai 兼容 / anthropic 任选
-      fallback 链（可选，默认关闭，配置里开启）
-  → 所有已启用提供方失败时保留原文
+```bash
+dsh plugin --profile web add dsh-think-translate@latest
 ```
 
-- **提供方配置** 存在 `config.json`（运行期生成，已 gitignore）：`chain`（有序 id）、`fallback`（enabled + chain，仅配置文件）、`providers`（每项的 `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`）。旧的 `priority` 配置会自动迁移；声明 `apiKeyEnv` 的提供方在请求时从该环境变量解析密钥（字面 `apiKey` 作为兜底），解析出的密钥绝不写回 `config.json`；patch 里显式的 `null` 表示删除该字段，UI 就是用它清空字段的
-- **DSH 发现** 在加载时读取 harness 的 `profiles/<profile>/cordis.patch.yml` / 旧版 `settings.yaml`（`llm-pi-ai.providers`）与 `.credentials.yaml`（`refs`）；被发现的提供方标记为 `source: "dsh"`，解析出的密钥只留在内存中（绝不写入 `config.json`），`/_xlate/dsh-scan` 路由可按需重新读取
-- **host 半边**（`lib/index.js`）：供应商适配器、LRU 缓存（600）、`/_xlate/models` 模型列表、`/_xlate/model/pull` + `pull-status` 模型下载管理（完成后自动配置启用）
-- **client 半边**（`lib/client.js`）：8 语言 UI、段落/句子分批翻译、流式 Think 行、设置与译文缓存持久化（localStorage）
-- 纯显示层：原文完整保留在会话日志与模型上下文中
+安装或升级后均需完整重启 DSH。手动部署可通过目录联接把包链接到 profile，并在 `cordis.patch.yml` 中插入 `dsh-think-translate` 插件行；普通使用建议选择上面的安装命令。
 
-## 🛠 开发
+</details>
 
-- 无需构建：`lib/client.js` 是浏览器 bundle（源码即产物），`lib/index.js` 是 host ESM
-- 修改 client 后刷新页面即生效；修改 host 后需重启 web
-- 8 语言文案在 `lib/client.js` 的 `UI_TEXT` 字典中
+<a id="features"></a>
+## 需要读懂的，不只是思考链
 
-## 📄 License
+<table>
+<tr>
+<td width="50%" valign="top">
+<h3>思考链，边想边读</h3>
+<p>按段落与句子分批翻译。可选全部预翻译、懒加载历史，或仅在展开后翻译。</p>
+</td>
+<td width="50%" valign="top">
+<h3>任务与回答，一起跟上</h3>
+<p>覆盖任务卡片和输入区任务列表；回答正文提供独立翻译开关。</p>
+</td>
+</tr>
+<tr>
+<td valign="top">
+<h3>审查理由，也能看清</h3>
+<p>自动审查拒绝一次调用时，保留原文并追加目标语言的理由，原有操作按钮照常使用。</p>
+</td>
+<td valign="top">
+<h3>原文与代码，完整保留</h3>
+<p>代码、路径和命令在翻译前受到保护。译文只用于显示，不进入模型上下文。</p>
+</td>
+</tr>
+<tr>
+<td valign="top">
+<h3>本地模型，用时再加载</h3>
+<p>复用已有 Ollama 和模型，支持手动释放、禁用后释放与空闲自动释放。</p>
+</td>
+<td valign="top">
+<h3>提供方，按你的顺序工作</h3>
+<p>拖动排序并逐行启停。失败时尝试下一家，明显串语言的结果也会触发回退。</p>
+</td>
+</tr>
+</table>
 
-MIT
+### 连接你已经在用的提供方
+
+**Ollama · Google · Bing · OpenAI 兼容端点 · Anthropic Messages API**
+
+也可以发现 DSH 已配置的提供方，无需重复填写端点和密钥。每一行都能单独测试，列表顺序就是尝试顺序。
+
+```text
+你的首选提供方 → 下一家已启用提供方 → … → 全部失败时保留原文
+```
+
+<details>
+<summary>自定义端点、密钥与自动恢复</summary>
+
+- 自定义端点支持 OpenAI 兼容的 `/v1/chat/completions` 和原生 Anthropic Messages API。
+- 自动发现当前 DSH profile 及覆盖配置中的提供方；可重新扫描并加入翻译链。
+- 声明 `apiKeyEnv` 的提供方在请求时解析密钥，解析结果不会写回插件配置。
+- 失败结果在 Host 内存冷却 30 秒，之后翻译会恢复重试。
+- 已经是目标语言的正文会按语言检测规则跳过；提供方测试仍会真实发起请求。
+
+</details>
+
+### 本地翻译模型，按需加载与释放
+
+| 你的操作 | 插件行为 |
+|---|---|
+| 实际翻译或点击测试 | 按需启动服务、加载所选模型 |
+| 点击“释放模型内存” | 当前翻译结束后释放；保留模型文件、开关和排序 |
+| 取消勾选本地提供方 | 停用并释放所选模型 |
+| 重新勾选或打开设置 | 不预加载；下一次实际翻译时再加载 |
+| 设置空闲释放 | 默认 5 分钟，可选 1 / 5 / 10 / 30 / 60 分钟或关闭 |
+
+空闲策略从下次使用起生效，由 Ollama 对当前模型计时，不修改全局环境变量。缺少软件或模型时，只有点击准备按钮后才安装或下载，并显示进度。
+
+<a id="languages"></a>
+### 让语言设置跟着你
+
+中文 · English · 日本語 · 한국어 · Español · Français · Deutsch · Русский · Português
+
+9 种目标语言、设置面板和任务文案保持一致，现已包含葡萄牙语，选择会在刷新后保留。
+
+<a id="faq"></a>
+## 遇到问题，先看这里
+
+<details>
+<summary><b>安装或升级后，看不到翻译入口</b></summary>
+
+完整重启 `dsh web`。客户端模块图在进程启动时组合，仅刷新页面有时不足以加载新插件。设置页底部会显示实际安装包的版本号。
+
+</details>
+
+<details>
+<summary><b>本地模型列表为空</b></summary>
+
+检查 `ollama list` 或 `/api/tags`，确认运行中的服务使用了正确的模型目录；同时检查该服务生效的 `OLLAMA_MODELS`。不需要重新下载已经存在于其他模型目录中的文件。
+
+</details>
+
+<details>
+<summary><b>升级 DSH 后，源码启动报 client bundles not found</b></summary>
+
+在 DeepSeek Harness 仓库根目录先运行 `pnpm run build`，完成后重新启动 DSH Web。
+
+</details>
+
+<details>
+<summary><b>翻译失败会影响正常对话吗</b></summary>
+
+所有已启用提供方都失败时保留原文，插件不会用失败结果覆盖会话原文。可以在设置中逐行测试提供方，并查看最近错误；冷却后翻译会自动恢复重试。
+
+</details>
+
+<details>
+<summary><b>最近更新与兼容性</b></summary>
+
+**1.2.16** 补齐葡萄牙语翻译目标与界面，同步 9 种语言的 README、横幅和对比图，并声明市场三张展示图。
+
+**1.2.15** 增加本地模型内存管理，适配 DSH `0.2.2-alpha.2` 的官方图片渲染、整轮思考折叠和正文原文选择。
+
+**1.2.14** 拒绝明显错误语言的译文并尝试下一提供方，清理旧译文缓存并保留设置。
+
+**1.2.13** 支持自动审查拒绝理由翻译。感谢 [llg1634](https://github.com/llg1634) 提供问题报告、初始补丁和测试。
+
+更早版本与具体变更见 [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases)。
+
+</details>
+
+<details>
+<summary><b>开发与工作原理</b></summary>
+
+```text
+浏览器 → 同源翻译接口 → 已启用的提供方链 → 译文或原文
+```
+
+- `lib/index.js`：Host 路由、提供方适配、配置、内存缓存与本地模型管理。
+- `lib/client.js`：设置、显示层翻译、流式分批和浏览器缓存。
+- `lib/config.json`：运行期配置，已从 Git 和 npm 包排除。
+- 无需额外构建，源码即产物；修改 Host 后重启 DSH。
+- 检查命令：`npm test`。
+
+配置发现、凭据处理和维护说明见 [维护笔记](https://github.com/UncleK/dsh-think-translate/blob/main/docs/maintenance-notes.md)。
+
+</details>
+
+---
+
+<p align="center">
+  <b>dsh-think-translate</b><br />
+  <a href="https://github.com/UncleK/dsh-think-translate/issues">反馈问题</a> &nbsp;·&nbsp; <a href="https://github.com/UncleK/dsh-think-translate/releases">版本发布</a> &nbsp;·&nbsp; <a href="https://github.com/UncleK/dsh-think-translate/blob/main/LICENSE">MIT License</a>
+</p>

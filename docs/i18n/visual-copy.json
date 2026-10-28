@@ -1,0 +1,392 @@
+{
+  "checked": "2026-10-29",
+  "pluginVersion": "1.2.16",
+  "dshVersion": "0.2.2-alpha.2",
+  "dates": {
+    "ours": "2026-08-25",
+    "official": "2026-10-09",
+    "calendarDaysEarlier": 45,
+    "timeZone": "Asia/Shanghai"
+  },
+  "copy": {
+    "en": {
+      "title": "Comparison with the official translation plugin",
+      "early": "Available 45 days earlier",
+      "official": "Official reasoning translation",
+      "launched": "First available",
+      "feature": "Feature",
+      "labels": [
+        "Coverage",
+        "Providers",
+        "Failure handling",
+        "When to translate",
+        "Original and model context",
+        "Markdown and code",
+        "Local model memory",
+        "Languages and interface"
+      ],
+      "ours": [
+        "Reasoning, task cards and composer task lists; optional answers and auto-review denial reasons",
+        "Local Ollama, Google, Bing; custom OpenAI / Anthropic endpoints; discovery of providers configured in DSH",
+        "Automatic fallback in enabled order; clearly wrong-language output tries the next provider; retry after cooldown",
+        "Pre-translate all, lazy-load history, or translate only when expanded",
+        "Originals preserved; translations stay out of model context",
+        "Reuses Markdown rendering; protects code, paths and commands before translation",
+        "Manual release, release when unchecked, idle auto-release; reloads on the next translation",
+        "9 target and UI languages: Chinese, English, Japanese, Korean, Spanish, French, German, Russian, Portuguese"
+      ],
+      "theirs": [
+        "Expanded reasoning text; collapsed previews remain original",
+        "Bing, Google; native paid DeepSeek Flash (account or API)",
+        "Keeps originals; explicit user retry; no automatic provider switching",
+        "On expansion; supports streaming paragraphs",
+        "Originals preserved; translations do not replace model input",
+        "Native rendering; translation may alter Markdown or code examples",
+        "No local model provider",
+        "Target language accepts language codes; auto follows UI. UI: Chinese, English, Japanese, Spanish, French, German, Russian, Portuguese"
+      ],
+      "foot": "First available: first public non-stage npm version. Dates: Asia/Shanghai.",
+      "source": "Sources: npm publication records, official release notes and source. Checked: 2026-10-29",
+      "hero": [
+        "AI thinking, in your language",
+        "Reasoning · Task cards · Answers",
+        "Thinking…"
+      ]
+    },
+    "ja": {
+      "title": "公式翻訳プラグインとの比較",
+      "early": "45日早く公開",
+      "official": "公式の思考翻訳",
+      "launched": "初公開",
+      "feature": "比較項目",
+      "labels": [
+        "翻訳範囲",
+        "提供元",
+        "失敗時の処理",
+        "翻訳タイミング",
+        "原文とモデルのコンテキスト",
+        "Markdown とコード",
+        "ローカルモデルのメモリ",
+        "対応言語と UI"
+      ],
+      "ours": [
+        "思考、タスクカード、入力欄のタスク一覧。回答本文と自動レビューの拒否理由も任意で翻訳",
+        "ローカル Ollama、Google、Bing。OpenAI / Anthropic の独自エンドポイントと DSH 設定済み提供元の検出",
+        "有効な順に自動フォールバック。明らかに異なる言語なら次の提供元へ。クールダウン後に再試行",
+        "すべて事前翻訳、履歴を遅延ロード、展開時のみ翻訳",
+        "原文を保持。訳文はモデルのコンテキストに入らない",
+        "Markdown コンポーネントを再利用。翻訳前にコード、パス、コマンドを保護",
+        "手動解放、チェック解除時の解放、アイドル時の自動解放。次の翻訳時に再ロード",
+        "翻訳先と UI は9言語：中国語、英語、日本語、韓国語、スペイン語、フランス語、ドイツ語、ロシア語、ポルトガル語"
+      ],
+      "theirs": [
+        "展開後の思考本文。折りたたみ表示は原文のまま",
+        "Bing、Google。有料 DeepSeek Flash（アカウントまたは API）",
+        "原文を保持しユーザーが明示的に再試行。提供元の自動切替なし",
+        "展開後に翻訳。ストリーミング段落に対応",
+        "原文を保持。訳文は元のモデル入力を置き換えない",
+        "公式レンダリング。翻訳で Markdown やコード例が変わる場合あり",
+        "ローカルモデル提供元なし",
+        "翻訳先は言語コードを指定。auto は UI に追従。UI は中・英・日・西・仏・独・露・葡"
+      ],
+      "foot": "初公開は stage を除く最初の公開 npm 版。日付：Asia/Shanghai。",
+      "source": "出典：npm 公開記録、公式リリースノートとソース。確認日：2026-10-29",
+      "hero": [
+        "AI の思考を、あなたの言語で",
+        "思考 · タスクカード · 回答本文",
+        "思考中…"
+      ]
+    },
+    "ko": {
+      "title": "공식 번역 플러그인과 비교",
+      "early": "45일 먼저 공개",
+      "official": "공식 사고 과정 번역",
+      "launched": "최초 공개",
+      "feature": "비교 항목",
+      "labels": [
+        "번역 범위",
+        "제공자",
+        "실패 처리",
+        "번역 시점",
+        "원문과 모델 컨텍스트",
+        "Markdown 및 코드",
+        "로컬 모델 메모리",
+        "언어 및 인터페이스"
+      ],
+      "ours": [
+        "사고 과정, 작업 카드, 입력 영역 작업 목록. 답변 본문과 자동 검토 거부 사유는 선택 번역",
+        "로컬 Ollama, Google, Bing. 사용자 지정 OpenAI / Anthropic 엔드포인트 및 DSH 설정 제공자 검색",
+        "활성화된 순서로 자동 대체. 명백히 잘못된 언어이면 다음 제공자 시도. 대기 후 재시도",
+        "전체 사전 번역, 이전 기록 지연 로딩, 펼칠 때만 번역",
+        "원문 보존. 번역문은 모델 컨텍스트에 들어가지 않음",
+        "Markdown 구성 요소 재사용. 번역 전에 코드, 경로, 명령 보호",
+        "수동 해제, 체크 해제 시 해제, 유휴 후 자동 해제. 다음 번역 시 다시 로드",
+        "번역 대상 및 UI 9개 언어: 중국어, 영어, 일본어, 한국어, 스페인어, 프랑스어, 독일어, 러시아어, 포르투갈어"
+      ],
+      "theirs": [
+        "펼쳐진 사고 본문. 접힌 미리보기는 원문 유지",
+        "Bing, Google. 기본 유료 DeepSeek Flash (계정 또는 API)",
+        "원문 유지, 사용자가 명시적으로 재시도. 제공자 자동 전환 없음",
+        "펼친 후 번역. 스트리밍 문단 지원",
+        "원문 보존. 번역문이 원래 모델 입력을 대체하지 않음",
+        "공식 렌더링. 번역이 Markdown 또는 코드 예제를 바꿀 수 있음",
+        "로컬 모델 제공자 없음",
+        "대상 언어 코드 지정, auto는 UI를 따름. UI: 중·영·일·스·프·독·러·포"
+      ],
+      "foot": "최초 공개: stage를 제외한 첫 공개 npm 버전. 날짜: Asia/Shanghai.",
+      "source": "출처: npm 공개 기록, 공식 릴리스 노트와 소스. 확인: 2026-10-29",
+      "hero": [
+        "AI의 생각을 당신의 언어로",
+        "사고 과정 · 작업 카드 · 답변 본문",
+        "생각 중…"
+      ]
+    },
+    "es": {
+      "title": "Comparación con el plugin oficial de traducción",
+      "early": "Disponible 45 días antes",
+      "official": "Traducción oficial del razonamiento",
+      "launched": "Primera publicación",
+      "feature": "Característica",
+      "labels": [
+        "Cobertura",
+        "Proveedores",
+        "Gestión de fallos",
+        "Cuándo traducir",
+        "Original y contexto del modelo",
+        "Markdown y código",
+        "Memoria del modelo local",
+        "Idiomas e interfaz"
+      ],
+      "ours": [
+        "Razonamiento, tarjetas y lista de tareas del editor; respuestas y motivos de rechazo de revisión automática opcionales",
+        "Ollama local, Google, Bing; endpoints OpenAI / Anthropic personalizados y detección de proveedores de DSH",
+        "Alternativa automática según el orden activo; idioma claramente incorrecto activa el siguiente; reintento tras la espera",
+        "Pretraducir todo, cargar historial bajo demanda o traducir solo al expandir",
+        "Conserva originales; la traducción no entra en el contexto del modelo",
+        "Reutiliza el renderizado Markdown; protege código, rutas y comandos antes de traducir",
+        "Liberación manual, al desmarcar y tras inactividad; recarga en la siguiente traducción",
+        "9 idiomas de destino e interfaz: chino, inglés, japonés, coreano, español, francés, alemán, ruso y portugués"
+      ],
+      "theirs": [
+        "Texto de razonamiento expandido; vista contraída en el idioma original",
+        "Bing, Google; DeepSeek Flash nativo de pago (cuenta o API)",
+        "Conserva originales; reintento explícito; sin cambio automático de proveedor",
+        "Al expandir; admite párrafos en streaming",
+        "Conserva originales; la traducción no sustituye la entrada del modelo",
+        "Renderizado oficial; puede alterar Markdown o ejemplos de código",
+        "Sin proveedor de modelos locales",
+        "Acepta códigos de idioma; auto sigue la interfaz. UI: chino, inglés, japonés, español, francés, alemán, ruso y portugués"
+      ],
+      "foot": "Primera publicación: primera versión npm pública no stage. Fechas: Asia/Shanghai.",
+      "source": "Fuentes: registros npm, notas y código oficiales. Verificado: 2026-10-29",
+      "hero": [
+        "El pensamiento de la IA, en tu idioma",
+        "Razonamiento · Tarjetas de tareas · Respuestas",
+        "Pensando…"
+      ]
+    },
+    "fr": {
+      "title": "Comparaison avec le plugin officiel de traduction",
+      "early": "Disponible 45 jours plus tôt",
+      "official": "Traduction officielle du raisonnement",
+      "launched": "Première publication",
+      "feature": "Fonction",
+      "labels": [
+        "Couverture",
+        "Fournisseurs",
+        "Gestion des échecs",
+        "Quand traduire",
+        "Original et contexte du modèle",
+        "Markdown et code",
+        "Mémoire du modèle local",
+        "Langues et interface"
+      ],
+      "ours": [
+        "Raisonnement, cartes et liste de tâches de la zone de saisie ; réponses et motifs de refus de révision automatique en option",
+        "Ollama local, Google, Bing ; endpoints OpenAI / Anthropic personnalisés et détection des fournisseurs DSH",
+        "Repli automatique selon l’ordre actif ; langue clairement incorrecte : fournisseur suivant ; nouvelle tentative après délai",
+        "Tout prétraduire, charger l’historique à la demande ou traduire uniquement au dépliage",
+        "Originaux conservés ; les traductions restent hors du contexte du modèle",
+        "Réutilise le rendu Markdown ; protège code, chemins et commandes avant traduction",
+        "Libération manuelle, au décochage ou après inactivité ; rechargement à la prochaine traduction",
+        "9 langues cibles et d’interface : chinois, anglais, japonais, coréen, espagnol, français, allemand, russe et portugais"
+      ],
+      "theirs": [
+        "Raisonnement déplié ; aperçu replié dans la langue d’origine",
+        "Bing, Google ; DeepSeek Flash natif payant (compte ou API)",
+        "Originaux conservés ; nouvelle tentative explicite ; aucun basculement automatique",
+        "Au dépliage ; paragraphes en streaming pris en charge",
+        "Originaux conservés ; la traduction ne remplace pas l’entrée du modèle",
+        "Rendu officiel ; la traduction peut modifier Markdown ou exemples de code",
+        "Aucun fournisseur de modèles locaux",
+        "Accepte les codes de langue ; auto suit l’interface. UI : chinois, anglais, japonais, espagnol, français, allemand, russe et portugais"
+      ],
+      "foot": "Première publication : première version npm publique hors stage. Dates : Asia/Shanghai.",
+      "source": "Sources : publications npm, notes et code officiels. Vérifié : 2026-10-29",
+      "hero": [
+        "La pensée de l’IA, dans votre langue",
+        "Raisonnement · Cartes de tâches · Réponses",
+        "Réflexion…"
+      ]
+    },
+    "de": {
+      "title": "Vergleich mit dem offiziellen Übersetzungsplugin",
+      "early": "45 Tage früher verfügbar",
+      "official": "Offizielle Gedankenübersetzung",
+      "launched": "Erstmals verfügbar",
+      "feature": "Merkmal",
+      "labels": [
+        "Übersetzungsumfang",
+        "Anbieter",
+        "Fehlerbehandlung",
+        "Übersetzungszeitpunkt",
+        "Original und Modellkontext",
+        "Markdown und Code",
+        "Lokaler Modellspeicher",
+        "Sprachen und Oberfläche"
+      ],
+      "ours": [
+        "Gedanken, Aufgabenkarten und Aufgabenliste im Eingabebereich; Antworten und Ablehnungsgründe der automatischen Prüfung optional",
+        "Lokales Ollama, Google, Bing; eigene OpenAI-/Anthropic-Endpunkte und Erkennung der DSH-Anbieter",
+        "Automatischer Wechsel in aktivierter Reihenfolge; klar falsche Sprache löst nächsten Anbieter aus; neuer Versuch nach Wartezeit",
+        "Alles vorübersetzen, Verlauf bei Bedarf laden oder nur beim Aufklappen übersetzen",
+        "Originale bleiben erhalten; Übersetzungen gelangen nicht in den Modellkontext",
+        "Nutzt Markdown-Komponenten; schützt Code, Pfade und Befehle vor der Übersetzung",
+        "Manuell, beim Abwählen oder nach Leerlauf freigeben; Laden bei der nächsten Übersetzung",
+        "9 Ziel- und Oberflächensprachen: Chinesisch, Englisch, Japanisch, Koreanisch, Spanisch, Französisch, Deutsch, Russisch, Portugiesisch"
+      ],
+      "theirs": [
+        "Aufgeklappter Gedankentext; eingeklappte Vorschau bleibt original",
+        "Bing, Google; natives kostenpflichtiges DeepSeek Flash (Konto oder API)",
+        "Original bleibt erhalten; expliziter neuer Versuch; kein automatischer Anbieterwechsel",
+        "Beim Aufklappen; unterstützt Streaming-Absätze",
+        "Originale bleiben erhalten; Übersetzung ersetzt keine Modelleingabe",
+        "Offizielle Darstellung; Übersetzung kann Markdown oder Codebeispiele ändern",
+        "Kein Anbieter für lokale Modelle",
+        "Sprachcodes als Ziel; auto folgt der Oberfläche. UI: Chinesisch, Englisch, Japanisch, Spanisch, Französisch, Deutsch, Russisch, Portugiesisch"
+      ],
+      "foot": "Erstmals verfügbar: erste öffentliche npm-Version ohne stage. Datum: Asia/Shanghai.",
+      "source": "Quellen: npm-Veröffentlichungen, offizielle Hinweise und Quellcode. Geprüft: 2026-10-29",
+      "hero": [
+        "KI-Gedanken in deiner Sprache",
+        "Gedanken · Aufgabenkarten · Antworten",
+        "Denkt nach…"
+      ]
+    },
+    "ru": {
+      "title": "Сравнение с официальным плагином перевода",
+      "early": "На 45 дней раньше",
+      "official": "Официальный перевод рассуждений",
+      "launched": "Первый выпуск",
+      "feature": "Возможность",
+      "labels": [
+        "Область перевода",
+        "Провайдеры",
+        "Обработка сбоев",
+        "Когда переводить",
+        "Оригинал и контекст модели",
+        "Markdown и код",
+        "Память локальной модели",
+        "Языки и интерфейс"
+      ],
+      "ours": [
+        "Рассуждения, карточки и список задач в поле ввода; ответы и причины отказа автопроверки — по выбору",
+        "Локальный Ollama, Google, Bing; свои API OpenAI / Anthropic и обнаружение провайдеров DSH",
+        "Автопереход по включённым провайдерам; явно неверный язык вызывает следующий; повтор после паузы",
+        "Предперевод всего, загрузка истории по мере надобности или перевод при раскрытии",
+        "Оригинал сохранён; перевод не попадает в контекст модели",
+        "Компоненты Markdown; защита кода, путей и команд до перевода",
+        "Вручную, при снятии флажка или после простоя; загрузка при следующем переводе",
+        "9 языков перевода и интерфейса: китайский, английский, японский, корейский, испанский, французский, немецкий, русский, португальский"
+      ],
+      "theirs": [
+        "Раскрытый текст рассуждений; свёрнутое превью остаётся оригинальным",
+        "Bing, Google; платный встроенный DeepSeek Flash (аккаунт или API)",
+        "Оригинал сохранён; явный повтор пользователем; без автосмены провайдера",
+        "При раскрытии; поддержка потоковых абзацев",
+        "Оригинал сохранён; перевод не заменяет вход модели",
+        "Официальный рендеринг; перевод может менять Markdown или примеры кода",
+        "Нет провайдера локальных моделей",
+        "Принимает коды языка; auto следует интерфейсу. UI: китайский, английский, японский, испанский, французский, немецкий, русский, португальский"
+      ],
+      "foot": "Первый выпуск: первая публичная npm-версия без stage. Даты: Asia/Shanghai.",
+      "source": "Источники: публикации npm, официальный код и примечания. Проверено: 2026-10-29",
+      "hero": [
+        "Мысли ИИ — на вашем языке",
+        "Рассуждения · Карточки задач · Ответы",
+        "Думает…"
+      ]
+    },
+    "pt": {
+      "title": "Comparação com o plugin oficial de tradução",
+      "early": "Disponível 45 dias antes",
+      "official": "Tradução oficial do raciocínio",
+      "launched": "Primeira publicação",
+      "feature": "Recurso",
+      "labels": [
+        "Abrangência",
+        "Provedores",
+        "Tratamento de falhas",
+        "Quando traduzir",
+        "Original e contexto do modelo",
+        "Markdown e código",
+        "Memória do modelo local",
+        "Idiomas e interface"
+      ],
+      "ours": [
+        "Raciocínio, cartões e lista de tarefas da área de entrada; respostas e motivos de recusa da revisão automática opcionais",
+        "Ollama local, Google, Bing; endpoints OpenAI / Anthropic personalizados e descoberta dos provedores do DSH",
+        "Alternativa automática na ordem ativada; idioma claramente errado tenta o próximo provedor; nova tentativa após intervalo",
+        "Pré-traduzir tudo, carregar histórico sob demanda ou traduzir apenas ao expandir",
+        "Originais preservados; traduções fora do contexto do modelo",
+        "Reutiliza componentes Markdown; protege código, caminhos e comandos antes de traduzir",
+        "Liberação manual, ao desmarcar ou após inatividade; recarga na próxima tradução",
+        "9 idiomas de destino e interface: chinês, inglês, japonês, coreano, espanhol, francês, alemão, russo e português"
+      ],
+      "theirs": [
+        "Texto de raciocínio expandido; prévia recolhida mantém o original",
+        "Bing, Google; DeepSeek Flash nativo pago (conta ou API)",
+        "Mantém originais; nova tentativa explícita; sem troca automática de provedor",
+        "Ao expandir; suporta parágrafos em streaming",
+        "Originais preservados; a tradução não substitui a entrada do modelo",
+        "Renderização oficial; pode alterar Markdown ou exemplos de código",
+        "Sem provedor de modelos locais",
+        "Aceita códigos de idioma; auto segue a interface. UI: chinês, inglês, japonês, espanhol, francês, alemão, russo e português"
+      ],
+      "foot": "Primeira publicação: primeira versão npm pública sem stage. Datas: Asia/Shanghai.",
+      "source": "Fontes: registros npm, notas e código oficiais. Verificado: 2026-10-29",
+      "hero": [
+        "O pensamento da IA, no seu idioma",
+        "Raciocínio · Cartões de tarefas · Respostas",
+        "Pensando…"
+      ]
+    }
+  },
+  "chartPrompts": {
+    "en": "Use case: text-localization. Edit target: attached approved Chinese comparison graphic. Localize all text into en. Preserve the premium white/ice-blue/cobalt design, 3 columns, our blue column BEFORE the official gray column, 8 rows, open-book icon, early-release badge, subtle shadows. Keep exact dates and same factual scope. Do not add rows. Omit result storage and interface integration. Use high-resolution crisp typography, enough row height for every word, and tasteful wrapping. Output a complete finished localized chart; no Chinese text except language names if explicitly supplied. Do not truncate, paraphrase away capabilities, or introduce extra claims.\nExact title: \"Comparison with the official translation plugin\" (may wrap into 2 balanced lines if needed).\nBadge: \"Available 45 days earlier\".\nHeader left \"Feature\"; middle \"dsh-think-translate\" with SECOND LINE \"First available: 2026-08-25\"; right \"Official reasoning translation\" with SECOND LINE \"First available: 2026-10-09\". Dates must be directly below the names.\nRows, each [label | our blue column | official gray column]:\n[Coverage | Reasoning, task cards and composer task lists; optional answers and auto-review denial reasons | Expanded reasoning text; collapsed previews remain original]\n[Providers | Local Ollama, Google, Bing; custom OpenAI / Anthropic endpoints; discovery of providers configured in DSH | Bing, Google; native paid DeepSeek Flash (account or API)]\n[Failure handling | Automatic fallback in enabled order; clearly wrong-language output tries the next provider; retry after cooldown | Keeps originals; explicit user retry; no automatic provider switching]\n[When to translate | Pre-translate all, lazy-load history, or translate only when expanded | On expansion; supports streaming paragraphs]\n[Original and model context | Originals preserved; translations stay out of model context | Originals preserved; translations do not replace model input]\n[Markdown and code | Reuses Markdown rendering; protects code, paths and commands before translation | Native rendering; translation may alter Markdown or code examples]\n[Local model memory | Manual release, release when unchecked, idle auto-release; reloads on the next translation | No local model provider]\n[Languages and interface | 9 target and UI languages: Chinese, English, Japanese, Korean, Spanish, French, German, Russian, Portuguese | Target language accepts language codes; auto follows UI. UI: Chinese, English, Japanese, Spanish, French, German, Russian, Portuguese]\nSmall footer: \"First available: first public non-stage npm version. Dates: Asia/Shanghai.\" and \"Sources: npm publication records, official release notes and source. Checked: 2026-10-29\". Keep legible with no overlap or clipped text. Preserve the 4:3 overall composition; modestly increase image size if needed for dense text.",
+    "ja": "Use case: text-localization. Edit target: attached approved Chinese comparison graphic. Localize all text into ja. Preserve the premium white/ice-blue/cobalt design, 3 columns, our blue column BEFORE the official gray column, 8 rows, open-book icon, early-release badge, subtle shadows. Keep exact dates and same factual scope. Do not add rows. Omit result storage and interface integration. Use high-resolution crisp typography, enough row height for every word, and tasteful wrapping. Output a complete finished localized chart; no Chinese text except language names if explicitly supplied. Do not truncate, paraphrase away capabilities, or introduce extra claims.\nExact title: \"公式翻訳プラグインとの比較\" (may wrap into 2 balanced lines if needed).\nBadge: \"45日早く公開\".\nHeader left \"比較項目\"; middle \"dsh-think-translate\" with SECOND LINE \"初公開: 2026-08-25\"; right \"公式の思考翻訳\" with SECOND LINE \"初公開: 2026-10-09\". Dates must be directly below the names.\nRows, each [label | our blue column | official gray column]:\n[翻訳範囲 | 思考、タスクカード、入力欄のタスク一覧。回答本文と自動レビューの拒否理由も任意で翻訳 | 展開後の思考本文。折りたたみ表示は原文のまま]\n[提供元 | ローカル Ollama、Google、Bing。OpenAI / Anthropic の独自エンドポイントと DSH 設定済み提供元の検出 | Bing、Google。有料 DeepSeek Flash（アカウントまたは API）]\n[失敗時の処理 | 有効な順に自動フォールバック。明らかに異なる言語なら次の提供元へ。クールダウン後に再試行 | 原文を保持しユーザーが明示的に再試行。提供元の自動切替なし]\n[翻訳タイミング | すべて事前翻訳、履歴を遅延ロード、展開時のみ翻訳 | 展開後に翻訳。ストリーミング段落に対応]\n[原文とモデルのコンテキスト | 原文を保持。訳文はモデルのコンテキストに入らない | 原文を保持。訳文は元のモデル入力を置き換えない]\n[Markdown とコード | Markdown コンポーネントを再利用。翻訳前にコード、パス、コマンドを保護 | 公式レンダリング。翻訳で Markdown やコード例が変わる場合あり]\n[ローカルモデルのメモリ | 手動解放、チェック解除時の解放、アイドル時の自動解放。次の翻訳時に再ロード | ローカルモデル提供元なし]\n[対応言語と UI | 翻訳先と UI は9言語：中国語、英語、日本語、韓国語、スペイン語、フランス語、ドイツ語、ロシア語、ポルトガル語 | 翻訳先は言語コードを指定。auto は UI に追従。UI は中・英・日・西・仏・独・露・葡]\nSmall footer: \"初公開は stage を除く最初の公開 npm 版。日付：Asia/Shanghai。\" and \"出典：npm 公開記録、公式リリースノートとソース。確認日：2026-10-29\". Keep legible with no overlap or clipped text. Preserve the 4:3 overall composition; modestly increase image size if needed for dense text.",
+    "ko": "Use case: text-localization. Edit target: attached approved Chinese comparison graphic. Localize all text into ko. Preserve the premium white/ice-blue/cobalt design, 3 columns, our blue column BEFORE the official gray column, 8 rows, open-book icon, early-release badge, subtle shadows. Keep exact dates and same factual scope. Do not add rows. Omit result storage and interface integration. Use high-resolution crisp typography, enough row height for every word, and tasteful wrapping. Output a complete finished localized chart; no Chinese text except language names if explicitly supplied. Do not truncate, paraphrase away capabilities, or introduce extra claims.\nExact title: \"공식 번역 플러그인과 비교\" (may wrap into 2 balanced lines if needed).\nBadge: \"45일 먼저 공개\".\nHeader left \"비교 항목\"; middle \"dsh-think-translate\" with SECOND LINE \"최초 공개: 2026-08-25\"; right \"공식 사고 과정 번역\" with SECOND LINE \"최초 공개: 2026-10-09\". Dates must be directly below the names.\nRows, each [label | our blue column | official gray column]:\n[번역 범위 | 사고 과정, 작업 카드, 입력 영역 작업 목록. 답변 본문과 자동 검토 거부 사유는 선택 번역 | 펼쳐진 사고 본문. 접힌 미리보기는 원문 유지]\n[제공자 | 로컬 Ollama, Google, Bing. 사용자 지정 OpenAI / Anthropic 엔드포인트 및 DSH 설정 제공자 검색 | Bing, Google. 기본 유료 DeepSeek Flash (계정 또는 API)]\n[실패 처리 | 활성화된 순서로 자동 대체. 명백히 잘못된 언어이면 다음 제공자 시도. 대기 후 재시도 | 원문 유지, 사용자가 명시적으로 재시도. 제공자 자동 전환 없음]\n[번역 시점 | 전체 사전 번역, 이전 기록 지연 로딩, 펼칠 때만 번역 | 펼친 후 번역. 스트리밍 문단 지원]\n[원문과 모델 컨텍스트 | 원문 보존. 번역문은 모델 컨텍스트에 들어가지 않음 | 원문 보존. 번역문이 원래 모델 입력을 대체하지 않음]\n[Markdown 및 코드 | Markdown 구성 요소 재사용. 번역 전에 코드, 경로, 명령 보호 | 공식 렌더링. 번역이 Markdown 또는 코드 예제를 바꿀 수 있음]\n[로컬 모델 메모리 | 수동 해제, 체크 해제 시 해제, 유휴 후 자동 해제. 다음 번역 시 다시 로드 | 로컬 모델 제공자 없음]\n[언어 및 인터페이스 | 번역 대상 및 UI 9개 언어: 중국어, 영어, 일본어, 한국어, 스페인어, 프랑스어, 독일어, 러시아어, 포르투갈어 | 대상 언어 코드 지정, auto는 UI를 따름. UI: 중·영·일·스·프·독·러·포]\nSmall footer: \"최초 공개: stage를 제외한 첫 공개 npm 버전. 날짜: Asia/Shanghai.\" and \"출처: npm 공개 기록, 공식 릴리스 노트와 소스. 확인: 2026-10-29\". Keep legible with no overlap or clipped text. Preserve the 4:3 overall composition; modestly increase image size if needed for dense text.",
+    "es": "Use case: text-localization. Edit target: attached approved Chinese comparison graphic. Localize all text into es. Preserve the premium white/ice-blue/cobalt design, 3 columns, our blue column BEFORE the official gray column, 8 rows, open-book icon, early-release badge, subtle shadows. Keep exact dates and same factual scope. Do not add rows. Omit result storage and interface integration. Use high-resolution crisp typography, enough row height for every word, and tasteful wrapping. Output a complete finished localized chart; no Chinese text except language names if explicitly supplied. Do not truncate, paraphrase away capabilities, or introduce extra claims.\nExact title: \"Comparación con el plugin oficial de traducción\" (may wrap into 2 balanced lines if needed).\nBadge: \"Disponible 45 días antes\".\nHeader left \"Característica\"; middle \"dsh-think-translate\" with SECOND LINE \"Primera publicación: 2026-08-25\"; right \"Traducción oficial del razonamiento\" with SECOND LINE \"Primera publicación: 2026-10-09\". Dates must be directly below the names.\nRows, each [label | our blue column | official gray column]:\n[Cobertura | Razonamiento, tarjetas y lista de tareas del editor; respuestas y motivos de rechazo de revisión automática opcionales | Texto de razonamiento expandido; vista contraída en el idioma original]\n[Proveedores | Ollama local, Google, Bing; endpoints OpenAI / Anthropic personalizados y detección de proveedores de DSH | Bing, Google; DeepSeek Flash nativo de pago (cuenta o API)]\n[Gestión de fallos | Alternativa automática según el orden activo; idioma claramente incorrecto activa el siguiente; reintento tras la espera | Conserva originales; reintento explícito; sin cambio automático de proveedor]\n[Cuándo traducir | Pretraducir todo, cargar historial bajo demanda o traducir solo al expandir | Al expandir; admite párrafos en streaming]\n[Original y contexto del modelo | Conserva originales; la traducción no entra en el contexto del modelo | Conserva originales; la traducción no sustituye la entrada del modelo]\n[Markdown y código | Reutiliza el renderizado Markdown; protege código, rutas y comandos antes de traducir | Renderizado oficial; puede alterar Markdown o ejemplos de código]\n[Memoria del modelo local | Liberación manual, al desmarcar y tras inactividad; recarga en la siguiente traducción | Sin proveedor de modelos locales]\n[Idiomas e interfaz | 9 idiomas de destino e interfaz: chino, inglés, japonés, coreano, español, francés, alemán, ruso y portugués | Acepta códigos de idioma; auto sigue la interfaz. UI: chino, inglés, japonés, español, francés, alemán, ruso y portugués]\nSmall footer: \"Primera publicación: primera versión npm pública no stage. Fechas: Asia/Shanghai.\" and \"Fuentes: registros npm, notas y código oficiales. Verificado: 2026-10-29\". Keep legible with no overlap or clipped text. Preserve the 4:3 overall composition; modestly increase image size if needed for dense text.",
+    "fr": "Use case: text-localization. Edit target: attached approved Chinese comparison graphic. Localize all text into fr. Preserve the premium white/ice-blue/cobalt design, 3 columns, our blue column BEFORE the official gray column, 8 rows, open-book icon, early-release badge, subtle shadows. Keep exact dates and same factual scope. Do not add rows. Omit result storage and interface integration. Use high-resolution crisp typography, enough row height for every word, and tasteful wrapping. Output a complete finished localized chart; no Chinese text except language names if explicitly supplied. Do not truncate, paraphrase away capabilities, or introduce extra claims.\nExact title: \"Comparaison avec le plugin officiel de traduction\" (may wrap into 2 balanced lines if needed).\nBadge: \"Disponible 45 jours plus tôt\".\nHeader left \"Fonction\"; middle \"dsh-think-translate\" with SECOND LINE \"Première publication: 2026-08-25\"; right \"Traduction officielle du raisonnement\" with SECOND LINE \"Première publication: 2026-10-09\". Dates must be directly below the names.\nRows, each [label | our blue column | official gray column]:\n[Couverture | Raisonnement, cartes et liste de tâches de la zone de saisie ; réponses et motifs de refus de révision automatique en option | Raisonnement déplié ; aperçu replié dans la langue d’origine]\n[Fournisseurs | Ollama local, Google, Bing ; endpoints OpenAI / Anthropic personnalisés et détection des fournisseurs DSH | Bing, Google ; DeepSeek Flash natif payant (compte ou API)]\n[Gestion des échecs | Repli automatique selon l’ordre actif ; langue clairement incorrecte : fournisseur suivant ; nouvelle tentative après délai | Originaux conservés ; nouvelle tentative explicite ; aucun basculement automatique]\n[Quand traduire | Tout prétraduire, charger l’historique à la demande ou traduire uniquement au dépliage | Au dépliage ; paragraphes en streaming pris en charge]\n[Original et contexte du modèle | Originaux conservés ; les traductions restent hors du contexte du modèle | Originaux conservés ; la traduction ne remplace pas l’entrée du modèle]\n[Markdown et code | Réutilise le rendu Markdown ; protège code, chemins et commandes avant traduction | Rendu officiel ; la traduction peut modifier Markdown ou exemples de code]\n[Mémoire du modèle local | Libération manuelle, au décochage ou après inactivité ; rechargement à la prochaine traduction | Aucun fournisseur de modèles locaux]\n[Langues et interface | 9 langues cibles et d’interface : chinois, anglais, japonais, coréen, espagnol, français, allemand, russe et portugais | Accepte les codes de langue ; auto suit l’interface. UI : chinois, anglais, japonais, espagnol, français, allemand, russe et portugais]\nSmall footer: \"Première publication : première version npm publique hors stage. Dates : Asia/Shanghai.\" and \"Sources : publications npm, notes et code officiels. Vérifié : 2026-10-29\". Keep legible with no overlap or clipped text. Preserve the 4:3 overall composition; modestly increase image size if needed for dense text.",
+    "de": "Use case: text-localization. Edit target: attached approved Chinese comparison graphic. Localize all text into de. Preserve the premium white/ice-blue/cobalt design, 3 columns, our blue column BEFORE the official gray column, 8 rows, open-book icon, early-release badge, subtle shadows. Keep exact dates and same factual scope. Do not add rows. Omit result storage and interface integration. Use high-resolution crisp typography, enough row height for every word, and tasteful wrapping. Output a complete finished localized chart; no Chinese text except language names if explicitly supplied. Do not truncate, paraphrase away capabilities, or introduce extra claims.\nExact title: \"Vergleich mit dem offiziellen Übersetzungsplugin\" (may wrap into 2 balanced lines if needed).\nBadge: \"45 Tage früher verfügbar\".\nHeader left \"Merkmal\"; middle \"dsh-think-translate\" with SECOND LINE \"Erstmals verfügbar: 2026-08-25\"; right \"Offizielle Gedankenübersetzung\" with SECOND LINE \"Erstmals verfügbar: 2026-10-09\". Dates must be directly below the names.\nRows, each [label | our blue column | official gray column]:\n[Übersetzungsumfang | Gedanken, Aufgabenkarten und Aufgabenliste im Eingabebereich; Antworten und Ablehnungsgründe der automatischen Prüfung optional | Aufgeklappter Gedankentext; eingeklappte Vorschau bleibt original]\n[Anbieter | Lokales Ollama, Google, Bing; eigene OpenAI-/Anthropic-Endpunkte und Erkennung der DSH-Anbieter | Bing, Google; natives kostenpflichtiges DeepSeek Flash (Konto oder API)]\n[Fehlerbehandlung | Automatischer Wechsel in aktivierter Reihenfolge; klar falsche Sprache löst nächsten Anbieter aus; neuer Versuch nach Wartezeit | Original bleibt erhalten; expliziter neuer Versuch; kein automatischer Anbieterwechsel]\n[Übersetzungszeitpunkt | Alles vorübersetzen, Verlauf bei Bedarf laden oder nur beim Aufklappen übersetzen | Beim Aufklappen; unterstützt Streaming-Absätze]\n[Original und Modellkontext | Originale bleiben erhalten; Übersetzungen gelangen nicht in den Modellkontext | Originale bleiben erhalten; Übersetzung ersetzt keine Modelleingabe]\n[Markdown und Code | Nutzt Markdown-Komponenten; schützt Code, Pfade und Befehle vor der Übersetzung | Offizielle Darstellung; Übersetzung kann Markdown oder Codebeispiele ändern]\n[Lokaler Modellspeicher | Manuell, beim Abwählen oder nach Leerlauf freigeben; Laden bei der nächsten Übersetzung | Kein Anbieter für lokale Modelle]\n[Sprachen und Oberfläche | 9 Ziel- und Oberflächensprachen: Chinesisch, Englisch, Japanisch, Koreanisch, Spanisch, Französisch, Deutsch, Russisch, Portugiesisch | Sprachcodes als Ziel; auto folgt der Oberfläche. UI: Chinesisch, Englisch, Japanisch, Spanisch, Französisch, Deutsch, Russisch, Portugiesisch]\nSmall footer: \"Erstmals verfügbar: erste öffentliche npm-Version ohne stage. Datum: Asia/Shanghai.\" and \"Quellen: npm-Veröffentlichungen, offizielle Hinweise und Quellcode. Geprüft: 2026-10-29\". Keep legible with no overlap or clipped text. Preserve the 4:3 overall composition; modestly increase image size if needed for dense text.",
+    "ru": "Use case: text-localization. Edit target: attached approved Chinese comparison graphic. Localize all text into ru. Preserve the premium white/ice-blue/cobalt design, 3 columns, our blue column BEFORE the official gray column, 8 rows, open-book icon, early-release badge, subtle shadows. Keep exact dates and same factual scope. Do not add rows. Omit result storage and interface integration. Use high-resolution crisp typography, enough row height for every word, and tasteful wrapping. Output a complete finished localized chart; no Chinese text except language names if explicitly supplied. Do not truncate, paraphrase away capabilities, or introduce extra claims.\nExact title: \"Сравнение с официальным плагином перевода\" (may wrap into 2 balanced lines if needed).\nBadge: \"На 45 дней раньше\".\nHeader left \"Возможность\"; middle \"dsh-think-translate\" with SECOND LINE \"Первый выпуск: 2026-08-25\"; right \"Официальный перевод рассуждений\" with SECOND LINE \"Первый выпуск: 2026-10-09\". Dates must be directly below the names.\nRows, each [label | our blue column | official gray column]:\n[Область перевода | Рассуждения, карточки и список задач в поле ввода; ответы и причины отказа автопроверки — по выбору | Раскрытый текст рассуждений; свёрнутое превью остаётся оригинальным]\n[Провайдеры | Локальный Ollama, Google, Bing; свои API OpenAI / Anthropic и обнаружение провайдеров DSH | Bing, Google; платный встроенный DeepSeek Flash (аккаунт или API)]\n[Обработка сбоев | Автопереход по включённым провайдерам; явно неверный язык вызывает следующий; повтор после паузы | Оригинал сохранён; явный повтор пользователем; без автосмены провайдера]\n[Когда переводить | Предперевод всего, загрузка истории по мере надобности или перевод при раскрытии | При раскрытии; поддержка потоковых абзацев]\n[Оригинал и контекст модели | Оригинал сохранён; перевод не попадает в контекст модели | Оригинал сохранён; перевод не заменяет вход модели]\n[Markdown и код | Компоненты Markdown; защита кода, путей и команд до перевода | Официальный рендеринг; перевод может менять Markdown или примеры кода]\n[Память локальной модели | Вручную, при снятии флажка или после простоя; загрузка при следующем переводе | Нет провайдера локальных моделей]\n[Языки и интерфейс | 9 языков перевода и интерфейса: китайский, английский, японский, корейский, испанский, французский, немецкий, русский, португальский | Принимает коды языка; auto следует интерфейсу. UI: китайский, английский, японский, испанский, французский, немецкий, русский, португальский]\nSmall footer: \"Первый выпуск: первая публичная npm-версия без stage. Даты: Asia/Shanghai.\" and \"Источники: публикации npm, официальный код и примечания. Проверено: 2026-10-29\". Keep legible with no overlap or clipped text. Preserve the 4:3 overall composition; modestly increase image size if needed for dense text.",
+    "pt": "Use case: text-localization. Edit target: attached approved Chinese comparison graphic. Localize all text into pt. Preserve the premium white/ice-blue/cobalt design, 3 columns, our blue column BEFORE the official gray column, 8 rows, open-book icon, early-release badge, subtle shadows. Keep exact dates and same factual scope. Do not add rows. Omit result storage and interface integration. Use high-resolution crisp typography, enough row height for every word, and tasteful wrapping. Output a complete finished localized chart; no Chinese text except language names if explicitly supplied. Do not truncate, paraphrase away capabilities, or introduce extra claims.\nExact title: \"Comparação com o plugin oficial de tradução\" (may wrap into 2 balanced lines if needed).\nBadge: \"Disponível 45 dias antes\".\nHeader left \"Recurso\"; middle \"dsh-think-translate\" with SECOND LINE \"Primeira publicação: 2026-08-25\"; right \"Tradução oficial do raciocínio\" with SECOND LINE \"Primeira publicação: 2026-10-09\". Dates must be directly below the names.\nRows, each [label | our blue column | official gray column]:\n[Abrangência | Raciocínio, cartões e lista de tarefas da área de entrada; respostas e motivos de recusa da revisão automática opcionais | Texto de raciocínio expandido; prévia recolhida mantém o original]\n[Provedores | Ollama local, Google, Bing; endpoints OpenAI / Anthropic personalizados e descoberta dos provedores do DSH | Bing, Google; DeepSeek Flash nativo pago (conta ou API)]\n[Tratamento de falhas | Alternativa automática na ordem ativada; idioma claramente errado tenta o próximo provedor; nova tentativa após intervalo | Mantém originais; nova tentativa explícita; sem troca automática de provedor]\n[Quando traduzir | Pré-traduzir tudo, carregar histórico sob demanda ou traduzir apenas ao expandir | Ao expandir; suporta parágrafos em streaming]\n[Original e contexto do modelo | Originais preservados; traduções fora do contexto do modelo | Originais preservados; a tradução não substitui a entrada do modelo]\n[Markdown e código | Reutiliza componentes Markdown; protege código, caminhos e comandos antes de traduzir | Renderização oficial; pode alterar Markdown ou exemplos de código]\n[Memória do modelo local | Liberação manual, ao desmarcar ou após inatividade; recarga na próxima tradução | Sem provedor de modelos locais]\n[Idiomas e interface | 9 idiomas de destino e interface: chinês, inglês, japonês, coreano, espanhol, francês, alemão, russo e português | Aceita códigos de idioma; auto segue a interface. UI: chinês, inglês, japonês, espanhol, francês, alemão, russo e português]\nSmall footer: \"Primeira publicação: primeira versão npm pública sem stage. Datas: Asia/Shanghai.\" and \"Fontes: registros npm, notas e código oficiais. Verificado: 2026-10-29\". Keep legible with no overlap or clipped text. Preserve the 4:3 overall composition; modestly increase image size if needed for dense text."
+  },
+  "heroPrompts": {
+    "en": "Use case: text-localization. Edit target: the approved wide Chinese dsh-think-translate README banner. Preserve the exact wide 3:1 composition, open-book translation emblem, pale ice-blue background, navy/cobalt wordmark, translucent connected paper cards, soft shadows, spacing, sophistication. Localize ONLY the main tagline, small feature line and main target-language card text. Keep the exact wordmark \"dsh-think-translate\". Tagline verbatim: \"AI thinking, in your language\". Small line verbatim: \"Reasoning · Task cards · Answers\". Keep source card \"Thinking…\" and set target card to \"Thinking…\". Quiet secondary language motifs \"日本語\" and \"Português\" may remain as decorative translation examples. Ensure all large heading/tagline copy is in en, no leftover Chinese tagline or labels. Fit text elegantly without clipping, keep ample margins. Output a finished polished wide banner.",
+    "ja": "Use case: text-localization. Edit target: the approved wide Chinese dsh-think-translate README banner. Preserve the exact wide 3:1 composition, open-book translation emblem, pale ice-blue background, navy/cobalt wordmark, translucent connected paper cards, soft shadows, spacing, sophistication. Localize ONLY the main tagline, small feature line and main target-language card text. Keep the exact wordmark \"dsh-think-translate\". Tagline verbatim: \"AI の思考を、あなたの言語で\". Small line verbatim: \"思考 · タスクカード · 回答本文\". Keep source card \"Thinking…\" and set target card to \"思考中…\". Quiet secondary language motifs \"日本語\" and \"Português\" may remain as decorative translation examples. Ensure all large heading/tagline copy is in ja, no leftover Chinese tagline or labels. Fit text elegantly without clipping, keep ample margins. Output a finished polished wide banner.",
+    "ko": "Use case: text-localization. Edit target: the approved wide Chinese dsh-think-translate README banner. Preserve the exact wide 3:1 composition, open-book translation emblem, pale ice-blue background, navy/cobalt wordmark, translucent connected paper cards, soft shadows, spacing, sophistication. Localize ONLY the main tagline, small feature line and main target-language card text. Keep the exact wordmark \"dsh-think-translate\". Tagline verbatim: \"AI의 생각을 당신의 언어로\". Small line verbatim: \"사고 과정 · 작업 카드 · 답변 본문\". Keep source card \"Thinking…\" and set target card to \"생각 중…\". Quiet secondary language motifs \"日本語\" and \"Português\" may remain as decorative translation examples. Ensure all large heading/tagline copy is in ko, no leftover Chinese tagline or labels. Fit text elegantly without clipping, keep ample margins. Output a finished polished wide banner.",
+    "es": "Use case: text-localization. Edit target: the approved wide Chinese dsh-think-translate README banner. Preserve the exact wide 3:1 composition, open-book translation emblem, pale ice-blue background, navy/cobalt wordmark, translucent connected paper cards, soft shadows, spacing, sophistication. Localize ONLY the main tagline, small feature line and main target-language card text. Keep the exact wordmark \"dsh-think-translate\". Tagline verbatim: \"El pensamiento de la IA, en tu idioma\". Small line verbatim: \"Razonamiento · Tarjetas de tareas · Respuestas\". Keep source card \"Thinking…\" and set target card to \"Pensando…\". Quiet secondary language motifs \"日本語\" and \"Português\" may remain as decorative translation examples. Ensure all large heading/tagline copy is in es, no leftover Chinese tagline or labels. Fit text elegantly without clipping, keep ample margins. Output a finished polished wide banner.",
+    "fr": "Use case: text-localization. Edit target: the approved wide Chinese dsh-think-translate README banner. Preserve the exact wide 3:1 composition, open-book translation emblem, pale ice-blue background, navy/cobalt wordmark, translucent connected paper cards, soft shadows, spacing, sophistication. Localize ONLY the main tagline, small feature line and main target-language card text. Keep the exact wordmark \"dsh-think-translate\". Tagline verbatim: \"La pensée de l’IA, dans votre langue\". Small line verbatim: \"Raisonnement · Cartes de tâches · Réponses\". Keep source card \"Thinking…\" and set target card to \"Réflexion…\". Quiet secondary language motifs \"日本語\" and \"Português\" may remain as decorative translation examples. Ensure all large heading/tagline copy is in fr, no leftover Chinese tagline or labels. Fit text elegantly without clipping, keep ample margins. Output a finished polished wide banner.",
+    "de": "Use case: text-localization. Edit target: the approved wide Chinese dsh-think-translate README banner. Preserve the exact wide 3:1 composition, open-book translation emblem, pale ice-blue background, navy/cobalt wordmark, translucent connected paper cards, soft shadows, spacing, sophistication. Localize ONLY the main tagline, small feature line and main target-language card text. Keep the exact wordmark \"dsh-think-translate\". Tagline verbatim: \"KI-Gedanken in deiner Sprache\". Small line verbatim: \"Gedanken · Aufgabenkarten · Antworten\". Keep source card \"Thinking…\" and set target card to \"Denkt nach…\". Quiet secondary language motifs \"日本語\" and \"Português\" may remain as decorative translation examples. Ensure all large heading/tagline copy is in de, no leftover Chinese tagline or labels. Fit text elegantly without clipping, keep ample margins. Output a finished polished wide banner.",
+    "ru": "Use case: text-localization. Edit target: the approved wide Chinese dsh-think-translate README banner. Preserve the exact wide 3:1 composition, open-book translation emblem, pale ice-blue background, navy/cobalt wordmark, translucent connected paper cards, soft shadows, spacing, sophistication. Localize ONLY the main tagline, small feature line and main target-language card text. Keep the exact wordmark \"dsh-think-translate\". Tagline verbatim: \"Мысли ИИ — на вашем языке\". Small line verbatim: \"Рассуждения · Карточки задач · Ответы\". Keep source card \"Thinking…\" and set target card to \"Думает…\". Quiet secondary language motifs \"日本語\" and \"Português\" may remain as decorative translation examples. Ensure all large heading/tagline copy is in ru, no leftover Chinese tagline or labels. Fit text elegantly without clipping, keep ample margins. Output a finished polished wide banner.",
+    "pt": "Use case: text-localization. Edit target: the approved wide Chinese dsh-think-translate README banner. Preserve the exact wide 3:1 composition, open-book translation emblem, pale ice-blue background, navy/cobalt wordmark, translucent connected paper cards, soft shadows, spacing, sophistication. Localize ONLY the main tagline, small feature line and main target-language card text. Keep the exact wordmark \"dsh-think-translate\". Tagline verbatim: \"O pensamento da IA, no seu idioma\". Small line verbatim: \"Raciocínio · Cartões de tarefas · Respostas\". Keep source card \"Thinking…\" and set target card to \"Pensando…\". Quiet secondary language motifs \"日本語\" and \"Português\" may remain as decorative translation examples. Ensure all large heading/tagline copy is in pt, no leftover Chinese tagline or labels. Fit text elegantly without clipping, keep ample margins. Output a finished polished wide banner."
+  },
+  "production": {
+    "tool": "built-in image_gen",
+    "layout": "Approved original pale-blue comparison layout; artifact cleanup only",
+    "chineseAsset": "docs/assets/translation-comparison.zh-CN.png",
+    "chineseSource": "exec-f74a7920-5c9f-4a08-a731-fe8afbb4838b.png",
+    "reviewDecision": "Preserve original layout and pale-blue fills; accept remaining minor text halos after cleanup. Exclude white-body and redesigned variants."
+  }
+}

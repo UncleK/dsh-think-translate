@@ -32,6 +32,8 @@ const valid = [
   ['es', 'Esta configuración está lista para los archivos del proyecto.'],
   ['fr', 'Cette configuration est prête pour les fichiers du projet.'],
   ['de', 'Die Konfiguration ist für die Dateien in diesem Projekt bereit.'],
+  ['pt', 'A configuração está pronta para os arquivos do projeto.'],
+  ['pt', 'Você deve verificar os arquivos antes de continuar com as alterações.'],
 ]
 const invalid = [
   ['zh-CN', 'これは日本語の翻訳です。設定を確認してください。'],
@@ -47,6 +49,9 @@ const invalid = [
   ['es', 'The configuration is ready and the build should succeed.'],
   ['fr', 'Die Konfiguration ist für die Dateien in diesem Projekt bereit.'],
   ['de', 'Cette configuration est prête pour les fichiers du projet.'],
+  ['pt', 'The configuration is ready and the build should succeed.'],
+  ['pt', '现在需要检查这个问题，确认构建结果。'],
+  ['en', 'Você deve verificar os arquivos antes de continuar com as alterações.'],
   ['zh-CN', ''],
 ]
 for (const [target, text] of valid) it('allows correct or ambiguous prose: ' + target + ' ' + text.slice(0,18), () => {

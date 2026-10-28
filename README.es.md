@@ -1,128 +1,217 @@
-<div align="center">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.es.png?v=1.2.16" alt="dsh-think-translate — El pensamiento de la IA, en tu idioma" width="100%" />
+</p>
 
-# 🐋 dsh-think-translate
+<p align="center">
+  <b>Traducción de la capa visual para DeepSeek Harness.</b><br />
+  Lee el razonamiento, sigue las tareas y comprende las respuestas. Conserva los originales; la traducción no entra en el contexto del modelo.
+</p>
 
-**Idiomas:** [English](README.md) · [中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Русский](README.ru.md)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.es.svg?v=1.2.16" alt="Licencia MIT" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.es.svg?v=1.2.16" alt="Ollama local" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.es.svg?v=1.2.16" alt="Originales intactos" />
+</p>
 
-[![npm version](https://img.shields.io/npm/v/dsh-think-translate?color=4D6BFE&label=npm)](https://www.npmjs.com/package/dsh-think-translate)
-[![license](https://img.shields.io/npm/l/dsh-think-translate?color=4D6BFE)](LICENSE)
-[![dsh](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
+<p align="center">
+  <a href="README.zh-CN.md">中文</a> · <a href="README.md">English</a> · <a href="README.ja.md">日本語</a> · <a href="README.ko.md">한국어</a> · <b>Español</b> · <a href="README.fr.md">Français</a> · <a href="README.de.md">Deutsch</a> · <a href="README.ru.md">Русский</a> · <a href="README.pt.md">Português</a>
+</p>
 
-<img src="demo/demo.gif?v=2" width="46%" alt="dsh-think-translate demo" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="demo/demo2.gif?v=2" width="41%" alt="dsh-think-translate demo 2" style="border:1px solid #4D6BFE;border-radius:8px;margin:4px" />
-
-</div>
+<p align="center">
+  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.es.svg?v=1.2.16" alt="Instalar" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.es.svg?v=1.2.16" alt="Demostraciones" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.es.svg?v=1.2.16" alt="Funciones" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.es.svg?v=1.2.16" alt="Comparación" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.es.svg?v=1.2.16" alt="Preguntas" height="24" /></a>
+</p>
 
 ---
 
-Traducción en la capa de visualización para la interfaz web de [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness): la **cadena de pensamiento (fila Think), las tarjetas de tareas y el texto de respuesta** se muestran en el idioma de destino elegido, mientras los originales permanecen intactos en la transcripción y el texto traducido **nunca entra en el contexto del modelo**.
+<a id="demo"></a>
+## Ve cómo surge el pensamiento
 
-## ✨ Características
+<table>
+<tr>
+<td width="50%" align="center" valign="bottom">
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.16" alt="Demo 1 · Razonamiento y respuestas" width="100%" />
+</td>
+<td width="50%" align="center" valign="bottom">
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.16" alt="Demo 2 · Más operaciones" width="100%" />
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><sub>Demo 1 · Razonamiento y respuestas</sub></td>
+<td align="center" valign="top"><sub>Demo 2 · Más operaciones</sub></td>
+</tr>
+</table>
 
-Los modelos de la familia DeepSeek suelen razonar en chino — o en el idioma en que les da por pensar. dsh-think-translate muestra la fila Think, las tarjetas de tareas y la respuesta en *tu* idioma mientras miras, como subtítulos del pensamiento del modelo.
+<a id="comparison"></a>
+## Comparación con el plugin oficial de traducción
 
-- **Motivos de rechazo de Auto review** — conserva el original y añade la traducción de forma asíncrona en la tarjeta de aprobación, con un interruptor independiente.
-- **🕵️ Lee cualquier cadena de pensamiento** — razonamiento, cadena de pensamiento, tarjetas de tareas y respuestas traducidos en tiempo real, por lotes
-- **8 idiomas de destino** — 中文 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский
-- **Interfaz en un solo idioma** — panel de ajustes, filas de pensamiento y tarjetas de tareas siguen el idioma de destino (sin mezclar zh/en); la elección persiste
-- **Ollama local** — reutiliza la instalación y los modelos al traducir o probar. Reordenar o volver a abrir los ajustes no carga el modelo. Los componentes que falten requieren el botón de preparación.
-- **1.2.15: memoria y compatibilidad** — libera el modelo seleccionado manualmente o al desactivar el proveedor, después de terminar las traducciones activas. La siguiente traducción lo recarga. La liberación por inactividad usa 5 minutos por defecto, con 1/5/10/30/60 minutos o desactivada; los cambios se aplican desde el próximo uso sin modificar ajustes globales. Adapta las imágenes, el plegado de Turn y la selección del original en DSH 0.2.2-alpha.2. No actives simultáneamente la traducción oficial del razonamiento.
-- **🧠 Coste de contexto cero** — capa de visualización pura: el modelo sigue viendo el texto original y el texto traducido nunca consume la ventana de contexto
-- **Respaldo Google / Bing** — cambio automático si el modelo local no está disponible (google usa un túnel CONNECT de Node con el proxy del sistema)
-- **Artefactos de código omitidos** — rutas, comandos, URL, regex y líneas de código puro nunca se traducen
-- **Traducción por lotes de frases** — las cadenas largas se traducen en lotes pequeños para mantener la calidad en modelos locales pequeños
-- **🧩 Fragmentación por párrafos y frases** — las cadenas largas se dividen por líneas en blanco (se conserva la estructura de párrafos) y luego por frases, para que un modelo local pequeño mantenga la calidad
-- **Salida en streaming** — las traducciones aparecen lote a lote mientras piensa; expande la fila Think para comparar con el original
-- **🎚️ Momento de traducción ajustable** — pre-traducir todo / carga diferida de cadenas antiguas (por defecto) / solo al expandir
-- **🔗 Cadena de proveedores dinámica** — el orden de la lista es el orden de uso: arrastra para reordenar y activa o desactiva cada fila. Integrados google gtx / bing / Ollama local más cualquier endpoint personalizado
-- **🔌 Proveedores personalizados (OpenAI y Anthropic)** — añade desde el panel cualquier endpoint compatible con OpenAI (`/v1/chat/completions`) o la **Anthropic Messages API** (Claude): tipo, preajuste, URL base, clave de API y modelo
-- **🪄 Hereda los proveedores configurados en DSH** — detecta filas DSH de solo lectura desde `profiles/<profile>/cordis.patch.yml` / anterior `settings.yaml` (`llm-pi-ai.providers`) y un botón reescanea y las añade todas a la cadena; la clave se resuelve en cada petición desde `.credentials.yaml` y nunca se guarda en la config del plugin. La ruta por defecto del propio harness también cuenta: si `default-model` / `agent-default-model` apunta a `deepseek-official`, la API oficial de DeepSeek aparece como una fila DSH más
-- **⏱️ Resistente** — los fallos se guardan en memoria durante 30 segundos para evitar reintentos continuos y después se reintentan automáticamente; cada proveedor tiene su botón de prueba
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.es.png?v=1.2.16" alt="Comparación con el plugin oficial de traducción" width="100%" />
+</p>
 
-## 📦 Instalación
+Activa este plugin o el traductor oficial de razonamiento. Ambos controlan la interfaz del razonamiento.
+
+<a id="quick-start"></a>
+## Un comando para empezar
 
 ```bash
-# Opción 1: npm (recomendado)
 dsh plugin --profile web add dsh-think-translate
-# luego reinicia web
+```
 
-# Opción 2: GitHub
+Tras instalar, reinicia completamente DSH Web. Abre **Ajustes → Traducción del pensamiento** y elige el idioma y los proveedores.
+
+<details>
+<summary><b>Instalar desde GitHub, actualizar y otros métodos</b></summary>
+
+Instalar desde GitHub:
+
+```bash
 dsh plugin --profile web add github:UncleK/dsh-think-translate
-
-# Opción 3: manual (junction + patch)
-#  1. enlaza el paquete en el node_modules del perfil
-New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-think-translate" `
-  -Target "<ruta del repositorio>"
-#  2. añade a "$HOME\.dsh\profiles\web\cordis.patch.yml":
-# - insert:
-#     - id: dsh-think-translate
-#       name: dsh-think-translate
-#  3. reinicia web
 ```
 
-## 🧯 Después de actualizar DSH
+Actualizar desde npm:
 
-Los plugins de cliente de terceros se cargan a través del grafo de módulos de cliente de DSH, y ese grafo se compone **una sola vez por proceso**: una composición fallida permanece en memoria hasta reiniciar. Por eso, justo después de actualizar suelen aparecer estas tres cosas.
-
-- **Arrancar desde un checkout del código falla** con `client bundles not found; run \`pnpm run build\` before launch` —— los paquetes de cliente nuevos vienen sin compilar: ejecuta `pnpm run build` en el checkout del harness y vuelve a iniciar `dsh web`.
-- **La interfaz del plugin desaparece** (la fila Think sin traducción, sin la sección *Traducción de cadena de pensamiento* en Ajustes) —— **reinicia `dsh web`**; a veces no basta con recargar la página.
-- **La lista de modelos locales está vacía** —— el servicio `ollama` no está sirviendo ese directorio de modelos: revisa `ollama list` (o `GET /api/tags`) y el `OLLAMA_MODELS` que usa realmente el servicio en ejecución. Si los modelos están en otra unidad, un enlace de directorio (junction) puede apuntar el directorio predeterminado del servicio hacia ellos.
-
-No hay nada que configurar en el plugin: no declara dependencia de orden con los paquetes internos de DSH (solo se enlaza al servicio `slots` y, opcionalmente, a `@deepseek-ai/dsh-client-ui-primitives`), así que funciona tanto en DSH antiguo (≤ 0.1.1-rc) como en la línea actual (≥ 0.1.2-alpha.1, incluida 0.1.5-rc.1).
-
-Para DSH **0.2.0-rc.2**, usa **dsh-think-translate 1.2.5 o posterior**. La versión 1.2.5 corrige el conflicto de registro del slot `todo_write` y declara el rango peer 0.2. Ejecuta `dsh plugin --profile web add dsh-think-translate@latest` y reinicia DSH; no hace falta una excepción de versión.
-
-**1.2.6** corrige la duplicación del razonamiento y las respuestas en DSH 0.2: el renderizador y su texto original de respaldo respetan los grupos reasoning/response.
-
-**1.2.7 preparación local:** Ollama habilitado en primera posición, o su botón de prueba, detecta la instalación existente y arranca/carga el modelo. La instalación y descarga requieren el botón de preparación y muestran progreso por etapas. La instalación automática del software admite Windows; otros sistemas enlazan la guía oficial. El proveedor en uso sigue la prioridad de los proveedores habilitados y verificados.
-
-**1.2.8 transporte y recuperación:** las traducciones HTTP/HTTPS normales usan la red nativa de Node en lugar de iniciar curl por cada lote de texto. Los proxies SOCKS y el instalador de Ollama conservan la compatibilidad con curl. Los fallos permanecen en memoria durante 30 segundos y después se reintentan automáticamente las traducciones del razonamiento y las respuestas. Los tiempos de espera permiten cargar modelos locales y probar proveedores alternativos.
-
-**1.2.14:** se aclaran el idioma de destino y los límites del texto original. Las traducciones claramente en otro idioma se rechazan y se prueba el siguiente proveedor habilitado. No se guardan como éxitos; se elimina la caché anterior y se conservan las preferencias, el código, los términos citados y los textos breves ambiguos. Reinicia por completo DSH Web o Desktop tras actualizar. [#14](https://github.com/UncleK/dsh-think-translate/issues/14).
-
-**1.2.13:** las tarjetas de rechazo de Auto review conservan el original y añaden la traducción de forma asíncrona, con un interruptor independiente activado por defecto. Se descartan los resultados antiguos al desactivar la función, cambiar el idioma o retirar la tarjeta. Los motivos no ingleses también se traducen al inglés. Gracias a [llg1634](https://github.com/llg1634) por el informe, el parche inicial y las pruebas en [#13](https://github.com/UncleK/dsh-think-translate/issues/13). Reinicia por completo DSH Web o Desktop tras actualizar.
-
-**1.2.12:** se respetan los proveedores habilitados; el navegador ya no consulta Google directamente si falla el Host. El código delimitado, con sangría o en línea se excluye de las solicitudes y se conserva exactamente, incluso durante streaming incompleto. Se elimina la caché de traducciones anterior y se conservan las preferencias. Tras actualizar, reinicia por completo DSH Web o Desktop; recargar la página puede seguir usando recursos antiguos del cliente.
-
-**1.2.11 correcciones de Bing:** se mantiene el proveedor gratuito. Las solicitudes de traducción usan el origen final de la página de sesión para evitar que la redirección `www.bing.com` → `cn.bing.com` en China continental elimine el cuerpo POST. SOCKS/curl comparte las cabeceras de navegador del transporte nativo para corregir HTTP 401; las respuestas vacías o no JSON muestran errores claros.
-
-**1.2.10 compatibilidad con perfiles DSH:** el descubrimiento sigue el perfil Desktop/Web activo y lee `profiles/<profile>/cordis.patch.yml` (`id` + `config`), después los parches del directorio DSH y las superposiciones de inicio. Se mantiene el formato anterior `settings.yaml`. El modelo predeterminado usa `default-model`; las credenciales siguen en `.credentials.yaml` del directorio DSH y solo en memoria. El diagnóstico muestra el archivo leído.
-
-**1.2.9 correcciones de idioma:** las pistas de vocabulario japonés solo se aplican al japonés; OpenAI/Anthropic reciben el nombre completo del idioma. Bing usa `auto-detect` y `zh-Hans`/`zh-Hant`. La detección del chino excluye rutas, código y JSON: omite la prosa ya simplificada, solicita conversión al detectar caracteres tradicionales frecuentes y traduce la prosa japonesa/coreana. Se elimina una vez la caché de traducciones anterior, conservando los ajustes.
-
-## 🚀 Uso
-
-1. Abre **Ajustes → Traducción de cadena de pensamiento**
-2. Elige el **idioma de destino** (p. ej. Español) — el panel, las filas y las tarjetas cambian a ese idioma
-3. Gestiona la **cadena de proveedores** (arrastra para ordenar, marca para activar):
-   - Integrados: **google gtx / bing** (gratis, mediante el proxy del sistema) y **Ollama local**; se reutilizan el software y los modelos existentes. Los componentes que falten requieren el botón de preparación, con progreso (7b/14b o un modelo personalizado)
-   - **Proveedores DSH**: los endpoints ya configurados en `profiles/<profile>/cordis.patch.yml` / anterior `settings.yaml` aparecen solos (solo lectura; márcalos para añadirlos a la cadena). El botón **Importar desde la config de DSH**, justo debajo de la lista, vuelve a escanear y los añade todos de una vez: ni baseURL ni clave que reescribir, porque la clave se resuelve desde las credenciales de DSH
-   - La clave se escribe a mano o llega como **`apiKeyEnv`** desde un preajuste o una fila DSH: esa fila muestra la insignia `env:NAME`, y la clave se resuelve en cada petición sin escribirse nunca en `config.json`. El formulario de edición no tiene campo de variable de entorno (el valor se conserva intacto), pero vaciar un campo lo elimina de verdad (se envía como borrado explícito)
-   - Si desmarcas uno, se omite. Los detalles están en [README.md](README.md)
-4. Envía un mensaje y expande la fila Think para ver la traducción
-
-## ⚙️ Cómo funciona
-
-```
-navegador → POST /_xlate/translate (mismo origen, sin CORS)
-  → cadena de proveedores en el host (fail-open, reordenable):
-      chain: [provider1, provider2, ...]   ← orden arrastrando en Ajustes
-        google / bing / compatible con OpenAI / Anthropic
-      cadena fallback (opcional, desactivada por defecto, se activa en el config)
-  → texto original si fallan todos los proveedores habilitados
+```bash
+dsh plugin --profile web add dsh-think-translate@latest
 ```
 
-- La **configuración de proveedores** vive en `config.json` (generado en tiempo de ejecución, ignorado por git): `chain` (ids ordenados), `fallback` (enabled + chain, solo en el archivo), `providers` (por proveedor `type`/`enabled`/`baseURL`/`apiKey`/`apiKeyEnv`/`model`). Las configuraciones antiguas con `priority` se migran solas; un proveedor que declara `apiKeyEnv` resuelve la clave desde esa variable en cada petición (el `apiKey` literal queda como respaldo) y ninguna clave resuelta se escribe de vuelta en `config.json`; un `null` en un parche borra ese campo, que es como la interfaz vacía uno
-- El **descubrimiento DSH** lee `profiles/<profile>/cordis.patch.yml` / anterior `settings.yaml` (`llm-pi-ai.providers`) y `.credentials.yaml` (`refs`) del harness al cargar; los proveedores detectados se marcan con `source: "dsh"`, las claves resueltas se quedan en memoria (nunca en `config.json`) y la ruta `/_xlate/dsh-scan` los relee cuando hace falta
-- **Mitad host** (`lib/index.js`): adaptadores de proveedor, caché LRU (600), `/_xlate/models`, `/_xlate/model/pull` + `pull-status` (configura automáticamente al terminar)
-- **Mitad cliente** (`lib/client.js`): UI en 8 idiomas, traducción por lotes, filas Think en streaming, persistencia en localStorage
-- Capa de visualización pura: los originales permanecen en la transcripción y el contexto del modelo
+Reinicia DSH por completo después de instalar o actualizar. Para una instalación manual, enlaza el paquete al perfil y regístralo en `cordis.patch.yml`. Para el uso normal, se recomiendan los comandos anteriores.
 
-## 🛠 Desarrollo
+</details>
 
-- Sin paso de compilación: `lib/client.js` es el bundle del navegador (fuente = artefacto); `lib/index.js` es el ESM del host
-- Cambios en el cliente se aplican al refrescar; cambios en el host requieren reiniciar web
-- Las cadenas de 8 idiomas viven en el diccionario `UI_TEXT` de `lib/client.js`
+<a id="features"></a>
+## Hay más que razonamiento por entender
 
-## 📄 Licencia
+<table>
+<tr>
+<td width="50%" valign="top">
+<h3>Razonamiento en directo</h3>
+<p>Pretraducir todo, cargar historial bajo demanda o traducir solo al expandir</p>
+</td>
+<td width="50%" valign="top">
+<h3>Tareas y respuestas juntas</h3>
+<p>Razonamiento, tarjetas y lista de tareas del editor; respuestas y motivos de rechazo de revisión automática opcionales</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<h3>Entiende las decisiones de revisión</h3>
+<p>Si la revisión automática rechaza una llamada, su motivo aparece traducido junto al original. Los botones de decisión existentes siguen disponibles.</p>
+</td>
+<td width="50%" valign="top">
+<h3>Conserva originales y código</h3>
+<p>Conserva originales; la traducción no entra en el contexto del modelo. Reutiliza el renderizado Markdown; protege código, rutas y comandos antes de traducir.</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<h3>Modelos locales bajo demanda</h3>
+<p>Liberación manual, al desmarcar y tras inactividad; recarga en la siguiente traducción</p>
+</td>
+<td width="50%" valign="top">
+<h3>Proveedores en tu orden</h3>
+<p>Alternativa automática según el orden activo; idioma claramente incorrecto activa el siguiente; reintento tras la espera</p>
+</td>
+</tr>
+</table>
 
-MIT
+### Conecta los proveedores que ya usas
+
+**Ollama · Google · Bing · OpenAI · Anthropic Messages API**
+
+Detecta proveedores configurados en DSH sin volver a introducir endpoints y claves. Prueba cada fila por separado; el orden de la lista controla los intentos.
+
+```text
+Tu primera opción → siguiente proveedor activo → … → original si todos fallan
+```
+
+<details>
+<summary><b>Endpoints personalizados, credenciales y recuperación</b></summary>
+
+- Admite `/v1/chat/completions` compatible con OpenAI y la API nativa Anthropic Messages.
+- Detecta proveedores del perfil DSH actual y sus modificaciones; vuelve a explorar y añádelos a la cadena.
+- `apiKeyEnv` se resuelve al solicitar; la credencial resuelta no se guarda en la configuración.
+- Los fallos esperan 30 segundos en la memoria del host antes de nuevos intentos. Un idioma claramente incorrecto activa el siguiente proveedor.
+- La detección omite texto reconocido en el idioma de destino; las pruebas de proveedor siempre hacen una solicitud real.
+
+</details>
+
+### Modelos locales de traducción: carga y liberación bajo demanda
+
+| Tu acción | Comportamiento |
+|---|---|
+| Traducir o probar | Inicia el servicio y carga el modelo seleccionado bajo demanda |
+| Liberar memoria del modelo | Espera las traducciones activas y libera; conserva archivos, interruptores y orden |
+| Desmarcar el proveedor local | Lo desactiva y libera el modelo seleccionado |
+| Reactivarlo o abrir ajustes | No precarga; carga en la próxima traducción real |
+| Configurar liberación por inactividad | 5 minutos por defecto; 1 / 5 / 10 / 30 / 60 minutos o desactivada |
+
+El plazo se aplica desde el próximo uso. Ollama controla el modelo seleccionado sin cambiar variables globales. El software o los modelos faltantes solo se instalan o descargan al pulsar preparar, mostrando el progreso.
+
+<a id="languages"></a>
+### Tu idioma te acompaña
+
+中文 · English · 日本語 · 한국어 · Español · Français · Deutsch · Русский · Português
+
+Nueve idiomas de destino, ajustes y textos de tareas, incluido el portugués. La selección se conserva al recargar.
+
+<a id="faq"></a>
+## Respuestas a preguntas frecuentes
+
+<details>
+<summary><b>No aparece la opción de traducción tras instalar o actualizar</b></summary>
+
+Reinicia completamente `dsh web`. El grafo de módulos se monta al iniciar el proceso; recargar la página puede no bastar. El pie de ajustes muestra la versión instalada.
+
+</details>
+
+<details>
+<summary><b>La lista de modelos locales está vacía</b></summary>
+
+Comprueba `ollama list` o `/api/tags`, el directorio activo y `OLLAMA_MODELS` del servicio. No hace falta volver a descargar archivos existentes.
+
+</details>
+
+<details>
+<summary><b>Aparece client bundles not found después de actualizar DSH</b></summary>
+
+Ejecuta `pnpm run build` en el repositorio de DeepSeek Harness y reinicia DSH Web.
+
+</details>
+
+<details>
+<summary><b>¿Un fallo de traducción afecta a la conversación?</b></summary>
+
+Si todos los proveedores activos fallan, se conserva el original. Prueba cada proveedor y consulta el último error en ajustes. Las solicitudes posteriores pueden reintentarlo tras la espera.
+
+</details>
+
+<details>
+<summary><b>Cambios recientes y compatibilidad</b></summary>
+
+**1.2.16** añade portugués al destino y la interfaz, renueva los nueve README e imágenes localizadas y declara tres imágenes para el mercado.
+
+**1.2.15** añade gestión de memoria local y adapta imágenes, plegado de razonamiento y selección del original a DSH `0.2.2-alpha.2`.
+
+**1.2.13** añade traducción de motivos de rechazo de revisión automática. Gracias a [llg1634](https://github.com/llg1634) por el informe, parche inicial y pruebas.
+
+Más versiones: [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases).
+
+</details>
+
+<details>
+<summary><b>Desarrollo y funcionamiento</b></summary>
+
+- `lib/index.js`: rutas del host, proveedores, configuración, caché y modelos locales.
+- `lib/client.js`: ajustes, traducción visual, lotes en streaming y caché del navegador.
+- `lib/config.json`: configuración en ejecución, excluida de Git y npm.
+- Sin compilación adicional: el código es el producto. Reinicia DSH tras cambiar el host.
+- Verifica con `npm test`. Detección y credenciales: [notas de mantenimiento](https://github.com/UncleK/dsh-think-translate/blob/main/docs/maintenance-notes.md).
+
+</details>
+
+---
+
+<p align="center">
+  <b>dsh-think-translate</b><br />
+  <a href="https://github.com/UncleK/dsh-think-translate/issues">Informar de un problema</a> &nbsp;·&nbsp; <a href="https://github.com/UncleK/dsh-think-translate/releases">Versiones</a> &nbsp;·&nbsp; <a href="https://github.com/UncleK/dsh-think-translate/blob/main/LICENSE">Licencia MIT</a>
+</p>

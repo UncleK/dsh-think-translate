@@ -1,0 +1,930 @@
+{
+  "en": {
+    "introTitle": "Display-layer translation for DeepSeek Harness.",
+    "intro": "Read the reasoning, follow the tasks, and understand the answers. Originals are preserved; translations stay out of model context.",
+    "nav": [
+      "Quick install",
+      "Live demos",
+      "Features",
+      "Official comparison",
+      "FAQ"
+    ],
+    "badges": [
+      "MIT License",
+      "Local Ollama",
+      "Originals preserved"
+    ],
+    "demoHeading": "See thinking unfold",
+    "demo1": "Demo 1 · Reasoning and answers",
+    "demo2": "Demo 2 · More live operations",
+    "installHeading": "One command to get started",
+    "installIntro": "After installation, fully restart DSH Web. Open **Settings → Think Translation**, then choose the target language and providers.",
+    "installDetails": "GitHub installation, updates and other methods",
+    "fromGithub": "Install from GitHub:",
+    "updateNpm": "Update from npm:",
+    "restart": "Fully restart DSH after installing or updating. For manual deployment, link the package into the profile and add its entry to `cordis.patch.yml`; the commands above are recommended for everyday use.",
+    "featuresHeading": "More than reasoning to understand",
+    "cardTitles": [
+      "Reasoning, as it happens",
+      "Tasks and answers, together",
+      "Understand review decisions",
+      "Preserve originals and code",
+      "Local models, loaded on demand",
+      "Providers in your preferred order"
+    ],
+    "reviewDetail": "When auto-review rejects a tool call, its reason is translated alongside the original. The existing decision buttons remain available.",
+    "providersHeading": "Connect providers you already use",
+    "providersIntro": "Discover providers already configured in DSH without entering endpoints and keys again. Test each provider separately; list order controls the order of attempts.",
+    "chain": "Your first choice → next enabled provider → … → originals if all fail",
+    "providerDetails": "Custom endpoints, credentials and recovery",
+    "providerNotes": [
+      "Custom endpoints support OpenAI-compatible `/v1/chat/completions` and the native Anthropic Messages API.",
+      "Discovery reads the current DSH profile and overrides. Rescan and add discovered providers to the translation chain.",
+      "An `apiKeyEnv` key is resolved at request time; resolved credentials are never written back to plugin configuration.",
+      "Failures cool down in host memory for 30 seconds, then subsequent translation requests can retry. Clearly wrong-language results try the next provider.",
+      "Language detection skips text already recognized as the target language; explicit provider tests still make a real request."
+    ],
+    "memoryHeading": "Local translation models: load and release on demand",
+    "memoryHeaders": [
+      "Your action",
+      "Plugin behavior"
+    ],
+    "memoryRows": [
+      [
+        "Translate or test",
+        "Start the service and load the selected model on demand"
+      ],
+      [
+        "Release model memory",
+        "Wait for active translations, then unload; preserve files, switches and order"
+      ],
+      [
+        "Uncheck the local provider",
+        "Disable it and unload the selected model"
+      ],
+      [
+        "Re-enable it or open settings",
+        "No preload; load on the next actual translation"
+      ],
+      [
+        "Set idle release",
+        "5 minutes by default; choose 1 / 5 / 10 / 30 / 60 minutes or off"
+      ]
+    ],
+    "memoryFoot": "Idle timing applies from the next use. Ollama tracks the selected model; global environment variables are unchanged. Missing software or models are installed or downloaded only after you click the preparation button, with progress shown.",
+    "languagesHeading": "Language settings that follow you",
+    "languagesIntro": "Nine target languages, settings translations and task labels, including Portuguese. Your selection survives a page refresh.",
+    "comparisonNotice": "Enable either this plugin or the official reasoning translator. Both take over the reasoning interface.",
+    "faqHeading": "Answers to common questions",
+    "faqs": [
+      [
+        "No translation entry after installing or updating",
+        "Fully restart `dsh web`. The client module graph is assembled at process start; refreshing the page alone may not load a new plugin. The settings footer shows the installed package version."
+      ],
+      [
+        "The local model list is empty",
+        "Check `ollama list` or `/api/tags`, the active model directory, and the service’s `OLLAMA_MODELS`. Existing model files do not need to be downloaded again."
+      ],
+      [
+        "Source startup reports client bundles not found after a DSH update",
+        "Run `pnpm run build` in the DeepSeek Harness repository, then restart DSH Web."
+      ],
+      [
+        "Does a translation failure affect the conversation?",
+        "When all enabled providers fail, the original remains. Test individual providers and inspect the latest error in settings. Translation requests can retry after cooldown."
+      ]
+    ],
+    "changesTitle": "Recent changes and compatibility",
+    "changes": [
+      "**1.2.16** adds Portuguese throughout the translation target and UI, refreshes all nine READMEs and localized comparison images, and declares three marketplace images.",
+      "**1.2.15** adds local model memory management and adapts to DSH `0.2.2-alpha.2` image rendering, grouped reasoning collapse and original text selection.",
+      "**1.2.13** adds auto-review denial-reason translation. Thanks to [llg1634](https://github.com/llg1634) for the report, initial patch and testing."
+    ],
+    "older": "Earlier versions and details: [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases).",
+    "devTitle": "Development and internals",
+    "devNotes": [
+      "`lib/index.js`: host routes, providers, configuration, memory cache and local model lifecycle.",
+      "`lib/client.js`: settings, display-layer translation, streaming batches and browser cache.",
+      "`lib/config.json`: runtime configuration, excluded from Git and npm.",
+      "No extra build step: source files are the deliverable. Restart DSH after changing host code.",
+      "Run checks with `npm test`. Discovery and credential handling are documented in the [maintenance notes](docs/maintenance-notes.md)."
+    ],
+    "footer": [
+      "Report an issue",
+      "Releases",
+      "MIT License"
+    ]
+  },
+  "ja": {
+    "introTitle": "DeepSeek Harness の表示レイヤー翻訳。",
+    "intro": "思考を読み、タスクを追い、回答を理解。原文は保持され、訳文はモデルのコンテキストに入りません。",
+    "nav": [
+      "簡単インストール",
+      "動作デモ",
+      "主な機能",
+      "公式との比較",
+      "よくある質問"
+    ],
+    "badges": [
+      "MIT License",
+      "ローカル Ollama",
+      "原文を保持"
+    ],
+    "demoHeading": "思考が生まれる瞬間を見る",
+    "demo1": "デモ1 · 思考と回答の翻訳",
+    "demo2": "デモ2 · その他の操作",
+    "installHeading": "コマンド1つで使い始める",
+    "installIntro": "インストール後、DSH Web を完全に再起動します。**設定 → 思考チェーン翻訳**で翻訳先の言語と提供元を選択してください。",
+    "installDetails": "GitHub からの導入、更新、その他の方法",
+    "fromGithub": "GitHub からインストール：",
+    "updateNpm": "npm 版を更新：",
+    "restart": "導入・更新後は DSH を完全に再起動してください。手動配置ではパッケージを profile にリンクし、`cordis.patch.yml` に登録します。通常は上記コマンドをお勧めします。",
+    "featuresHeading": "読みたいのは思考だけではない",
+    "cardTitles": [
+      "思考をリアルタイムに読む",
+      "タスクと回答をまとめて確認",
+      "レビューの理由を理解",
+      "原文とコードを保持",
+      "ローカルモデルは必要な時に",
+      "好みの順に提供元を利用"
+    ],
+    "reviewDetail": "自動レビューがツール呼び出しを拒否した際、原文とともに理由の訳を表示します。既存の操作ボタンも利用できます。",
+    "providersHeading": "使い慣れた提供元に接続",
+    "providersIntro": "DSH 設定済みの提供元を検出し、エンドポイントやキーの再入力を省けます。各行を個別にテストでき、一覧の順番で試行します。",
+    "chain": "優先する提供元 → 次の有効な提供元 → … → すべて失敗したら原文を保持",
+    "providerDetails": "独自エンドポイント、認証情報と復旧",
+    "providerNotes": [
+      "OpenAI 互換 `/v1/chat/completions` と Anthropic Messages API に対応します。",
+      "現在の DSH profile と上書き設定から提供元を検出し、再スキャンして翻訳チェーンに追加できます。",
+      "`apiKeyEnv` はリクエスト時に解決し、解決したキーはプラグイン設定へ書き戻しません。",
+      "失敗は Host メモリで30秒間クールダウンし、その後の翻訳で再試行します。明らかに違う言語なら次の提供元を試します。",
+      "すでに翻訳先言語と認識できる本文はスキップします。提供元テストでは実際にリクエストします。"
+    ],
+    "memoryHeading": "ローカル翻訳モデル：必要に応じてロードと解放",
+    "memoryHeaders": [
+      "操作",
+      "プラグインの動作"
+    ],
+    "memoryRows": [
+      [
+        "翻訳またはテスト",
+        "必要な時にサービスを起動し、選択したモデルをロード"
+      ],
+      [
+        "モデルメモリを解放",
+        "進行中の翻訳を待って解放。ファイル、スイッチ、順序は保持"
+      ],
+      [
+        "ローカル提供元のチェックを外す",
+        "無効にして選択モデルを解放"
+      ],
+      [
+        "再有効化、または設定を開く",
+        "事前ロードせず、次の実際の翻訳時にロード"
+      ],
+      [
+        "アイドル時の解放を設定",
+        "既定は5分。1 / 5 / 10 / 30 / 60分、または無効"
+      ]
+    ],
+    "memoryFoot": "時間設定は次の使用時から適用されます。Ollama が選択モデルを計時し、グローバル環境変数は変更しません。不足するソフトやモデルは準備ボタンを押してから導入・ダウンロードし、進捗を表示します。",
+    "languagesHeading": "言語設定をいつも一緒に",
+    "languagesIntro": "翻訳先、設定画面、タスク表示はポルトガル語を含む9言語に対応。選択はページ更新後も保持されます。",
+    "comparisonNotice": "本プラグインか公式思考翻訳のどちらか一方を有効にしてください。両者とも思考表示を担当します。",
+    "faqHeading": "よくある質問",
+    "faqs": [
+      [
+        "導入・更新後に翻訳設定が見つからない",
+        "`dsh web` を完全に再起動してください。クライアントのモジュール構成は起動時に作られ、ページ更新だけでは反映されない場合があります。設定画面下部にインストール版を表示します。"
+      ],
+      [
+        "ローカルモデル一覧が空",
+        "`ollama list` または `/api/tags` と、サービスのモデル保存先・`OLLAMA_MODELS` を確認してください。既存ファイルの再ダウンロードは不要です。"
+      ],
+      [
+        "DSH 更新後に client bundles not found と表示される",
+        "DeepSeek Harness のリポジトリで `pnpm run build` を実行し、DSH Web を再起動してください。"
+      ],
+      [
+        "翻訳失敗は会話に影響する？",
+        "すべての有効な提供元が失敗しても原文を保持します。設定で各提供元をテストし、直近のエラーを確認できます。クールダウン後の翻訳で再試行します。"
+      ]
+    ],
+    "changesTitle": "最近の更新と互換性",
+    "changes": [
+      "**1.2.16**：翻訳先と UI にポルトガル語を追加。9言語の README と比較画像を更新し、市場向け画像を3枚に拡充。",
+      "**1.2.15**：ローカルモデルのメモリ管理を追加。DSH `0.2.2-alpha.2` の画像表示、思考のまとめ折りたたみ、原文選択に対応。",
+      "**1.2.13**：自動レビューの拒否理由翻訳を追加。[llg1634](https://github.com/llg1634) の報告、初期パッチとテストに感謝します。"
+    ],
+    "older": "以前の変更は [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases) をご覧ください。",
+    "devTitle": "開発と仕組み",
+    "devNotes": [
+      "`lib/index.js`：Host ルート、提供元、設定、メモリキャッシュ、ローカルモデル管理。",
+      "`lib/client.js`：設定、表示レイヤー翻訳、ストリーミング分割、ブラウザーキャッシュ。",
+      "`lib/config.json`：実行時設定。Git と npm には含めません。",
+      "追加ビルド不要。ソースが成果物です。Host の変更後は DSH を再起動します。",
+      "確認：`npm test`。設定検出と認証情報は[メンテナンスノート](docs/maintenance-notes.md)に記載。"
+    ],
+    "footer": [
+      "問題を報告",
+      "リリース",
+      "MIT License"
+    ]
+  },
+  "ko": {
+    "introTitle": "DeepSeek Harness를 위한 표시 계층 번역.",
+    "intro": "사고를 읽고, 작업을 따라가고, 답변을 이해하세요. 원문은 보존되며 번역문은 모델 컨텍스트에 들어가지 않습니다.",
+    "nav": [
+      "빠른 설치",
+      "실제 데모",
+      "핵심 기능",
+      "공식 비교",
+      "자주 묻는 질문"
+    ],
+    "badges": [
+      "MIT License",
+      "로컬 Ollama",
+      "원문 보존"
+    ],
+    "demoHeading": "생각이 펼쳐지는 순간",
+    "demo1": "데모 1 · 사고 과정과 답변 번역",
+    "demo2": "데모 2 · 더 많은 실제 조작",
+    "installHeading": "명령 하나로 시작",
+    "installIntro": "설치 후 DSH Web을 완전히 다시 시작하세요. **설정 → 사고 체인 번역**에서 대상 언어와 제공자를 선택합니다.",
+    "installDetails": "GitHub 설치, 업데이트 및 기타 방법",
+    "fromGithub": "GitHub에서 설치:",
+    "updateNpm": "npm 버전 업데이트:",
+    "restart": "설치나 업데이트 후 DSH를 완전히 다시 시작하세요. 수동 배포는 패키지를 profile에 연결하고 `cordis.patch.yml`에 등록합니다. 일반적으로 위 명령을 권장합니다.",
+    "featuresHeading": "이해해야 할 것은 사고 과정만이 아닙니다",
+    "cardTitles": [
+      "사고를 실시간으로 읽기",
+      "작업과 답변 함께 보기",
+      "검토 사유 이해하기",
+      "원문과 코드 보존",
+      "필요할 때 로컬 모델 로드",
+      "원하는 순서로 제공자 사용"
+    ],
+    "reviewDetail": "자동 검토가 도구 호출을 거부하면 원문 옆에 사유 번역을 표시합니다. 기존 결정 버튼은 계속 사용할 수 있습니다.",
+    "providersHeading": "이미 사용하는 제공자 연결",
+    "providersIntro": "DSH에 설정된 제공자를 검색하므로 엔드포인트와 키를 다시 입력할 필요가 없습니다. 각 행을 개별 테스트하고 목록 순서대로 시도합니다.",
+    "chain": "첫 번째 제공자 → 다음 활성 제공자 → … → 모두 실패하면 원문 유지",
+    "providerDetails": "사용자 지정 엔드포인트, 인증 및 복구",
+    "providerNotes": [
+      "OpenAI 호환 `/v1/chat/completions`와 기본 Anthropic Messages API를 지원합니다.",
+      "현재 DSH profile 및 덮어쓰기 설정에서 제공자를 검색하고 번역 체인에 추가할 수 있습니다.",
+      "`apiKeyEnv`는 요청 시 해석하며 해석한 키를 플러그인 설정에 다시 쓰지 않습니다.",
+      "실패는 Host 메모리에서 30초간 대기 후 다음 번역 요청에서 재시도합니다. 명백한 언어 오류는 다음 제공자로 넘어갑니다.",
+      "이미 대상 언어로 인식되는 본문은 건너뜁니다. 제공자 테스트는 실제 요청을 보냅니다."
+    ],
+    "memoryHeading": "로컬 번역 모델: 필요할 때 로드하고 해제",
+    "memoryHeaders": [
+      "사용자 조작",
+      "플러그인 동작"
+    ],
+    "memoryRows": [
+      [
+        "번역 또는 테스트",
+        "필요할 때 서비스를 시작하고 선택한 모델 로드"
+      ],
+      [
+        "모델 메모리 해제",
+        "진행 중인 번역 후 해제. 파일, 스위치, 순서 유지"
+      ],
+      [
+        "로컬 제공자 체크 해제",
+        "비활성화하고 선택한 모델 해제"
+      ],
+      [
+        "다시 활성화하거나 설정 열기",
+        "미리 로드하지 않고 다음 실제 번역 시 로드"
+      ],
+      [
+        "유휴 해제 설정",
+        "기본 5분. 1 / 5 / 10 / 30 / 60분 또는 끄기"
+      ]
+    ],
+    "memoryFoot": "시간은 다음 사용부터 적용됩니다. Ollama가 선택한 모델의 유휴 시간을 관리하며 전역 환경 변수는 바꾸지 않습니다. 소프트웨어나 모델이 없으면 준비 버튼을 눌러야 설치·다운로드하며 진행률을 표시합니다.",
+    "languagesHeading": "언어 설정도 함께",
+    "languagesIntro": "번역 대상, 설정 화면, 작업 문구를 포르투갈어 포함 9개 언어로 제공합니다. 새로고침 후에도 선택이 유지됩니다.",
+    "comparisonNotice": "이 플러그인과 공식 사고 번역 중 하나만 활성화하세요. 둘 다 사고 화면을 담당합니다.",
+    "faqHeading": "자주 묻는 질문",
+    "faqs": [
+      [
+        "설치·업데이트 후 번역 설정이 보이지 않음",
+        "`dsh web`을 완전히 다시 시작하세요. 클라이언트 모듈 구성은 프로세스 시작 시 만들어져 새로고침만으로는 부족할 수 있습니다. 설정 하단에 설치된 패키지 버전이 표시됩니다."
+      ],
+      [
+        "로컬 모델 목록이 비어 있음",
+        "`ollama list` 또는 `/api/tags`, 실제 모델 경로 및 서비스의 `OLLAMA_MODELS`를 확인하세요. 기존 파일은 다시 다운로드하지 않아도 됩니다."
+      ],
+      [
+        "DSH 업데이트 후 client bundles not found 오류",
+        "DeepSeek Harness 저장소에서 `pnpm run build`를 실행한 뒤 DSH Web을 다시 시작하세요."
+      ],
+      [
+        "번역 실패가 대화에 영향을 주나요?",
+        "모든 활성 제공자가 실패해도 원문을 유지합니다. 설정에서 개별 제공자를 테스트하고 최근 오류를 확인하세요. 대기 시간이 지나면 다음 번역 요청이 재시도할 수 있습니다."
+      ]
+    ],
+    "changesTitle": "최근 변경 및 호환성",
+    "changes": [
+      "**1.2.16**: 포르투갈어 번역 대상과 UI 추가. 9개 언어 README와 비교 이미지 갱신, 마켓 이미지 3장 선언.",
+      "**1.2.15**: 로컬 모델 메모리 관리 추가. DSH `0.2.2-alpha.2`의 이미지 표시, 사고 묶음 접기, 원문 선택에 대응.",
+      "**1.2.13**: 자동 검토 거부 사유 번역 추가. 제보, 초기 패치, 테스트를 제공한 [llg1634](https://github.com/llg1634)에게 감사드립니다."
+    ],
+    "older": "이전 버전: [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases).",
+    "devTitle": "개발 및 동작 원리",
+    "devNotes": [
+      "`lib/index.js`: Host 라우트, 제공자, 설정, 메모리 캐시와 로컬 모델 관리.",
+      "`lib/client.js`: 설정, 표시 계층 번역, 스트리밍 분할 및 브라우저 캐시.",
+      "`lib/config.json`: 실행 설정. Git 및 npm에서 제외합니다.",
+      "추가 빌드 없이 소스가 결과물입니다. Host 수정 후 DSH를 다시 시작합니다.",
+      "검사: `npm test`. 검색 및 인증 처리는 [유지보수 노트](docs/maintenance-notes.md)를 참고하세요."
+    ],
+    "footer": [
+      "문제 제보",
+      "릴리스",
+      "MIT License"
+    ]
+  },
+  "es": {
+    "introTitle": "Traducción de la capa visual para DeepSeek Harness.",
+    "intro": "Lee el razonamiento, sigue las tareas y comprende las respuestas. Conserva los originales; la traducción no entra en el contexto del modelo.",
+    "nav": [
+      "Instalar",
+      "Demostraciones",
+      "Funciones",
+      "Comparación",
+      "Preguntas"
+    ],
+    "badges": [
+      "Licencia MIT",
+      "Ollama local",
+      "Originales intactos"
+    ],
+    "demoHeading": "Ve cómo surge el pensamiento",
+    "demo1": "Demo 1 · Razonamiento y respuestas",
+    "demo2": "Demo 2 · Más operaciones",
+    "installHeading": "Un comando para empezar",
+    "installIntro": "Tras instalar, reinicia completamente DSH Web. Abre **Ajustes → Traducción del pensamiento** y elige el idioma y los proveedores.",
+    "installDetails": "Instalar desde GitHub, actualizar y otros métodos",
+    "fromGithub": "Instalar desde GitHub:",
+    "updateNpm": "Actualizar desde npm:",
+    "restart": "Reinicia DSH por completo después de instalar o actualizar. Para una instalación manual, enlaza el paquete al perfil y regístralo en `cordis.patch.yml`. Para el uso normal, se recomiendan los comandos anteriores.",
+    "featuresHeading": "Hay más que razonamiento por entender",
+    "cardTitles": [
+      "Razonamiento en directo",
+      "Tareas y respuestas juntas",
+      "Entiende las decisiones de revisión",
+      "Conserva originales y código",
+      "Modelos locales bajo demanda",
+      "Proveedores en tu orden"
+    ],
+    "reviewDetail": "Si la revisión automática rechaza una llamada, su motivo aparece traducido junto al original. Los botones de decisión existentes siguen disponibles.",
+    "providersHeading": "Conecta los proveedores que ya usas",
+    "providersIntro": "Detecta proveedores configurados en DSH sin volver a introducir endpoints y claves. Prueba cada fila por separado; el orden de la lista controla los intentos.",
+    "chain": "Tu primera opción → siguiente proveedor activo → … → original si todos fallan",
+    "providerDetails": "Endpoints personalizados, credenciales y recuperación",
+    "providerNotes": [
+      "Admite `/v1/chat/completions` compatible con OpenAI y la API nativa Anthropic Messages.",
+      "Detecta proveedores del perfil DSH actual y sus modificaciones; vuelve a explorar y añádelos a la cadena.",
+      "`apiKeyEnv` se resuelve al solicitar; la credencial resuelta no se guarda en la configuración.",
+      "Los fallos esperan 30 segundos en la memoria del host antes de nuevos intentos. Un idioma claramente incorrecto activa el siguiente proveedor.",
+      "La detección omite texto reconocido en el idioma de destino; las pruebas de proveedor siempre hacen una solicitud real."
+    ],
+    "memoryHeading": "Modelos locales de traducción: carga y liberación bajo demanda",
+    "memoryHeaders": [
+      "Tu acción",
+      "Comportamiento"
+    ],
+    "memoryRows": [
+      [
+        "Traducir o probar",
+        "Inicia el servicio y carga el modelo seleccionado bajo demanda"
+      ],
+      [
+        "Liberar memoria del modelo",
+        "Espera las traducciones activas y libera; conserva archivos, interruptores y orden"
+      ],
+      [
+        "Desmarcar el proveedor local",
+        "Lo desactiva y libera el modelo seleccionado"
+      ],
+      [
+        "Reactivarlo o abrir ajustes",
+        "No precarga; carga en la próxima traducción real"
+      ],
+      [
+        "Configurar liberación por inactividad",
+        "5 minutos por defecto; 1 / 5 / 10 / 30 / 60 minutos o desactivada"
+      ]
+    ],
+    "memoryFoot": "El plazo se aplica desde el próximo uso. Ollama controla el modelo seleccionado sin cambiar variables globales. El software o los modelos faltantes solo se instalan o descargan al pulsar preparar, mostrando el progreso.",
+    "languagesHeading": "Tu idioma te acompaña",
+    "languagesIntro": "Nueve idiomas de destino, ajustes y textos de tareas, incluido el portugués. La selección se conserva al recargar.",
+    "comparisonNotice": "Activa este plugin o el traductor oficial de razonamiento. Ambos controlan la interfaz del razonamiento.",
+    "faqHeading": "Respuestas a preguntas frecuentes",
+    "faqs": [
+      [
+        "No aparece la opción de traducción tras instalar o actualizar",
+        "Reinicia completamente `dsh web`. El grafo de módulos se monta al iniciar el proceso; recargar la página puede no bastar. El pie de ajustes muestra la versión instalada."
+      ],
+      [
+        "La lista de modelos locales está vacía",
+        "Comprueba `ollama list` o `/api/tags`, el directorio activo y `OLLAMA_MODELS` del servicio. No hace falta volver a descargar archivos existentes."
+      ],
+      [
+        "Aparece client bundles not found después de actualizar DSH",
+        "Ejecuta `pnpm run build` en el repositorio de DeepSeek Harness y reinicia DSH Web."
+      ],
+      [
+        "¿Un fallo de traducción afecta a la conversación?",
+        "Si todos los proveedores activos fallan, se conserva el original. Prueba cada proveedor y consulta el último error en ajustes. Las solicitudes posteriores pueden reintentarlo tras la espera."
+      ]
+    ],
+    "changesTitle": "Cambios recientes y compatibilidad",
+    "changes": [
+      "**1.2.16** añade portugués al destino y la interfaz, renueva los nueve README e imágenes localizadas y declara tres imágenes para el mercado.",
+      "**1.2.15** añade gestión de memoria local y adapta imágenes, plegado de razonamiento y selección del original a DSH `0.2.2-alpha.2`.",
+      "**1.2.13** añade traducción de motivos de rechazo de revisión automática. Gracias a [llg1634](https://github.com/llg1634) por el informe, parche inicial y pruebas."
+    ],
+    "older": "Más versiones: [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases).",
+    "devTitle": "Desarrollo y funcionamiento",
+    "devNotes": [
+      "`lib/index.js`: rutas del host, proveedores, configuración, caché y modelos locales.",
+      "`lib/client.js`: ajustes, traducción visual, lotes en streaming y caché del navegador.",
+      "`lib/config.json`: configuración en ejecución, excluida de Git y npm.",
+      "Sin compilación adicional: el código es el producto. Reinicia DSH tras cambiar el host.",
+      "Verifica con `npm test`. Detección y credenciales: [notas de mantenimiento](docs/maintenance-notes.md)."
+    ],
+    "footer": [
+      "Informar de un problema",
+      "Versiones",
+      "Licencia MIT"
+    ]
+  },
+  "fr": {
+    "introTitle": "Traduction de la couche d’affichage de DeepSeek Harness.",
+    "intro": "Lisez le raisonnement, suivez les tâches et comprenez les réponses. Les originaux sont conservés ; les traductions restent hors du contexte du modèle.",
+    "nav": [
+      "Installation",
+      "Démonstrations",
+      "Fonctions",
+      "Comparaison",
+      "Questions"
+    ],
+    "badges": [
+      "Licence MIT",
+      "Ollama local",
+      "Originaux conservés"
+    ],
+    "demoHeading": "Voir la pensée se déployer",
+    "demo1": "Démo 1 · Raisonnement et réponses",
+    "demo2": "Démo 2 · Autres opérations",
+    "installHeading": "Une commande pour commencer",
+    "installIntro": "Après l’installation, redémarrez complètement DSH Web. Ouvrez **Paramètres → Traduction de la réflexion**, puis choisissez la langue et les fournisseurs.",
+    "installDetails": "Installation GitHub, mises à jour et autres méthodes",
+    "fromGithub": "Installer depuis GitHub :",
+    "updateNpm": "Mettre à jour depuis npm :",
+    "restart": "Redémarrez complètement DSH après chaque installation ou mise à jour. En manuel, liez le paquet au profil et ajoutez son entrée dans `cordis.patch.yml`. Les commandes ci-dessus conviennent à l’usage courant.",
+    "featuresHeading": "Il n’y a pas que le raisonnement à comprendre",
+    "cardTitles": [
+      "Lire le raisonnement en direct",
+      "Tâches et réponses ensemble",
+      "Comprendre les décisions de révision",
+      "Préserver originaux et code",
+      "Modèles locaux à la demande",
+      "Vos fournisseurs, dans votre ordre"
+    ],
+    "reviewDetail": "Lorsqu’une révision automatique refuse un appel d’outil, le motif est traduit à côté de l’original. Les boutons de décision existants restent disponibles.",
+    "providersHeading": "Connectez les fournisseurs que vous utilisez déjà",
+    "providersIntro": "Détectez les fournisseurs configurés dans DSH sans ressaisir endpoints et clés. Testez chaque ligne séparément ; l’ordre de la liste détermine les tentatives.",
+    "chain": "Premier choix → fournisseur actif suivant → … → original si tous échouent",
+    "providerDetails": "Endpoints personnalisés, identifiants et reprise",
+    "providerNotes": [
+      "Prend en charge `/v1/chat/completions` compatible OpenAI et l’API native Anthropic Messages.",
+      "Détecte les fournisseurs du profil DSH courant et des surcharges ; relancez l’analyse et ajoutez-les à la chaîne.",
+      "`apiKeyEnv` est résolu lors de la requête ; les identifiants résolus ne sont pas réécrits dans la configuration.",
+      "Les échecs attendent 30 secondes en mémoire du host avant les nouvelles tentatives. Une langue clairement incorrecte déclenche le fournisseur suivant.",
+      "Le texte reconnu dans la langue cible est ignoré ; les tests de fournisseur effectuent toujours une vraie requête."
+    ],
+    "memoryHeading": "Modèles locaux de traduction : chargement et libération à la demande",
+    "memoryHeaders": [
+      "Votre action",
+      "Comportement"
+    ],
+    "memoryRows": [
+      [
+        "Traduire ou tester",
+        "Démarre le service et charge le modèle sélectionné à la demande"
+      ],
+      [
+        "Libérer la mémoire du modèle",
+        "Attend les traductions en cours, puis libère ; conserve fichiers, interrupteurs et ordre"
+      ],
+      [
+        "Décocher le fournisseur local",
+        "Le désactive et libère le modèle sélectionné"
+      ],
+      [
+        "Le réactiver ou ouvrir les paramètres",
+        "Aucun préchargement ; chargement à la prochaine traduction réelle"
+      ],
+      [
+        "Définir le délai d’inactivité",
+        "5 minutes par défaut ; 1 / 5 / 10 / 30 / 60 minutes ou désactivé"
+      ]
+    ],
+    "memoryFoot": "Le délai s’applique dès l’utilisation suivante. Ollama suit le modèle sélectionné sans modifier les variables globales. Les logiciels ou modèles manquants sont installés ou téléchargés uniquement après un clic sur préparer, avec suivi de progression.",
+    "languagesHeading": "Votre langue vous accompagne",
+    "languagesIntro": "Neuf langues cibles, de paramètres et de tâches, dont le portugais. Le choix reste enregistré après actualisation.",
+    "comparisonNotice": "Activez ce plugin ou le traducteur officiel du raisonnement. Tous deux prennent en charge l’affichage du raisonnement.",
+    "faqHeading": "Réponses aux questions fréquentes",
+    "faqs": [
+      [
+        "L’entrée de traduction n’apparaît pas après installation ou mise à jour",
+        "Redémarrez complètement `dsh web`. Le graphe des modules est assemblé au démarrage ; une simple actualisation peut ne pas suffire. Le pied des paramètres affiche la version installée."
+      ],
+      [
+        "La liste des modèles locaux est vide",
+        "Vérifiez `ollama list` ou `/api/tags`, le répertoire actif et `OLLAMA_MODELS` du service. Les fichiers existants n’ont pas à être téléchargés à nouveau."
+      ],
+      [
+        "Client bundles not found après une mise à jour DSH",
+        "Lancez `pnpm run build` dans le dépôt DeepSeek Harness, puis redémarrez DSH Web."
+      ],
+      [
+        "Un échec de traduction affecte-t-il la conversation ?",
+        "Si tous les fournisseurs actifs échouent, l’original reste visible. Testez chaque fournisseur et consultez la dernière erreur. Les requêtes suivantes peuvent réessayer après le délai."
+      ]
+    ],
+    "changesTitle": "Mises à jour et compatibilité",
+    "changes": [
+      "**1.2.16** ajoute le portugais comme cible et langue d’interface, renouvelle les neuf README et images localisées, et déclare trois images pour le marché.",
+      "**1.2.15** ajoute la gestion mémoire locale et adapte images, repli du raisonnement et sélection de l’original à DSH `0.2.2-alpha.2`.",
+      "**1.2.13** traduit les motifs de refus de révision automatique. Merci à [llg1634](https://github.com/llg1634) pour le signalement, le correctif initial et les tests."
+    ],
+    "older": "Anciennes versions : [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases).",
+    "devTitle": "Développement et fonctionnement",
+    "devNotes": [
+      "`lib/index.js` : routes du host, fournisseurs, configuration, cache et modèles locaux.",
+      "`lib/client.js` : paramètres, traduction d’affichage, lots en streaming et cache du navigateur.",
+      "`lib/config.json` : configuration d’exécution, exclue de Git et npm.",
+      "Aucune compilation supplémentaire : les sources sont le livrable. Redémarrez DSH après une modification du host.",
+      "Vérification : `npm test`. Détection et identifiants : [notes de maintenance](docs/maintenance-notes.md)."
+    ],
+    "footer": [
+      "Signaler un problème",
+      "Versions",
+      "Licence MIT"
+    ]
+  },
+  "de": {
+    "introTitle": "Übersetzung der Anzeigeebene für DeepSeek Harness.",
+    "intro": "Gedanken lesen, Aufgaben verfolgen und Antworten verstehen. Originale bleiben erhalten; Übersetzungen gelangen nicht in den Modellkontext.",
+    "nav": [
+      "Installation",
+      "Live-Demos",
+      "Funktionen",
+      "Vergleich",
+      "Fragen"
+    ],
+    "badges": [
+      "MIT-Lizenz",
+      "Lokales Ollama",
+      "Originale erhalten"
+    ],
+    "demoHeading": "Gedanken beim Entstehen erleben",
+    "demo1": "Demo 1 · Gedanken und Antworten",
+    "demo2": "Demo 2 · Weitere Bedienung",
+    "installHeading": "Mit einem Befehl starten",
+    "installIntro": "Starte DSH Web nach der Installation vollständig neu. Wähle unter **Einstellungen → Gedankenübersetzung** die Zielsprache und Anbieter.",
+    "installDetails": "GitHub-Installation, Updates und weitere Methoden",
+    "fromGithub": "Von GitHub installieren:",
+    "updateNpm": "Über npm aktualisieren:",
+    "restart": "Starte DSH nach Installation oder Update vollständig neu. Manuell wird das Paket ins Profil verlinkt und in `cordis.patch.yml` eingetragen. Im Alltag sind die obigen Befehle empfohlen.",
+    "featuresHeading": "Mehr verstehen als nur Gedanken",
+    "cardTitles": [
+      "Gedanken live mitlesen",
+      "Aufgaben und Antworten gemeinsam",
+      "Prüfentscheidungen verstehen",
+      "Originale und Code erhalten",
+      "Lokale Modelle bei Bedarf laden",
+      "Anbieter in deiner Reihenfolge"
+    ],
+    "reviewDetail": "Lehnt die automatische Prüfung einen Werkzeugaufruf ab, erscheint der Grund übersetzt neben dem Original. Die vorhandenen Entscheidungsschaltflächen bleiben verfügbar.",
+    "providersHeading": "Bereits genutzte Anbieter verbinden",
+    "providersIntro": "DSH-Anbieter erkennen, ohne Endpunkte und Schlüssel erneut einzugeben. Jede Zeile lässt sich separat testen; die Listenreihenfolge bestimmt die Versuche.",
+    "chain": "Erste Wahl → nächster aktiver Anbieter → … → Original, wenn alle scheitern",
+    "providerDetails": "Eigene Endpunkte, Zugangsdaten und Wiederholung",
+    "providerNotes": [
+      "Unterstützt OpenAI-kompatibles `/v1/chat/completions` und die native Anthropic Messages API.",
+      "Erkennt Anbieter im aktuellen DSH-Profil und in Überschreibungen. Erneut suchen und zur Übersetzungskette hinzufügen.",
+      "`apiKeyEnv` wird bei der Anfrage aufgelöst; aufgelöste Schlüssel werden nicht in die Plugin-Konfiguration zurückgeschrieben.",
+      "Fehler warten 30 Sekunden im Host-Speicher vor neuen Versuchen. Klar falsche Sprache löst den nächsten Anbieter aus.",
+      "Als Zielsprache erkannter Text wird übersprungen; Anbietertests senden eine echte Anfrage."
+    ],
+    "memoryHeading": "Lokale Übersetzungsmodelle: bei Bedarf laden und freigeben",
+    "memoryHeaders": [
+      "Deine Aktion",
+      "Plugin-Verhalten"
+    ],
+    "memoryRows": [
+      [
+        "Übersetzen oder testen",
+        "Dienst starten und gewähltes Modell bei Bedarf laden"
+      ],
+      [
+        "Modellspeicher freigeben",
+        "Laufende Übersetzungen abwarten, dann entladen; Dateien, Schalter und Reihenfolge bleiben"
+      ],
+      [
+        "Lokalen Anbieter abwählen",
+        "Deaktivieren und gewähltes Modell entladen"
+      ],
+      [
+        "Erneut aktivieren oder Einstellungen öffnen",
+        "Kein Vorladen; Laden bei der nächsten tatsächlichen Übersetzung"
+      ],
+      [
+        "Freigabe nach Leerlauf festlegen",
+        "Standard: 5 Minuten; 1 / 5 / 10 / 30 / 60 Minuten oder aus"
+      ]
+    ],
+    "memoryFoot": "Die Zeit gilt ab der nächsten Nutzung. Ollama überwacht das gewählte Modell; globale Umgebungsvariablen bleiben unverändert. Fehlende Software oder Modelle werden erst nach Klick auf Vorbereiten installiert oder heruntergeladen, mit Fortschrittsanzeige.",
+    "languagesHeading": "Deine Sprache bleibt dabei",
+    "languagesIntro": "Neun Ziel-, Einstellungs- und Aufgabensprachen einschließlich Portugiesisch. Die Auswahl bleibt nach dem Neuladen erhalten.",
+    "comparisonNotice": "Aktiviere dieses Plugin oder den offiziellen Gedankenübersetzer. Beide übernehmen die Gedankenoberfläche.",
+    "faqHeading": "Häufige Fragen",
+    "faqs": [
+      [
+        "Nach Installation oder Update fehlt der Übersetzungseintrag",
+        "Starte `dsh web` vollständig neu. Der Modulgraph entsteht beim Prozessstart; Neuladen der Seite reicht eventuell nicht. Unten in den Einstellungen steht die installierte Paketversion."
+      ],
+      [
+        "Die Liste lokaler Modelle ist leer",
+        "Prüfe `ollama list` oder `/api/tags`, das aktive Modellverzeichnis und `OLLAMA_MODELS` des Dienstes. Vorhandene Dateien müssen nicht erneut geladen werden."
+      ],
+      [
+        "Client bundles not found nach einem DSH-Update",
+        "Führe `pnpm run build` im DeepSeek-Harness-Repository aus und starte DSH Web neu."
+      ],
+      [
+        "Beeinflusst ein Übersetzungsfehler das Gespräch?",
+        "Scheitern alle aktiven Anbieter, bleibt das Original. Teste einzelne Anbieter und prüfe den letzten Fehler. Nach der Wartezeit können neue Übersetzungsanfragen erneut versuchen."
+      ]
+    ],
+    "changesTitle": "Änderungen und Kompatibilität",
+    "changes": [
+      "**1.2.16** ergänzt Portugiesisch als Ziel- und Oberflächensprache, erneuert alle neun READMEs und Vergleichsbilder und erklärt drei Marktplatzbilder.",
+      "**1.2.15** ergänzt lokale Speicherverwaltung und passt Bilder, gruppiertes Einklappen und Originalauswahl an DSH `0.2.2-alpha.2` an.",
+      "**1.2.13** übersetzt Ablehnungsgründe der automatischen Prüfung. Danke an [llg1634](https://github.com/llg1634) für Bericht, ersten Patch und Tests."
+    ],
+    "older": "Weitere Versionen: [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases).",
+    "devTitle": "Entwicklung und Funktionsweise",
+    "devNotes": [
+      "`lib/index.js`: Host-Routen, Anbieter, Konfiguration, Cache und lokale Modelle.",
+      "`lib/client.js`: Einstellungen, Anzeigeübersetzung, Streaming-Batches und Browser-Cache.",
+      "`lib/config.json`: Laufzeitkonfiguration, von Git und npm ausgeschlossen.",
+      "Kein zusätzlicher Build: Die Quellen sind das Ergebnis. Nach Host-Änderungen DSH neu starten.",
+      "Prüfen mit `npm test`. Erkennung und Zugangsdaten: [Wartungsnotizen](docs/maintenance-notes.md)."
+    ],
+    "footer": [
+      "Problem melden",
+      "Versionen",
+      "MIT-Lizenz"
+    ]
+  },
+  "ru": {
+    "introTitle": "Перевод слоя отображения для DeepSeek Harness.",
+    "intro": "Читайте рассуждения, следите за задачами и понимайте ответы. Оригиналы сохранены; переводы не входят в контекст модели.",
+    "nav": [
+      "Установка",
+      "Демонстрации",
+      "Возможности",
+      "Сравнение",
+      "Вопросы"
+    ],
+    "badges": [
+      "Лицензия MIT",
+      "Локальный Ollama",
+      "Оригиналы сохранены"
+    ],
+    "demoHeading": "Наблюдайте, как рождаются мысли",
+    "demo1": "Демо 1 · Рассуждения и ответы",
+    "demo2": "Демо 2 · Другие операции",
+    "installHeading": "Одна команда для начала",
+    "installIntro": "После установки полностью перезапустите DSH Web. Откройте **Настройки → Перевод размышлений** и выберите язык и провайдеров.",
+    "installDetails": "Установка из GitHub, обновление и другие способы",
+    "fromGithub": "Установить из GitHub:",
+    "updateNpm": "Обновить из npm:",
+    "restart": "Полностью перезапускайте DSH после установки или обновления. При ручном размещении свяжите пакет с профилем и добавьте запись в `cordis.patch.yml`. Обычно рекомендуются команды выше.",
+    "featuresHeading": "Понимать нужно не только рассуждения",
+    "cardTitles": [
+      "Читайте рассуждения в реальном времени",
+      "Задачи и ответы вместе",
+      "Понимайте причины решений проверки",
+      "Сохраняйте оригиналы и код",
+      "Локальные модели по необходимости",
+      "Провайдеры в вашем порядке"
+    ],
+    "reviewDetail": "Если автопроверка отклоняет вызов инструмента, рядом с оригиналом появляется перевод причины. Обычные кнопки решения остаются доступны.",
+    "providersHeading": "Подключите знакомых провайдеров",
+    "providersIntro": "Обнаруживайте провайдеров DSH без повторного ввода адресов и ключей. Каждую строку можно проверить отдельно; порядок списка определяет попытки.",
+    "chain": "Первый выбор → следующий включённый провайдер → … → оригинал, если все не сработали",
+    "providerDetails": "Свои API, ключи и восстановление",
+    "providerNotes": [
+      "Поддерживаются совместимый с OpenAI `/v1/chat/completions` и нативный Anthropic Messages API.",
+      "Обнаружение читает текущий профиль DSH и переопределения. Повторите поиск и добавьте провайдеров в цепочку.",
+      "`apiKeyEnv` разрешается при запросе; полученные ключи не записываются в конфигурацию плагина.",
+      "После сбоя действует пауза 30 секунд в памяти host. Затем новые запросы могут повторить попытку. Явно неверный язык вызывает следующего провайдера.",
+      "Текст, распознанный как целевой язык, пропускается; тест провайдера всегда отправляет настоящий запрос."
+    ],
+    "memoryHeading": "Локальные модели перевода: загрузка и освобождение по необходимости",
+    "memoryHeaders": [
+      "Ваше действие",
+      "Поведение плагина"
+    ],
+    "memoryRows": [
+      [
+        "Перевести или проверить",
+        "Запуск службы и загрузка выбранной модели по необходимости"
+      ],
+      [
+        "Освободить память модели",
+        "Дождаться текущих переводов, затем выгрузить; сохранить файлы, переключатели и порядок"
+      ],
+      [
+        "Снять флажок локального провайдера",
+        "Отключить его и выгрузить выбранную модель"
+      ],
+      [
+        "Снова включить или открыть настройки",
+        "Без предварительной загрузки; загрузка при следующем переводе"
+      ],
+      [
+        "Настроить освобождение после простоя",
+        "По умолчанию 5 минут; 1 / 5 / 10 / 30 / 60 минут или выкл."
+      ]
+    ],
+    "memoryFoot": "Время применяется со следующего использования. Ollama отслеживает выбранную модель без изменения глобальных переменных среды. Недостающие программы или модели устанавливаются и скачиваются только после нажатия подготовки, с показом прогресса.",
+    "languagesHeading": "Ваш язык всегда с вами",
+    "languagesIntro": "Девять языков перевода, настроек и задач, включая португальский. Выбор сохраняется после обновления страницы.",
+    "comparisonNotice": "Включайте этот плагин или официальный переводчик рассуждений. Оба управляют интерфейсом рассуждений.",
+    "faqHeading": "Частые вопросы",
+    "faqs": [
+      [
+        "После установки или обновления нет пункта перевода",
+        "Полностью перезапустите `dsh web`. Граф модулей собирается при старте; обновления страницы может быть недостаточно. Внизу настроек указана версия установленного пакета."
+      ],
+      [
+        "Список локальных моделей пуст",
+        "Проверьте `ollama list` или `/api/tags`, каталог моделей и `OLLAMA_MODELS` службы. Повторно скачивать имеющиеся файлы не нужно."
+      ],
+      [
+        "Client bundles not found после обновления DSH",
+        "Выполните `pnpm run build` в репозитории DeepSeek Harness и перезапустите DSH Web."
+      ],
+      [
+        "Сбой перевода влияет на разговор?",
+        "Если все включённые провайдеры не сработали, остаётся оригинал. Проверьте отдельные провайдеры и последнюю ошибку в настройках. После паузы новые запросы могут повторить попытку."
+      ]
+    ],
+    "changesTitle": "Изменения и совместимость",
+    "changes": [
+      "**1.2.16** добавляет португальский для перевода и интерфейса, обновляет все девять README и сравнительных изображений, объявляет три изображения для маркета.",
+      "**1.2.15** добавляет управление памятью локальных моделей и адаптацию изображений, группового сворачивания и выбора оригинала к DSH `0.2.2-alpha.2`.",
+      "**1.2.13** переводит причины отказа автопроверки. Спасибо [llg1634](https://github.com/llg1634) за сообщение, первый патч и тесты."
+    ],
+    "older": "Предыдущие версии: [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases).",
+    "devTitle": "Разработка и устройство",
+    "devNotes": [
+      "`lib/index.js`: маршруты host, провайдеры, конфигурация, кеш и локальные модели.",
+      "`lib/client.js`: настройки, перевод отображения, потоковые пакеты и кеш браузера.",
+      "`lib/config.json`: конфигурация времени выполнения, исключена из Git и npm.",
+      "Дополнительная сборка не требуется. После изменения host перезапустите DSH.",
+      "Проверка: `npm test`. Обнаружение и ключи: [заметки по сопровождению](docs/maintenance-notes.md)."
+    ],
+    "footer": [
+      "Сообщить о проблеме",
+      "Версии",
+      "Лицензия MIT"
+    ]
+  },
+  "pt": {
+    "introTitle": "Tradução da camada de exibição do DeepSeek Harness.",
+    "intro": "Leia o raciocínio, acompanhe as tarefas e entenda as respostas. Os originais são preservados; as traduções ficam fora do contexto do modelo.",
+    "nav": [
+      "Instalação",
+      "Demonstrações",
+      "Recursos",
+      "Comparação",
+      "Perguntas"
+    ],
+    "badges": [
+      "Licença MIT",
+      "Ollama local",
+      "Originais preservados"
+    ],
+    "demoHeading": "Veja o pensamento acontecer",
+    "demo1": "Demo 1 · Raciocínio e respostas",
+    "demo2": "Demo 2 · Mais operações",
+    "installHeading": "Um comando para começar",
+    "installIntro": "Após instalar, reinicie completamente o DSH Web. Abra **Configurações → Tradução do pensamento** e escolha o idioma de destino e os provedores.",
+    "installDetails": "Instalação pelo GitHub, atualizações e outros métodos",
+    "fromGithub": "Instalar pelo GitHub:",
+    "updateNpm": "Atualizar pelo npm:",
+    "restart": "Reinicie o DSH completamente após instalar ou atualizar. Na implantação manual, vincule o pacote ao perfil e adicione sua entrada em `cordis.patch.yml`. Para uso normal, recomendamos os comandos acima.",
+    "featuresHeading": "Há mais que raciocínio para entender",
+    "cardTitles": [
+      "Raciocínio em tempo real",
+      "Tarefas e respostas juntas",
+      "Entenda as decisões de revisão",
+      "Preserve originais e código",
+      "Modelos locais sob demanda",
+      "Provedores na sua ordem"
+    ],
+    "reviewDetail": "Quando a revisão automática recusa uma chamada de ferramenta, o motivo aparece traduzido ao lado do original. Os botões de decisão existentes continuam disponíveis.",
+    "providersHeading": "Conecte os provedores que você já usa",
+    "providersIntro": "Descubra provedores configurados no DSH sem digitar endpoints e chaves novamente. Teste cada linha separadamente; a ordem da lista define a sequência de tentativas.",
+    "chain": "Sua primeira opção → próximo provedor ativado → … → original se todos falharem",
+    "providerDetails": "Endpoints personalizados, credenciais e recuperação",
+    "providerNotes": [
+      "Suporta `/v1/chat/completions` compatível com OpenAI e a API nativa Anthropic Messages.",
+      "A descoberta lê o perfil DSH atual e suas substituições. Verifique novamente e adicione provedores à sequência de tradução.",
+      "`apiKeyEnv` é resolvido no momento da requisição; as credenciais resolvidas nunca são gravadas na configuração do plugin.",
+      "Falhas aguardam 30 segundos na memória do host antes de novas tentativas. Um idioma claramente errado aciona o próximo provedor.",
+      "A detecção ignora textos reconhecidos no idioma de destino; testes de provedor sempre enviam uma requisição real."
+    ],
+    "memoryHeading": "Modelos locais de tradução: carregar e liberar sob demanda",
+    "memoryHeaders": [
+      "Sua ação",
+      "Comportamento do plugin"
+    ],
+    "memoryRows": [
+      [
+        "Traduzir ou testar",
+        "Inicia o serviço e carrega o modelo selecionado sob demanda"
+      ],
+      [
+        "Liberar memória do modelo",
+        "Aguarda traduções ativas e libera; mantém arquivos, opções e ordem"
+      ],
+      [
+        "Desmarcar o provedor local",
+        "Desativa e libera o modelo selecionado"
+      ],
+      [
+        "Reativar ou abrir configurações",
+        "Sem pré-carregamento; carrega na próxima tradução real"
+      ],
+      [
+        "Configurar liberação por inatividade",
+        "5 minutos por padrão; 1 / 5 / 10 / 30 / 60 minutos ou desativada"
+      ]
+    ],
+    "memoryFoot": "O prazo vale a partir do próximo uso. O Ollama acompanha o modelo selecionado sem alterar variáveis globais. Softwares ou modelos ausentes só são instalados ou baixados após clicar em preparar, com progresso visível.",
+    "languagesHeading": "Seu idioma acompanha você",
+    "languagesIntro": "Nove idiomas de destino, configurações e tarefas, incluindo português. A seleção é preservada ao atualizar a página.",
+    "comparisonNotice": "Ative este plugin ou o tradutor oficial de raciocínio. Ambos controlam a interface de raciocínio.",
+    "faqHeading": "Respostas às perguntas frequentes",
+    "faqs": [
+      [
+        "A opção de tradução não aparece após instalar ou atualizar",
+        "Reinicie completamente `dsh web`. O grafo de módulos é montado no início do processo; atualizar só a página pode não bastar. O rodapé das configurações mostra a versão instalada."
+      ],
+      [
+        "A lista de modelos locais está vazia",
+        "Confira `ollama list` ou `/api/tags`, o diretório ativo e `OLLAMA_MODELS` do serviço. Não é necessário baixar novamente arquivos existentes."
+      ],
+      [
+        "Client bundles not found após atualizar o DSH",
+        "Execute `pnpm run build` no repositório DeepSeek Harness e reinicie o DSH Web."
+      ],
+      [
+        "Uma falha de tradução afeta a conversa?",
+        "Se todos os provedores ativados falharem, o original permanece. Teste cada provedor e consulte o último erro nas configurações. As próximas requisições podem tentar novamente após o intervalo."
+      ]
+    ],
+    "changesTitle": "Atualizações e compatibilidade",
+    "changes": [
+      "**1.2.16** adiciona português ao destino e à interface, renova os nove README e imagens localizadas, e declara três imagens para o mercado.",
+      "**1.2.15** adiciona gestão de memória local e adapta imagens, recolhimento agrupado do raciocínio e seleção do original ao DSH `0.2.2-alpha.2`.",
+      "**1.2.13** traduz motivos de recusa da revisão automática. Obrigado a [llg1634](https://github.com/llg1634) pelo relato, patch inicial e testes."
+    ],
+    "older": "Versões anteriores: [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases).",
+    "devTitle": "Desenvolvimento e funcionamento",
+    "devNotes": [
+      "`lib/index.js`: rotas do host, provedores, configuração, cache e modelos locais.",
+      "`lib/client.js`: configurações, tradução da exibição, lotes em streaming e cache do navegador.",
+      "`lib/config.json`: configuração de execução, excluída do Git e npm.",
+      "Sem compilação extra: os fontes são o produto. Reinicie o DSH após mudar o host.",
+      "Verifique com `npm test`. Descoberta e credenciais: [notas de manutenção](docs/maintenance-notes.md)."
+    ],
+    "footer": [
+      "Relatar um problema",
+      "Versões",
+      "Licença MIT"
+    ]
+  }
+}

@@ -43,10 +43,10 @@ function captureUIText() {
   return sandbox.__UI_TEXT__
 }
 
-const LANGS = ['zh-CN', 'en', 'ja', 'ko', 'es', 'fr', 'de', 'ru']
+const LANGS = ['zh-CN', 'en', 'ja', 'ko', 'es', 'fr', 'de', 'ru', 'pt']
 
 describe('locale dictionary parity', function () {
-  it('defines exactly the same keys in all 8 locales', function () {
+  it('defines exactly the same keys in all 9 locales', function () {
     // A key added to en only used to be invisible: the panel falls back to English
     // for the whole locale, so nothing showed up as `undefined` — six locales simply
     // rendered English (the provider buttons) or lost a label (copy/copied).
@@ -112,9 +112,9 @@ describe('MarkdownText label contract (issue #3)', function () {
     assert.match(src, /mdLabelsCache\.set\(tt, labels\)/)
   })
 
-  it('defines the footnotes label in all 8 languages', function () {
+  it('defines the footnotes label in all 9 languages', function () {
     const hits = (src.match(/^\s*footnotes: "/gm) || []).length
-    assert.equal(hits, 8)
+    assert.equal(hits, LANGS.length)
   })
 })
 
@@ -240,14 +240,14 @@ describe('settings UI contracts', function () {
     assert.ok(!src.includes('t.providerEnvLabel)'), 'the env-var row must be gone')
   })
 
-  it('marks both suggestion menus as suggestions only, in all 8 languages', function () {
+  it('marks both suggestion menus as suggestions only, in all 9 languages', function () {
     // The lists drift with every vendor release, so the note is what keeps the
     // free-text promise visible where the user actually picks a model.
     assert.match(src, /createElement\("div", \{ className: "xl-menu-note" \}, t\.providerHint\)/)
     assert.match(src, /createElement\("div", \{ className: "xl-menu-note" \}, t\.modelHint\)/)
     assert.match(src, /"\.xl-menu-note\{/)
-    assert.equal((src.match(/^\s*providerHint: "/gm) || []).length, 8)
-    assert.equal((src.match(/^\s*modelHint: "/gm) || []).length, 8)
+    assert.equal((src.match(/^\s*providerHint: "/gm) || []).length, LANGS.length)
+    assert.equal((src.match(/^\s*modelHint: "/gm) || []).length, LANGS.length)
   })
 
   it('keeps the row markers as light chips, not solid brand-coloured pills', function () {
@@ -265,7 +265,7 @@ describe('settings UI contracts', function () {
   it('names the provider list for what it controls: the translation priority', function () {
     // "拖动排序" described the gesture; the list order is the delivery order.
     const labels = src.match(/providerDrag: "[^"]*"/g) || []
-    assert.equal(labels.length, 8, 'one label per locale')
+    assert.equal(labels.length, LANGS.length, 'one label per locale')
     assert.ok(labels.every(function (l) { return /优先|優先|우선순위|priorit|prioridad|préfér|приоритет/i.test(l) }),
       'every locale should name the priority: ' + labels.join(' | '))
   })
@@ -324,7 +324,7 @@ describe('settings UI contracts', function () {
     // wording (the other labels are tooltips now, and 思考链 — the model's reasoning
     // chain — is the plugin's own subject).
     const labels = src.match(/dshImportAll: "[^"]*"/g) || []
-    assert.equal(labels.length, 8, 'one label per locale')
+    assert.equal(labels.length, LANGS.length, 'one label per locale')
     assert.ok(labels.every(function (l) { return !/chain|链|チェーン|체인|cadena|chaîne|Kette|цепочк/i.test(l) }),
       'the bulk action should not name the chain: ' + labels.join(' | '))
     assert.match(src, /dshImportAll: "全部加入"/)
