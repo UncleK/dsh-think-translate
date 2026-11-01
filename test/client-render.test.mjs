@@ -185,7 +185,7 @@ function configWith(providers, chain) {
   }
 }
 
-async function mountPanel(config, scanConfig, officialTodoFirst = null, preferences = {}, localResponse = null, testResponse = null, primitives = null) {
+async function mountPanel(config, scanConfig, officialTodoFirst = null, preferences = {}, localResponse = null, testResponse = null, primitives = null, memoryResponse = null) {
   // The host already merges the harness's providers into GET /_xlate/config, so the
   // panel paints them without being asked; the scan route answers with the same shape
   // (a second argument models "the harness config changed since we loaded").
@@ -220,7 +220,7 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
       } else if (url === '/_xlate/local/release') {
         body = { ok: true, job: { id: 'release-1', model: served.providers.openai.model, origin: 'http://localhost:11434', phase: 'unloaded', running: false } }
       } else if (url === '/_xlate/local/prepare' || url.startsWith('/_xlate/local/status')) {
-        body = { ok: true, job: localResponse || { id: '1', origin: 'http://localhost:11434', model: 'test-model', phase: 'ready', running: false, percent: 100, completed: 0, total: 0, platform: 'win32', canInstall: true } }
+        body = { ok: true, memory: memoryResponse, job: localResponse || { id: '1', origin: 'http://localhost:11434', model: 'test-model', phase: 'ready', running: false, percent: 100, completed: 0, total: 0, platform: 'win32', canInstall: true } }
       }
       return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve(body) } })
     },
@@ -565,6 +565,15 @@ describe('settings panel renders (real bundle, mini React)', function () {
     await panel.runtime.mount(panel.registered)
     const save = panel.calls.find(c => c.url === '/_xlate/config' && c.init)
     assert.deepEqual(JSON.parse(save.init.body), { localModel: { idleMinutes: 0 } })
+    assert.equal(panel.calls.some(c => c.url === '/_xlate/local/prepare'), false)
+  })
+  it('shows the server idle countdown without loading or refreshing the model', async function () {
+    const cfg = configWith({ openai: ollama }, ['openai'])
+    cfg.localModel = { idleMinutes: 30 }
+    const panel = await mountPanel(cfg, null, null, {}, null, null, null,
+      { loaded: true, active: 0, sizeBytes: 1500000000, expiresAt: new Date(Date.now() + 5 * 60000 - 1000).toISOString() })
+    assert.match(textOf(panel.tree), /空闲后自动释放 5 min/)
+    assert.match(textOf(panel.tree), /每次翻译后重新计时/)
     assert.equal(panel.calls.some(c => c.url === '/_xlate/local/prepare'), false)
   })
   it('reads memory status without loading the first local provider, including after reopening settings', async function () {

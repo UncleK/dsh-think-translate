@@ -1,9 +1,11 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import { createServer } from 'node:http'
+import { once } from 'node:events'
 import { createLocalModelLifecycle, modelKeepAlive } from '../lib/local-model.js'
 import { normalizeConfigPatch, viaLocalOllama } from '../lib/index.js'
 
-const provider = { type: 'openai', baseURL: 'http://localhost:11434/v1', model: 'chosen' }
+const provider = { type: 'openai', enabled: true, baseURL: 'http://localhost:11434/v1', model: 'chosen' }
 const tick = () => new Promise(resolve => setImmediate(resolve))
 function fixture(options = {}) {
   const loaded = new Set(['chosen:latest', 'other:latest'])
@@ -22,9 +24,8 @@ function fixture(options = {}) {
       calls.push({ url, init })
       if (url.endsWith('/api/ps')) return { models: [...loaded].map(name => ({ name, size: 100, size_vram: 80 })) }
       const body = JSON.parse(init.body)
-      assert.equal(body.keep_alive, 0)
       if (options.unloadFailure) throw new Error('unload failed')
-      loaded.delete(body.model + ':latest')
+      if (body.keep_alive === 0) loaded.delete(body.model + ':latest')
       return { done: true }
     },
   })
@@ -39,6 +40,55 @@ function fixture(options = {}) {
 }
 
 describe('local model memory lifecycle', () => {
+  it('allows inference beyond the former 15-second deadline, including the response body', async t => {
+    const server = createServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.flushHeaders()
+      setTimeout(() => res.end(JSON.stringify({ message: { content: '这是完整的中文译文。' } })), 250)
+    })
+    server.listen(0, '127.0.0.1')
+    await once(server, 'listening')
+    t.after(() => { server.closeAllConnections(); server.close() })
+    const nativeFetch = globalThis.fetch
+    const timeout = AbortSignal.timeout.bind(AbortSignal)
+    // Compress 15s/120s to 150ms/1200ms while using a real HTTP response body.
+    t.mock.method(AbortSignal, 'timeout', ms => timeout(ms / 100))
+    t.mock.method(globalThis, 'fetch', (url, init) => nativeFetch('http://127.0.0.1:' + server.address().port, init))
+    assert.equal(await viaLocalOllama('An explanation requiring slow local inference.', 'zh-CN', provider), '这是完整的中文译文。')
+  })
+  it('reports an actual local inference timeout clearly instead of a generic aborted error', async t => {
+    t.mock.method(globalThis, 'fetch', async () => { throw new DOMException('The operation was aborted', 'TimeoutError') })
+    await assert.rejects(viaLocalOllama('Original', 'zh-CN', provider), /Ollama translation timed out after 120 seconds/)
+  })
+  it('applies a new idle policy to an already resident model without another translation', async () => {
+    const f = fixture()
+    const job = f.api.configChanged(provider, provider, { idleMinutes: 30 }, { idleMinutes: 0 })
+    assert.ok(job, 'changing from never to 30 minutes must update the resident model')
+    await f.finish(job)
+    const request = f.calls.find(call => call.url?.endsWith('/api/generate'))
+    assert.equal(JSON.parse(request.init.body).keep_alive, 1800)
+    assert.equal(f.calls.some(call => call.prepare), false)
+  })
+  it('applies changed policy after active work and serializes a following explicit release', async () => {
+    const f = fixture()
+    const done = await f.api.acquire(provider, { idleMinutes: 0 })
+    const update = f.api.configChanged(provider, provider, { idleMinutes: 1 }, { idleMinutes: 0 })
+    const release = f.api.release(provider)
+    await tick()
+    assert.equal(f.calls.some(call => call.url?.endsWith('/api/generate')), false)
+    done()
+    assert.equal((await f.finish(release)).phase, 'unloaded')
+    assert.equal(f.api.snapshot(update.id).running, false)
+    assert.deepEqual(f.calls.filter(call => call.url?.endsWith('/api/generate')).map(call => JSON.parse(call.init.body).keep_alive), [60, 0])
+  })
+  it('never loads an idle model when its policy changes', async () => {
+    const f = fixture()
+    f.loaded.delete('chosen:latest')
+    const job = f.api.configChanged(provider, provider, { idleMinutes: 1 }, { idleMinutes: 0 })
+    assert.ok(job)
+    await f.finish(job)
+    assert.equal(f.calls.some(call => call.prepare || call.url?.endsWith('/api/generate')), false)
+  })
   it('releases the prior selected model when its provider is disabled without loading on re-enable', async () => {
     const f = fixture()
     const released = f.api.configChanged({ ...provider, enabled: true }, { ...provider, enabled: false })
