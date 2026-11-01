@@ -23,12 +23,12 @@ Issue：[Ollama 本地模型空闲释放与 was aborted](https://github.com/Uncl
 - 生命周期、错误恢复、语言守卫、代码保护和客户端组件测试通过。
 - Ollama 0.32.15 上，同款 Hy-MT2 Q4_K_M 模型完成三段长短文本的中文翻译；完整提供方链的代码块样本也成功，代码保持原样。
 - 同款模型从常驻改为 1 分钟，在约 60 秒真实空闲后从 `/api/ps` 消失；常驻改为 30 分钟后过期时间立即更新为当前时间加 30 分钟。
-- DSH 0.2.2 的隔离 Web profile 中挂载实际插件设置组件，真实 Host 保存、翻译、策略变更、剩余时间显示和手动释放均通过，未捕获脚本错误。没有替换用户现有 Web/Desktop profile。
+- 1.2.17 最终 tarball 在 DSH 0.2.2 的隔离 Web 与原生 Electron profile 中分别安装并挂载实际插件设置组件，真实 Host 保存、翻译、代码保留、策略变更、剩余时间显示和手动释放均通过，未捕获插件脚本错误。405 项测试通过，没有替换用户现有 Web/Desktop profile。
 
 ## 仍不能确定的部分
 
 本次短样本中，`/api/ps` 对该模型报告约 1.35 GiB、4096 token context，数次翻译后保持不变。该数值是 Ollama 的模型驻留大小，不能当作 Windows 进程 RAM、全部 VRAM 或整个 Ollama 服务的内存占用。
 
-尚未确认提问者“数小时后 9GB+”的根因；没有进行同环境、同负载的数小时进程内存监测，也未在 DSH 0.2.1-rc2 和原生 Electron 上重跑本次候选。不能将上述两个修复等同于已经证明消除了长期内存增长。
+尚未确认提问者“数小时后 9GB+”的根因；没有进行同环境、同负载的数小时进程内存监测，也未在 DSH 0.2.1-rc2 上复测。当前 Web/Electron 验证使用 DSH 0.2.2。不能将上述两个修复等同于已经证明消除了长期内存增长。
 
 进一步定位需要提问者在异常发生时保留：`ollama --version`、`ollama ps`、`GET /api/ps`、插件 `/_xlate/local/status` 的 `active`/`expiresAt`，以及对应错误时刻的 Ollama 日志；同时说明是否有其他应用使用同一模型。每次请求都会刷新空闲期限，持续翻译时不会进入连续 30 分钟空闲；其他应用对同一模型的请求也可能改变驻留时间。[Ollama 官方说明](https://docs.ollama.com/faq#how-do-i-keep-a-model-loaded-in-memory-or-make-it-unload-immediately)

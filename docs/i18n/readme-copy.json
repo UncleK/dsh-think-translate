@@ -96,6 +96,7 @@
     ],
     "changesTitle": "Recent changes and compatibility",
     "changes": [
+      "**1.2.17** fixes idle-policy changes for already loaded Ollama models, allows up to 120 seconds for local inference, and displays the server idle countdown. Addresses reproducible parts of issue #17; long-term memory growth remains under investigation.",
       "**1.2.16** adds Portuguese throughout the translation target and UI, refreshes all nine READMEs and localized comparison images, and declares three marketplace images.",
       "**1.2.15** adds local model memory management and adapts to DSH `0.2.2-alpha.2` image rendering, grouped reasoning collapse and original text selection.",
       "**1.2.13** adds auto-review denial-reason translation. Thanks to [llg1634](https://github.com/llg1634) for the report, initial patch and testing."
@@ -212,6 +213,7 @@
     ],
     "changesTitle": "最近の更新と互換性",
     "changes": [
+      "**1.2.17**：ロード済み Ollama モデルにも保存した待機時間を適用。ローカル推論は最大120秒待機し、残り時間を表示します。issue #17 の再現可能な問題を修正し、長時間のメモリ増加は引き続き調査します。",
       "**1.2.16**：翻訳先と UI にポルトガル語を追加。9言語の README と比較画像を更新し、市場向け画像を3枚に拡充。",
       "**1.2.15**：ローカルモデルのメモリ管理を追加。DSH `0.2.2-alpha.2` の画像表示、思考のまとめ折りたたみ、原文選択に対応。",
       "**1.2.13**：自動レビューの拒否理由翻訳を追加。[llg1634](https://github.com/llg1634) の報告、初期パッチとテストに感謝します。"
@@ -328,6 +330,7 @@
     ],
     "changesTitle": "최근 변경 및 호환성",
     "changes": [
+      "**1.2.17**: 로드된 Ollama 모델에도 저장한 유휴 시간을 적용하고, 로컬 추론을 최대 120초 기다리며 남은 시간을 표시합니다. issue #17의 재현 가능한 문제를 수정했으며 장시간 메모리 증가는 조사 중입니다.",
       "**1.2.16**: 포르투갈어 번역 대상과 UI 추가. 9개 언어 README와 비교 이미지 갱신, 마켓 이미지 3장 선언.",
       "**1.2.15**: 로컬 모델 메모리 관리 추가. DSH `0.2.2-alpha.2`의 이미지 표시, 사고 묶음 접기, 원문 선택에 대응.",
       "**1.2.13**: 자동 검토 거부 사유 번역 추가. 제보, 초기 패치, 테스트를 제공한 [llg1634](https://github.com/llg1634)에게 감사드립니다."
@@ -444,6 +447,7 @@
     ],
     "changesTitle": "Cambios recientes y compatibilidad",
     "changes": [
+      "**1.2.17** corrige el cambio del plazo de inactividad en modelos Ollama ya cargados, permite hasta 120 segundos de inferencia local y muestra el tiempo restante. Resuelve los problemas reproducibles del issue #17; el aumento de memoria a largo plazo sigue en investigación.",
       "**1.2.16** añade portugués al destino y la interfaz, renueva los nueve README e imágenes localizadas y declara tres imágenes para el mercado.",
       "**1.2.15** añade gestión de memoria local y adapta imágenes, plegado de razonamiento y selección del original a DSH `0.2.2-alpha.2`.",
       "**1.2.13** añade traducción de motivos de rechazo de revisión automática. Gracias a [llg1634](https://github.com/llg1634) por el informe, parche inicial y pruebas."
@@ -560,6 +564,7 @@
     ],
     "changesTitle": "Mises à jour et compatibilité",
     "changes": [
+      "**1.2.17** applique le délai enregistré aux modèles Ollama déjà chargés, attend jusqu’à 120 secondes pour l’inférence locale et affiche le temps restant. Corrige les problèmes reproductibles du ticket #17 ; la hausse de mémoire à long terme reste à étudier.",
       "**1.2.16** ajoute le portugais comme cible et langue d’interface, renouvelle les neuf README et images localisées, et déclare trois images pour le marché.",
       "**1.2.15** ajoute la gestion mémoire locale et adapte images, repli du raisonnement et sélection de l’original à DSH `0.2.2-alpha.2`.",
       "**1.2.13** traduit les motifs de refus de révision automatique. Merci à [llg1634](https://github.com/llg1634) pour le signalement, le correctif initial et les tests."
@@ -676,6 +681,7 @@
     ],
     "changesTitle": "Änderungen und Kompatibilität",
     "changes": [
+      "**1.2.17** übernimmt gespeicherte Leerlaufzeiten für bereits geladene Ollama-Modelle, wartet bis zu 120 Sekunden auf lokale Inferenz und zeigt die Restzeit an. Behebt reproduzierbare Teile von Issue #17; langfristiger Speicheranstieg wird weiter untersucht.",
       "**1.2.16** ergänzt Portugiesisch als Ziel- und Oberflächensprache, erneuert alle neun READMEs und Vergleichsbilder und erklärt drei Marktplatzbilder.",
       "**1.2.15** ergänzt lokale Speicherverwaltung und passt Bilder, gruppiertes Einklappen und Originalauswahl an DSH `0.2.2-alpha.2` an.",
       "**1.2.13** übersetzt Ablehnungsgründe der automatischen Prüfung. Danke an [llg1634](https://github.com/llg1634) für Bericht, ersten Patch und Tests."
@@ -792,6 +798,7 @@
     ],
     "changesTitle": "Изменения и совместимость",
     "changes": [
+      "**1.2.17** применяет сохранённое время простоя к уже загруженным моделям Ollama, ожидает локальный перевод до 120 секунд и показывает оставшееся время. Исправлены воспроизводимые проблемы из issue #17; длительный рост памяти ещё исследуется.",
       "**1.2.16** добавляет португальский для перевода и интерфейса, обновляет все девять README и сравнительных изображений, объявляет три изображения для маркета.",
       "**1.2.15** добавляет управление памятью локальных моделей и адаптацию изображений, группового сворачивания и выбора оригинала к DSH `0.2.2-alpha.2`.",
       "**1.2.13** переводит причины отказа автопроверки. Спасибо [llg1634](https://github.com/llg1634) за сообщение, первый патч и тесты."
@@ -908,6 +915,7 @@
     ],
     "changesTitle": "Atualizações e compatibilidade",
     "changes": [
+      "**1.2.17** aplica o prazo salvo a modelos Ollama já carregados, aguarda até 120 segundos pela inferência local e mostra o tempo restante. Corrige os problemas reproduzíveis do issue #17; o aumento de memória a longo prazo continua em investigação.",
       "**1.2.16** adiciona português ao destino e à interface, renova os nove README e imagens localizadas, e declara três imagens para o mercado.",
       "**1.2.15** adiciona gestão de memória local e adapta imagens, recolhimento agrupado do raciocínio e seleção do original ao DSH `0.2.2-alpha.2`.",
       "**1.2.13** traduz motivos de recusa da revisão automática. Obrigado a [llg1634](https://github.com/llg1634) pelo relato, patch inicial e testes."
