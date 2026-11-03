@@ -192,6 +192,8 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
   const served = config
   const scanned = scanConfig || config
   const calls = []
+  const savedPreferences = { ...preferences }
+  const disposers = []
   const runtime = createRuntime()
   const captured = {}
   const sandbox = {
@@ -199,8 +201,10 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
     setTimeout, clearTimeout, setInterval: function (fn, ms) { const timer = setInterval(fn, ms); timer.unref(); return timer }, clearInterval, URL,
     localStorage: { getItem: function (key) {
       const pref = key.replace('dsh-think-translate:', '')
-      return Object.hasOwn(preferences, pref) ? String(preferences[pref]) : null
-    }, setItem: function () {}, removeItem: function () {} },
+      return Object.hasOwn(savedPreferences, pref) ? String(savedPreferences[pref]) : null
+    }, setItem: function (key, value) {
+      savedPreferences[key.replace('dsh-think-translate:', '')] = String(value)
+    }, removeItem: function () {} },
     fetch: function (url, init) {
       calls.push({ url: url, init: init || null })
       let body = {}
@@ -241,6 +245,11 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
   const specs = []
   const entries = []
   const ctx = {
+    effect: function (factory) {
+      const dispose = factory()
+      if (typeof dispose === 'function') disposers.push(dispose)
+      return dispose
+    },
     slots: {
       inject: function (name, cb) { return cb() },
       register: function (spec, component) {
@@ -275,7 +284,8 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
 
   const tree = await runtime.mount(registered.section)
   return {
-    tree, calls, runtime, specs, entries, officialTodo,
+    tree, calls, runtime, specs, entries, officialTodo, preferences: savedPreferences,
+    dispose: function () { disposers.splice(0).reverse().forEach(function (dispose) { dispose() }) },
     renderView: function (name, key, props) {
       runtime.reset()
       return runtime.mount(views.get(name + ':' + key), props)
@@ -285,6 +295,56 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
     remount: function () { runtime.reset(); return runtime.mount(registered.section) },
   }
 }
+
+describe('persistent translation sidebar entry', function () {
+  function toggle(tree, label) {
+    const row = flatten(tree).find(n => n.host && n.type === 'label' && textOf(n) === label)
+    assert.ok(row, 'sidebar checkbox label is visible')
+    return flatten(row).find(n => n.host && n.type === 'input' && n.props.type === 'checkbox')
+  }
+  function sidebar(panel) { return panel.entries.filter(e => e.spec.name === 'sidebar.panellist') }
+
+  it('shows one entry immediately and restores the choice in a fresh client', async function () {
+    const config = configWith({}, [])
+    const panel = await mountPanel(config)
+    assert.equal(sidebar(panel).length, 0)
+    toggle(panel.tree, '在侧边栏显示翻译入口').props.onChange({ target: { checked: true } })
+    assert.equal(sidebar(panel).length, 1)
+    assert.equal(sidebar(panel)[0].spec.id, 'dsh-think-translate')
+    assert.equal(panel.preferences.sidebar, 'true')
+    const fresh = await mountPanel(config, undefined, null, panel.preferences)
+    assert.equal(sidebar(fresh).length, 1)
+    const page = await fresh.renderView('main', 'dsh-think-translate', {})
+    assert.ok(flatten(page).some(n => n.host && n.type === 'h1' && textOf(n) === '思考链翻译'))
+    toggle(page, '在侧边栏显示翻译入口').props.onChange({ target: { checked: false } })
+    assert.equal(sidebar(fresh).length, 0)
+    assert.equal(fresh.preferences.sidebar, 'false')
+    assert.equal(fresh.calls.some(c => c.url === '/_xlate/config' && c.init), false)
+    panel.dispose()
+    fresh.dispose()
+  })
+
+  it('updates the entry label without duplicate rows when language changes', async function () {
+    const panel = await mountPanel(configWith({}, []), undefined, null, { sidebar: 'true', lang: 'en' })
+    assert.equal(sidebar(panel)[0].spec.label(), 'Think Translation')
+    const language = flatten(panel.tree).find(n => n.host && n.type === 'select' && n.props.value === 'en')
+    language.props.onChange({ target: { value: 'ja' } })
+    assert.equal(sidebar(panel).length, 1)
+    assert.equal(sidebar(panel)[0].spec.label(), '思考チェーン翻訳')
+    panel.dispose()
+  })
+
+  it('withdraws the entry and its preference listener when the plugin is disposed', async function () {
+    const panel = await mountPanel(configWith({}, []), undefined, null, { sidebar: 'true' })
+    const checkbox = toggle(panel.tree, '在侧边栏显示翻译入口')
+    assert.equal(sidebar(panel).length, 1)
+    panel.dispose()
+    assert.equal(sidebar(panel).length, 0)
+    checkbox.props.onChange({ target: { checked: false } })
+    checkbox.props.onChange({ target: { checked: true } })
+    assert.equal(sidebar(panel).length, 0)
+  })
+})
 
 describe('todo_write slot composition (issue #4)', function () {
   for (const officialFirst of [true, false]) {

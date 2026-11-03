@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.ja.png?v=1.2.17" alt="dsh-think-translate — AI の思考を、あなたの言語で" width="100%" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.ja.png?v=1.2.18" alt="dsh-think-translate — AI の思考を、あなたの言語で" width="100%" />
 </p>
 
 <p align="center">
@@ -8,9 +8,9 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.ja.svg?v=1.2.17" alt="MIT License" />
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.ja.svg?v=1.2.17" alt="ローカル Ollama" />
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.ja.svg?v=1.2.17" alt="原文を保持" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.ja.svg?v=1.2.18" alt="MIT License" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.ja.svg?v=1.2.18" alt="ローカル Ollama" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.ja.svg?v=1.2.18" alt="原文を保持" />
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.ja.svg?v=1.2.17" alt="簡単インストール" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.ja.svg?v=1.2.17" alt="動作デモ" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.ja.svg?v=1.2.17" alt="主な機能" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.ja.svg?v=1.2.17" alt="公式との比較" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.ja.svg?v=1.2.17" alt="よくある質問" height="24" /></a>
+  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.ja.svg?v=1.2.18" alt="簡単インストール" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.ja.svg?v=1.2.18" alt="動作デモ" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.ja.svg?v=1.2.18" alt="主な機能" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.ja.svg?v=1.2.18" alt="公式との比較" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.ja.svg?v=1.2.18" alt="よくある質問" height="24" /></a>
 </p>
 
 ---
@@ -29,10 +29,10 @@
 <table>
 <tr>
 <td width="50%" align="center" valign="bottom">
-<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.17" alt="デモ1 · 思考と回答の翻訳" width="100%" />
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.18" alt="デモ1 · 思考と回答の翻訳" width="100%" />
 </td>
 <td width="50%" align="center" valign="bottom">
-<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.17" alt="デモ2 · その他の操作" width="100%" />
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.18" alt="デモ2 · その他の操作" width="100%" />
 </td>
 </tr>
 <tr>
@@ -45,7 +45,7 @@
 ## 公式翻訳プラグインとの比較
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.ja.png?v=1.2.17" alt="公式翻訳プラグインとの比較" width="100%" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.ja.png?v=1.2.18" alt="公式翻訳プラグインとの比較" width="100%" />
 </p>
 
 本プラグインか公式思考翻訳のどちらか一方を有効にしてください。両者とも思考表示を担当します。
@@ -57,7 +57,7 @@
 dsh plugin --profile web add dsh-think-translate
 ```
 
-インストール後、DSH Web を完全に再起動します。**設定 → 思考チェーン翻訳**で翻訳先の言語と提供元を選択してください。
+インストール後、DSH Web を完全に再起動します。**設定 → 思考チェーン翻訳**で翻訳先の言語と提供元を選択してください。 **サイドバーに翻訳エントリを表示**をオンにすると、翻訳設定を他のグローバルパネルと並べて固定できます。専用ページは翻訳の設定・サービス・稼働状況をカードに分け、狭いウィンドウでは単一列に切り替わります。設定ダイアログはコンパクトな単一列のセクションで同じ操作項目を表示します。選択はこのブラウザに保存され、ページ更新や DSH の再起動後も保持されます。設定ダイアログまたは翻訳ページでオフにすると固定が解除されます。
 
 <details>
 <summary><b>GitHub からの導入、更新、その他の方法</b></summary>
@@ -188,13 +188,13 @@ DeepSeek Harness のリポジトリで `pnpm run build` を実行し、DSH Web �
 <details>
 <summary><b>最近の更新と互換性</b></summary>
 
+**1.2.18**：翻訳操作の常駐サイドバーエントリを追加（設定ダイアログまたは翻訳ページで切替、ブラウザごとに保存）。翻訳ページと設定ダイアログをカード型セクションへ刷新し、狭いウィンドウではレスポンシブな単一列レイアウトに切り替わります。
+
 **1.2.17**：ロード済み Ollama モデルにも保存した待機時間を適用。ローカル推論は最大120秒待機し、残り時間を表示します。issue #17 の再現可能な問題を修正し、長時間のメモリ増加は引き続き調査します。
 
 **1.2.16**：翻訳先と UI にポルトガル語を追加。9言語の README と比較画像を更新し、市場向け画像を3枚に拡充。
 
 **1.2.15**：ローカルモデルのメモリ管理を追加。DSH `0.2.2-alpha.2` の画像表示、思考のまとめ折りたたみ、原文選択に対応。
-
-**1.2.13**：自動レビューの拒否理由翻訳を追加。[llg1634](https://github.com/llg1634) の報告、初期パッチとテストに感謝します。
 
 以前の変更は [GitHub Releases](https://github.com/UncleK/dsh-think-translate/releases) をご覧ください。
 

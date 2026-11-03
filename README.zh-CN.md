@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.zh-CN.png?v=1.2.17" width="100%" alt="dsh-think-translate：让 AI 的思考，用你的语言呈现" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.zh-CN.png?v=1.2.18" width="100%" alt="dsh-think-translate：让 AI 的思考，用你的语言呈现" />
 </p>
 
 <p align="center">
@@ -8,9 +8,9 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.zh-CN.svg?v=1.2.17" alt="MIT License" />
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.zh-CN.svg?v=1.2.17" alt="支持本地 Ollama" />
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.zh-CN.svg?v=1.2.17" alt="保留原文与模型上下文" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.zh-CN.svg?v=1.2.18" alt="MIT License" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.zh-CN.svg?v=1.2.18" alt="支持本地 Ollama" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.zh-CN.svg?v=1.2.18" alt="保留原文与模型上下文" />
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.zh-CN.svg?v=1.2.17" alt="快速安装" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.zh-CN.svg?v=1.2.17" alt="实际演示" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.zh-CN.svg?v=1.2.17" alt="核心能力" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.zh-CN.svg?v=1.2.17" alt="官方对比" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.zh-CN.svg?v=1.2.17" alt="常见问题" height="24" /></a>
+  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.zh-CN.svg?v=1.2.18" alt="快速安装" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.zh-CN.svg?v=1.2.18" alt="实际演示" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.zh-CN.svg?v=1.2.18" alt="核心能力" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.zh-CN.svg?v=1.2.18" alt="官方对比" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.zh-CN.svg?v=1.2.18" alt="常见问题" height="24" /></a>
 </p>
 
 ---
@@ -29,10 +29,10 @@
 <table>
 <tr>
 <td width="50%" align="center" valign="bottom">
-<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.17" width="100%" alt="思考链与回答翻译的实际操作演示" />
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.18" width="100%" alt="思考链与回答翻译的实际操作演示" />
 </td>
 <td width="50%" align="center" valign="bottom">
-<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.17" width="100%" alt="dsh-think-translate 第二段实际操作演示" />
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.18" width="100%" alt="dsh-think-translate 第二段实际操作演示" />
 </td>
 </tr>
 <tr>
@@ -49,7 +49,7 @@
 ## 与官方翻译插件对比
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.zh-CN.png?v=1.2.17" width="100%" alt="与官方翻译插件的功能和首次上线日期对比" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.zh-CN.png?v=1.2.18" width="100%" alt="与官方翻译插件的功能和首次上线日期对比" />
 </p>
 
 本插件与官方思考翻译都接管思考界面，请二选一启用。
@@ -61,7 +61,7 @@
 dsh plugin --profile web add dsh-think-translate
 ```
 
-安装后**完整重启 DSH Web**，打开 **设置 → 思考链翻译**，选择目标语言和翻译提供方即可。
+安装后**完整重启 DSH Web**，打开 **设置 → 思考链翻译**，选择目标语言和翻译提供方即可。 开启 **在侧边栏显示翻译入口**，即可把翻译设置固定到左侧全局面板列表。独立页面按翻译偏好、翻译服务和运行状态分成卡片，小窗口自动使用单栏布局；设置弹窗使用紧凑的单栏分区，控件样式与独立页面一致。选择保存在当前浏览器中，刷新页面或重启 DSH 后仍会保留；在设置窗口或翻译页面关闭此开关即可取消固定。
 
 <details>
 <summary>从 GitHub 安装、升级与其他安装方式</summary>
@@ -191,6 +191,8 @@ dsh plugin --profile web add dsh-think-translate@latest
 
 <details>
 <summary><b>最近更新与兼容性</b></summary>
+
+**1.2.18** 新增常驻侧边栏翻译入口（可在设置窗口或翻译页面开启，按浏览器保存），并将翻译页面与设置弹窗重构为卡片式分区，窄窗口自动切换为响应式单栏布局。
 
 **1.2.17** 修复已加载 Ollama 模型保存空闲时长后不生效的问题，本地推理等待延长至 120 秒，并显示服务端剩余空闲时间。修复 issue #17 中已复现的部分，长期内存增长仍在调查。
 

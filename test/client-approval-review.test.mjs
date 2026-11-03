@@ -192,7 +192,14 @@ function loadPlugin(dom, timers, observers, preferences, translate) {
   plugin.apply(ctx)
   function changeSetting(name, value) {
     const tree = views.get('settings.section')()
-    const labels = tree.children.filter(node => node.type === 'label')
+    const labels = []
+    function visit(node) {
+      if (!node || typeof node !== 'object') return
+      if (Array.isArray(node)) { node.forEach(visit); return }
+      if (node.type === 'label') labels.push(node)
+      if (node.children) visit(node.children)
+    }
+    visit(tree)
     const label = labels.find(node => node.children.some(child => child.type === 'span' && child.children.includes(name)))
     assert.ok(label, 'setting is rendered: ' + name)
     const control = label.children.find(child => child.type === 'input' || child.type === 'select')

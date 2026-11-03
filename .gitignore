@@ -3,3 +3,5 @@ config.json
 lib/config.json
 lib/config.json.corrupt-*
 node_modules/
+
+demo/demo_combined.mp4
