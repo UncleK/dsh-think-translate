@@ -1,3 +1,5 @@
+import { glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText } from '../lib/glossary.js'
+import { translationNamespace } from '../lib/runtime-state.js'
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
 import http from 'node:http'
@@ -13,7 +15,7 @@ function between(source, from, to) {
   assert.ok(start >= 0 && end > start, 'missing source section: ' + from)
   return source.slice(start, end)
 }
-const client = vm.createContext({ protectedTextParts })
+const client = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }), protectedTextParts })
 vm.runInContext(between(clientSource, 'function isCjk(', 'function sleepMs('), client)
 
 const cases = [
@@ -84,7 +86,7 @@ for (const [target, expected] of Object.entries({ zh: 'zh-Hans', 'zh-CN': 'zh-Ha
   'zh-Hans': 'zh-Hans', 'zh-TW': 'zh-Hant', 'zh-HK': 'zh-Hant', 'zh-MO': 'zh-Hant',
   'zh_Hant_TW': 'zh-Hant', 'zh-Hans-HK': 'zh-Hans', ja: 'ja', en: 'en', ko: 'ko', es: 'es', fr: 'fr', de: 'de', ru: 'ru', pt: 'pt' })) {
   it('Bing sends auto-detect and its own target code: ' + target, async () => {
-    const sandbox = vm.createContext({
+    const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
       bingCache: null, Date, URL, URLSearchParams,
       curlGetInfo: async () => ({ text: 'IG:"test-session"; params_AbusePreventionHelper = [123,"test-token"]', url: 'https://www.bing.com/translator' }),
       curlPostForm: async (url, body) => {
@@ -101,7 +103,7 @@ for (const [target, expected] of Object.entries({ zh: 'zh-Hans', 'zh-CN': 'zh-Ha
 }
 
 it('Bing reports an API error instead of hiding it as empty translation', async () => {
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     bingCache: { ig: 'test', key: 'test', token: 'test', origin: 'https://www.bing.com', iid: 'SERP', exp: Date.now() + 60000 }, Date,
     curlPostForm: async () => '{"statusCode":400,"errorMessage":"invalid language"}',
   })
@@ -114,7 +116,7 @@ it('ignores legacy persisted translations without deleting preferences', () => {
     ['dsh-xlate-cache:zh-CN|old', JSON.stringify({ ok: true, text: 'wrong language' })],
     ['dsh-think-translate:lang', 'zh-CN'],
   ])
-  const sandbox = vm.createContext({ Map, Date, localStorage: {
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }), Map, Date, localStorage: {
     get length() { return storage.size }, key: index => [...storage.keys()][index],
     getItem: key => storage.get(key) ?? null, removeItem: key => storage.delete(key), setItem: (key, value) => storage.set(key, value),
   } })
@@ -126,7 +128,7 @@ it('ignores legacy persisted translations without deleting preferences', () => {
 
 it('host returns already-Simplified prose before consulting an old translated result', async () => {
   const text = '现在检查构建结果。'
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     Date, Map, needsTranslate,
     loadConfig: () => { throw new Error('should not read provider configuration') },
   })
@@ -140,7 +142,7 @@ it('host returns already-Simplified prose before consulting an old translated re
 
 it('client returns already-Simplified prose before consulting an old translated result', async () => {
   const text = '现在检查构建结果。'
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     Date, Map, Promise, needsTranslate, translationLanguageError, fnv: value => value,
     localStorage: { getItem: () => null, setItem: () => {} },
     hostAttempt: () => { throw new Error('should not request a provider') },
@@ -154,7 +156,7 @@ it('client returns already-Simplified prose before consulting an old translated 
 })
 
 it('explicit provider tests still bypass language detection', async () => {
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     Date, Map, needsTranslate, translationLanguageError, translateProtectedText, chunkText: value => [value], ollamaOrigin: () => null, providerFingerprint: () => 'test-signature',
     loadConfig: async () => ({ providers: { test: { enabled: true, type: 'test' } } }),
     ADAPTERS: { test: async () => 'provider reached' },

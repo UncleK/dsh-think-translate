@@ -1,3 +1,5 @@
+import { glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText } from '../lib/glossary.js'
+import { translationNamespace } from '../lib/runtime-state.js'
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -19,7 +21,7 @@ function sourceBetween(source, from, to) {
 
 it('keeps installer curl arguments usable until the actual download step', async () => {
   let downloadReached = false
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     join, tmpdir: () => 'X:/unused', randomUUID: () => 'offline-test', unlink: async () => {},
     isLoopback: () => false, getProxy: async () => 'http://127.0.0.1:10809',
     runProgram: async () => 'Content-Length: 42\r\n',
@@ -37,7 +39,7 @@ it('keeps installer curl arguments usable until the actual download step', async
 
 it('preserves SOCKS compatibility without silently switching to direct transport', async () => {
   let calls = 0
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     DEFAULT_HEADERS, isLoopback: () => false, getProxy: async () => 'socks5://127.0.0.1:1080',
     runProgram: async (program, args) => {
       calls++; assert.equal(program, 'curl')
@@ -57,7 +59,7 @@ it('preserves SOCKS compatibility without silently switching to direct transport
 it('preserves the final SOCKS session URL and leaves the HTML body intact', async () => {
   const marker = '\n__DSH_RESPONSE_INFO__\n'
   const html = '<html>body may contain ' + marker + ' too</html>\n'
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     DEFAULT_HEADERS, isLoopback: () => false, getProxy: async () => 'socks5://127.0.0.1:1080',
     runProgram: async (program, args) => {
       assert.equal(program, 'curl')
@@ -80,7 +82,7 @@ it('preserves the final SOCKS session URL and leaves the HTML body intact', asyn
 
 for (const output of ['page without metadata', 'page\n__DSH_RESPONSE_INFO__\n\n200']) {
   it('rejects missing or invalid SOCKS metadata instead of guessing the original URL: ' + JSON.stringify(output), async () => {
-    const sandbox = vm.createContext({
+    const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
       DEFAULT_HEADERS, isLoopback: () => false, getProxy: async () => 'socks5://127.0.0.1:1080',
       runProgram: async () => output,
       requestTextInfo: () => { throw new Error('unexpected direct request') },
@@ -91,7 +93,7 @@ for (const output of ['page without metadata', 'page\n__DSH_RESPONSE_INFO__\n\n2
 }
 
 it('keeps explicit SOCKS headers while applying native browser defaults', async () => {
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     DEFAULT_HEADERS, isLoopback: () => false, getProxy: async () => 'socks5://127.0.0.1:1080',
     runProgram: async (program, args) => {
       const headers = Array.from(args).filter((value, i, list) => list[i - 1] === '-H')
@@ -110,7 +112,7 @@ it('keeps explicit SOCKS headers while applying native browser defaults', async 
 
 it('keeps native text callers compatible while exposing the final URL to session callers', async () => {
   let proxyGets = 0
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     isLoopback: url => url.startsWith('http://127.0.0.1'),
     getProxy: async () => { proxyGets++; return 'http://127.0.0.1:10809' },
     requestTextInfo: async (url, options) => {
@@ -129,7 +131,7 @@ it('keeps native text callers compatible while exposing the final URL to session
 
 it('reuses a host failure during cooldown, then performs a real retry at expiry', async () => {
   let now = 100000, calls = 0
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     Date: { now: () => now }, Map,
     loadConfig: async () => ({}), needsTranslate: () => true, translationLanguageError,
     translateViaChain: async () => { calls++; return calls === 1 ? { ok: false, text: 'original', error: 'offline' } : { ok: true, text: 'translated' } },
@@ -148,14 +150,15 @@ it('reuses a host failure during cooldown, then performs a real retry at expiry'
 
 function pipeline() {
   let now = 100000, recovered = false, hostCalls = 0, directCalls = 0, writes = 0
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     Date: { now: () => now }, Map, Promise, translationLanguageError,
+    fetchWithTimeout: async () => ({ ok: true, json: async () => ({ cacheNamespace: 'test-context', officialEnabled: false }) }),
     localStorage: { getItem: () => null, setItem: () => { writes++ } },
     fnv: value => value, needsTranslate: () => true, chunkText: value => [value], recordCheck: () => {},
     hostAttempt: async () => {
       hostCalls++
       if (!recovered) { const error = new Error('temporary offline'); error.retryAt = now + 30000; throw error }
-      return { ok: true, text: 'translated' }
+      return { ok: true, text: 'translated', cacheNamespace: 'test-context' }
     },
     gtxChunk: async () => { directCalls++; throw new Error('temporary offline') },
     sleepMs: async ms => { now += ms; recovered = true },
@@ -205,7 +208,7 @@ it('retries mounted answer text with a cached failure and cancels retry on unmou
   p.recover()
   let entry, callback, delay, cleanup, cancelled = false
   Object.assign(p.sandbox, {
-    useStore: () => ({ lang: 'zh-CN' }),
+    useStore: () => ({ lang: 'zh-CN', contextKnown: true, cacheNamespace: 'test-context' }),
     useState: init => [init(), value => { entry = value }],
     useEffect: effect => { cleanup = effect() },
     setTimeout: (fn, ms) => { callback = fn; delay = ms; return 17 },
@@ -213,7 +216,7 @@ it('retries mounted answer text with a cached failure and cancels retry on unmou
   })
   vm.runInContext(sourceBetween(client, 'function useXlate(', '// ------------------------------------------------------------------'), p.sandbox)
   p.sandbox.useXlate('original', true)
-  await Promise.resolve(); await Promise.resolve()
+  await new Promise(resolve => setImmediate(resolve))
   assert.equal(entry.ok, false)
   assert.equal(delay, 30000)
   cleanup()
@@ -231,7 +234,7 @@ it('retries mounted answer text with a cached failure and cancels retry on unmou
 
 it('allows a slow host chain to complete instead of imposing an 8-second browser limit', async () => {
   let timeout
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),
     translationLanguageError,
     fetchWithTimeout: async (url, opts, ms) => {
       timeout = ms

@@ -170,9 +170,8 @@ describe('settings nav glyph fallback', function () {
     loadPlugin(dom, timers, observers)
     // Two DOM concerns own one observer each: the nav-glyph fallback (registered
     // first) and the auto-review approval decorator.
-    assert.equal(observers.length, 2, 'one observer per DOM concern')
+    assert.equal(observers.length, 1, 'only the nav observer mounts before translation context is verified')
     assert.equal(observers[0].target, dom.document.documentElement, 'observes the root, not <body>')
-    assert.equal(observers[1].target, dom.document.documentElement, 'the approval decorator observes the root too')
     flush(timers)
 
     const holder = dom.ours.btn.querySelector('[data-xl-nav-glyph="1"]')

@@ -1,3 +1,5 @@
+import { glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText } from '../lib/glossary.js'
+import { translationNamespace } from '../lib/runtime-state.js'
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -12,7 +14,7 @@ function section(source, from, to) {
   assert.ok(start >= 0 && end > start)
   return source.slice(start, end)
 }
-const browser = vm.createContext({ protectedTextParts })
+const browser = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }), protectedTextParts })
 vm.runInContext(section(client, 'function isCjk(', 'function sleepMs('), browser)
 
 const valid = [
@@ -100,7 +102,7 @@ it('rejects one wrong chunk even when other paragraphs are in Chinese', async t 
   assert.equal(result.provider, 'good')
 })
 function hostBox(cfg, adapters) {
-  const box = vm.createContext({Date,Map,protectedTextParts,translateProtectedText,loadConfig:async()=>cfg,ADAPTERS:adapters,ollamaOrigin:()=>null})
+  const box = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),Date,Map,protectedTextParts,translateProtectedText,loadConfig:async()=>cfg,ADAPTERS:adapters,ollamaOrigin:()=>null})
   vm.runInContext(section(host,'const cache = new Map()','// ---------------------------------------------------------------- http glue'),box)
   return box
 }
@@ -114,7 +116,7 @@ it('does not retain wrong-language output as a successful host cache entry', asy
   assert.ok(first.retryAt>Date.now())
   await box.handleTranslate({text,target:'zh-CN'})
   assert.equal(calls,1,'failure cooldown avoids repeat inference')
-  box.cacheSet('zh-CN|'+box.fnv(text),{ok:false,retryAt:0})
+  box.cacheSet('zh-CN|'+translationNamespace(await box.loadConfig())+'|'+box.fnv(text),{ok:false,retryAt:0})
   await box.handleTranslate({text,target:'zh-CN'})
   assert.equal(calls,2)
 })
@@ -122,14 +124,14 @@ it('evicts a poisoned host cache entry and checks forced provider tests too', as
   let calls=0
   const box=hostBox({chain:['test'],providers:{test:{enabled:true,type:'test'}}},{test:async()=>{calls++;return '检查配置。'}})
   const text='Check the configuration.'
-  box.cacheSet('zh-CN|'+box.fnv(text),{ok:true,text:'これは日本語の翻訳です。'})
+  box.cacheSet('zh-CN|'+translationNamespace(await box.loadConfig())+'|'+box.fnv(text),{ok:true,text:'これは日本語の翻訳です。'})
   assert.equal((await box.handleTranslate({text,target:'zh-CN'})).text,'检查配置。')
   assert.equal(calls,1)
   box.ADAPTERS.test=async()=> 'これは日本語の翻訳です。'
   assert.equal((await box.handleTranslate({text:'现在检查配置。',target:'zh-CN',provider:'test'})).ok,false)
 })
 function cacheBox(storage) {
-  const box=vm.createContext({Map,Date,translationLanguageError,localStorage:{
+  const box=vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),Map,Date,translationLanguageError,localStorage:{
     get length(){return storage.size},key:i=>[...storage.keys()][i],
     getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k),
   }})
@@ -143,7 +145,7 @@ it('discards v3 translations while preserving language preferences', () => {
   assert.equal(storage.get('dsh-think-translate:lang'),'zh-CN')
 })
 it('revalidates persisted and in-memory browser translations', () => {
-  const storage=new Map([['dsh-xlate-cache:v4:zh-CN|bad',JSON.stringify({ok:true,text:'これは日本語の翻訳です。'})]])
+  const storage=new Map([['dsh-xlate-cache:v6:zh-CN|bad',JSON.stringify({ok:true,text:'これは日本語の翻訳です。'})]])
   const box=cacheBox(storage)
   assert.equal(box.cacheMemGet('zh-CN|bad'),undefined)
   assert.equal(storage.size,0)
@@ -154,7 +156,7 @@ it('revalidates persisted and in-memory browser translations', () => {
   assert.equal(box.cacheMemGet('zh-CN|good').text,'检查配置。')
 })
 it('a browser connected to an older Host refuses a wrong-language success', async () => {
-  const box=vm.createContext({Date,translationLanguageError,recordCheck:()=>{},fetchWithTimeout:async()=>({ok:true,json:async()=>({ok:true,text:'これは日本語の翻訳です。'})})})
+  const box=vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),Date,translationLanguageError,recordCheck:()=>{},fetchWithTimeout:async()=>({ok:true,json:async()=>({ok:true,text:'これは日本語の翻訳です。'})})})
   vm.runInContext(section(client,'async function hostAttempt(','function requestTranslate('),box)
   await assert.rejects(box.hostAttempt('Check the configuration.','zh-CN'),/language mismatch/)
 })

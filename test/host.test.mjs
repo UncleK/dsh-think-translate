@@ -913,7 +913,7 @@ describe('stripResolvedKeys', function () {
       },
     })
     assert.equal(disk.providers.linuxdo.apiKey, undefined)
-    assert.equal(disk.providers.mine.apiKey, 'typed-by-user')
+    assert.equal(disk.providers.mine.apiKey, undefined)
   })
 
   it('survives providers without keys and an empty config', function () {
@@ -931,9 +931,9 @@ describe('stripResolvedKeys', function () {
     // All three config answers go through the sanitizer: GET /_xlate/config,
     // POST /_xlate/config and GET /_xlate/dsh-scan (which sanitizes into `out` so the
     // scan diagnostic can ride along on the response copy).
-    assert.match(src, /sendJson\(res, 200, stripResolvedKeys\(await loadConfig\(\)\)\)/)
-    assert.match(src, /sendJson\(res, 200, stripResolvedKeys\(merged\)\)/)
-    assert.match(src, /const out = stripResolvedKeys\(cfg\)/)
+    assert.match(src, /sendJson\(res, 200, await publicConfig\(await loadConfig\(\)\)\)/)
+    assert.match(src, /sendJson\(res, 200, updated\)/)
+    assert.match(src, /const out = await publicConfig\(await loadConfig\(\)\)/)
     assert.match(src, /sendJson\(res, 200, out\)/)
     // And no route may answer with a live config object.
     assert.ok(!/sendJson\(res, 200, (cfg|merged|live)\)/.test(src),

@@ -144,7 +144,7 @@ describe('settings UI contracts', function () {
 
   it('sends an explicit null for a cleared secret field', function () {
     assert.match(src, /apiKeyEnv: formApiKeyEnv\.trim\(\) === "" \? null : formApiKeyEnv\.trim\(\),/)
-    assert.match(src, /apiKey: formApiKey\.trim\(\) === "" \? null : formApiKey\.trim\(\),/)
+    assert.match(src, /clearApiKey \? \{ apiKey: null \} : \{\}/)
   })
 
   it('bounds the persisted translation cache', function () {

@@ -208,9 +208,14 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
     fetch: function (url, init) {
       calls.push({ url: url, init: init || null })
       let body = {}
-      if (url === '/_xlate/config' && init && init.method === 'POST') {
+      if (url === '/_xlate/context') {
+        body = { ok: true, officialEnabled: served.officialEnabled === true }
+      } else if (url === '/_xlate/config' && init && init.method === 'POST') {
         body = JSON.parse(init.body)
-        body = configWith(body.providers || served.providers || {}, body.chain || served.chain || [])
+        const update = body
+        if (update.glossary) served.glossary = { ...(served.glossary || { enabled: true, entries: {} }), ...update.glossary,
+          entries: { ...(served.glossary?.entries || {}), ...(update.glossary.entries || {}) } }
+        body = { ...configWith(body.providers || served.providers || {}, body.chain || served.chain || []), glossary: served.glossary }
       } else if (url === '/_xlate/config') {
         body = served
       } else if (url === '/_xlate/dsh-scan') {
@@ -226,13 +231,13 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
       } else if (url === '/_xlate/local/prepare' || url.startsWith('/_xlate/local/status')) {
         body = { ok: true, memory: memoryResponse, job: localResponse || { id: '1', origin: 'http://localhost:11434', model: 'test-model', phase: 'ready', running: false, percent: 100, completed: 0, total: 0, platform: 'win32', canInstall: true } }
       }
-      return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve(body) } })
+      return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve(body).then(value => ({ ...value, cacheNamespace: served.cacheNamespace || 'test-context', officialEnabled: served.officialEnabled === true })) } })
     },
     window: {},
   }
   sandbox.window.__ModuleLoader__ = { load: function (spec) { captured.spec = spec } }
   vm.createContext(sandbox)
-  vm.runInContext(SRC, sandbox, { filename: 'lib/client.js' })
+  vm.runInContext(SRC.replace('exports.inject = inject;', 'globalThis.__contextTest = { refresh: refreshTranslationContext, store: store }; exports.inject = inject;'), sandbox, { filename: 'lib/client.js' })
 
   const plugin = captured.spec.factory(function (name) {
     if (name === 'react') return { default: runtime.React }
@@ -285,6 +290,7 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
   const tree = await runtime.mount(registered.section)
   return {
     tree, calls, runtime, specs, entries, officialTodo, preferences: savedPreferences,
+    refreshContext: () => sandbox.__contextTest.refresh(),
     dispose: function () { disposers.splice(0).reverse().forEach(function (dispose) { dispose() }) },
     renderView: function (name, key, props) {
       runtime.reset()
@@ -295,6 +301,140 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
     remount: function () { runtime.reset(); return runtime.mount(registered.section) },
   }
 }
+
+describe('exclusive translation and masked credential controls', function () {
+  it('shows the conflict, yields all translation seats, and resumes without duplicate entries', async () => {
+    const cfg = { ...configWith({}, []), officialEnabled: true }
+    const panel = await mountPanel(cfg)
+    assert.match(textOf(panel.tree), /本插件已暂停翻译/)
+    assert.equal(panel.entries.some(entry => entry.spec.key === 'assistant-step' || entry.spec.key === 'todo_write' || entry.spec.id === 'todo'), false)
+    assert.equal(panel.calls.filter(call => call.url === '/_xlate/translate').length, 0)
+    cfg.officialEnabled = false
+    await panel.refreshContext()
+    assert.equal(panel.entries.filter(entry => entry.spec.key === 'assistant-step').length, 1)
+    await panel.refreshContext()
+    assert.equal(panel.entries.filter(entry => entry.spec.key === 'assistant-step').length, 1)
+    cfg.officialEnabled = true
+    await panel.refreshContext()
+    assert.equal(panel.entries.some(entry => entry.spec.key === 'assistant-step'), false)
+    panel.dispose()
+    cfg.officialEnabled = false
+    await panel.refreshContext()
+    assert.equal(panel.entries.some(entry => entry.spec.key === 'assistant-step'), false, 'disposed plugin cannot remount its renderers')
+  })
+
+  it('keeps a saved key when the masked form is submitted without a replacement', async () => {
+    const custom = { type: 'openai', enabled: true, baseURL: 'https://fixture.invalid/v1', model: 'fixture-model', apiKeyRef: 'masked-ref', hasApiKey: true }
+    const panel = await mountPanel(configWith({ custom }, ['custom']))
+    click(button(panel.tree, '编辑'))
+    const tree = await panel.runtime.mount(panel.registered)
+    const input = flatten(tree).find(node => node.type === 'input' && node.props.type === 'password')
+    assert.equal(input.props.value, '')
+    assert.match(input.props.placeholder, /已保存/)
+    click(button(tree, '保存'))
+    await panel.runtime.mount(panel.registered)
+    const patch = JSON.parse(panel.calls.find(call => call.url === '/_xlate/config' && call.init?.method === 'POST').init.body)
+    assert.equal(Object.hasOwn(patch.providers.custom, 'apiKey'), false)
+    assert.equal(Object.hasOwn(patch.providers.custom, 'apiKeyRef'), false, 'browser cannot select a different stored key')
+    panel.dispose()
+  })
+
+  it('requires an explicit clear action and sends null only for the selected key', async () => {
+    const custom = { type: 'openai', enabled: true, baseURL: 'https://fixture.invalid/v1', model: 'fixture-model', hasApiKey: true }
+    const panel = await mountPanel(configWith({ custom }, ['custom']))
+    click(button(panel.tree, '编辑'))
+    let tree = await panel.runtime.mount(panel.registered)
+    const label = flatten(tree).find(node => node.type === 'label' && textOf(node) === '移除已保存的密钥')
+    assert.ok(label)
+    flatten(label).find(node => node.type === 'input').props.onChange({ target: { checked: true } })
+    tree = await panel.runtime.mount(panel.registered)
+    click(button(tree, '保存'))
+    await panel.runtime.mount(panel.registered)
+    const patch = JSON.parse(panel.calls.find(call => call.url === '/_xlate/config' && call.init?.method === 'POST').init.body)
+    assert.equal(patch.providers.custom.apiKey, null)
+    panel.dispose()
+  })
+
+  it('discards a newly typed key when the edit form is cancelled', async () => {
+    const custom = { type: 'openai', enabled: true, baseURL: 'https://fixture.invalid/v1', model: 'fixture-model', hasApiKey: true }
+    const panel = await mountPanel(configWith({ custom }, ['custom']))
+    click(button(panel.tree, '编辑'))
+    let tree = await panel.runtime.mount(panel.registered)
+    flatten(tree).find(node => node.type === 'input' && node.props.type === 'password').props.onChange({ target: { value: 'new-private-key' } })
+    tree = await panel.runtime.mount(panel.registered)
+    click(button(tree, '取消'))
+    tree = await panel.runtime.mount(panel.registered)
+    click(button(tree, '编辑'))
+    tree = await panel.runtime.mount(panel.registered)
+    assert.equal(flatten(tree).find(node => node.type === 'input' && node.props.type === 'password').props.value, '')
+    assert.equal(panel.calls.some(call => call.url === '/_xlate/config' && call.init?.method === 'POST'), false)
+    assert.equal(JSON.stringify(panel.preferences).includes('new-private-key'), false)
+    panel.dispose()
+  })
+})
+
+describe('glossary editor', function () {
+  function editor(tree) { return flatten(tree).find(node => node.type === 'textarea') }
+  function targetLanguage(tree) { return flatten(tree).find(node => node.type === 'select' && ['zh-CN', 'en'].includes(node.props.value)) }
+
+  it('saves only the selected language and keeps the other languages and provider chain', async () => {
+    const cfg = { ...configWith({}, []), glossary: { enabled: true, entries: { ja: [{ source: 'agent', target: 'エージェント' }] } } }
+    const panel = await mountPanel(cfg)
+    editor(panel.tree).props.onChange({ target: { value: 'DeepSeek => DeepSeek\nagent => 智能体' } })
+    let tree = await panel.runtime.mount(panel.registered)
+    click(button(tree, '保存术语表'))
+    tree = await panel.runtime.mount(panel.registered)
+    const patch = JSON.parse(panel.calls.find(call => call.url === '/_xlate/config' && call.init?.method === 'POST').init.body)
+    assert.deepEqual(patch, { glossary: { enabled: true, entries: { 'zh-CN': [{ source: 'DeepSeek', target: 'DeepSeek' }, { source: 'agent', target: '智能体' }] } } })
+    assert.equal(cfg.glossary.entries.ja[0].target, 'エージェント')
+    assert.match(textOf(tree), /术语表已保存/)
+    panel.dispose()
+  })
+
+  it('shows the invalid line without submitting a malformed glossary', async () => {
+    const panel = await mountPanel(configWith({}, []))
+    editor(panel.tree).props.onChange({ target: { value: 'agent => 智能体\n\nAGENT => 代理' } })
+    let tree = await panel.runtime.mount(panel.registered)
+    click(button(tree, '保存术语表'))
+    tree = await panel.runtime.mount(panel.registered)
+    assert.match(textOf(tree), /第 3 行/)
+    assert.equal(panel.calls.some(call => call.url === '/_xlate/config' && call.init?.method === 'POST'), false)
+    panel.dispose()
+  })
+
+  it('preserves unsaved drafts separately while switching target languages', async () => {
+    const cfg = { ...configWith({}, []), glossary: { enabled: true, entries: { en: [{ source: '智能体', target: 'AI agent' }] } } }
+    const panel = await mountPanel(cfg)
+    editor(panel.tree).props.onChange({ target: { value: 'agent => 智能体' } })
+    let tree = await panel.runtime.mount(panel.registered)
+    targetLanguage(tree).props.onChange({ target: { value: 'en' } })
+    tree = await panel.remount()
+    assert.equal(editor(tree).props.value, '智能体 => AI agent')
+    editor(tree).props.onChange({ target: { value: '智能体 => agent' } })
+    tree = await panel.runtime.mount(panel.registered)
+    targetLanguage(tree).props.onChange({ target: { value: 'zh-CN' } })
+    tree = await panel.remount()
+    assert.equal(editor(tree).props.value, 'agent => 智能体')
+    assert.equal(panel.calls.some(call => call.url === '/_xlate/config' && call.init?.method === 'POST'), false)
+    panel.dispose()
+  })
+
+  it('clears the current language explicitly and can disable all glossary mappings', async () => {
+    const cfg = { ...configWith({}, []), glossary: { enabled: true, entries: { 'zh-CN': [{ source: 'agent', target: '智能体' }], ja: [{ source: 'agent', target: 'エージェント' }] } } }
+    const panel = await mountPanel(cfg)
+    editor(panel.tree).props.onChange({ target: { value: '' } })
+    let tree = await panel.runtime.mount(panel.registered)
+    const label = flatten(tree).find(node => node.type === 'label' && textOf(node) === '启用术语表（全部目标语言）')
+    flatten(label).find(node => node.type === 'input').props.onChange({ target: { checked: false } })
+    tree = await panel.runtime.mount(panel.registered)
+    click(button(tree, '保存术语表'))
+    await panel.runtime.mount(panel.registered)
+    assert.equal(cfg.glossary.enabled, false)
+    assert.deepEqual(cfg.glossary.entries['zh-CN'], [])
+    assert.equal(cfg.glossary.entries.ja[0].target, 'エージェント')
+    panel.dispose()
+  })
+})
 
 describe('persistent translation sidebar entry', function () {
   function toggle(tree, label) {

@@ -29,6 +29,17 @@ const samples = [
   ['indented code', 'Before.\n    const key = "secret";\nAfter.', ['    const key = "secret";\n']],
   ['unfinished fence', 'Before.\n```js\nconst key = "secret"', ['```js\nconst key = "secret"']],
   ['unfinished inline', 'Before `const key = "secret"', ['`const key = "secret"']],
+  ['bare Windows path', 'Open E:\\VP\\project\\config.json and continue.', ['E:\\VP\\project\\config.json']],
+  ['quoted path with spaces', 'Open "C:\\Program Files\\App\\config.json" now.', ['"C:\\Program Files\\App\\config.json"']],
+  ['UNC path', 'Read \\\\server\\share\\data.json now.', ['\\\\server\\share\\data.json']],
+  ['POSIX and relative paths', 'Open /workspace/app/config.json, then ./src/main.ts.', ['/workspace/app/config.json', './src/main.ts']],
+  ['URL with Markdown delimiter', 'Read [the guide](https://example.test/docs?q=1&x=2).', ['https://example.test/docs?q=1&x=2']],
+  ['balanced URL parentheses', 'Read https://example.test/a(b) now.', ['https://example.test/a(b)']],
+  ['bare commands', 'Please run npm test and git status --short, then check results.', ['npm test', 'git status --short']],
+  ['build command', 'Run pnpm run build -- --serial before continuing.', ['pnpm run build -- --serial']],
+  ['file name', 'Inspect runtime_config.json before continuing.', ['runtime_config.json']],
+  ['standalone commands with arguments', 'Before.\nnpm install foo && npm test\nAfter.', ['npm install foo && npm test\n']],
+  ['path adjacent to Chinese prose', '读取E:\\VP\\project\\config.json，然后检查结果。', ['E:\\VP\\project\\config.json']],
 ]
 
 for (const [label, text, codes] of samples) {
@@ -47,6 +58,11 @@ for (const [label, text, codes] of samples) {
     assert.deepEqual(batches.filter(batch => batch.code).map(batch => batch.text), codes)
   })
 }
+
+it('keeps ordinary prose, dates and words containing command names translatable', () => {
+  const text = 'The digital assistant starts working on 2026-11-04. Please install the application and continue.'
+  assert.equal(protectedTextParts(text).some(part => part.code), false)
+})
 
 it('preserves whitespace around inline code without provider placeholders', async () => {
   const seen = []
@@ -124,7 +140,8 @@ it('keeps the original after Host failure without any direct browser request', a
     localStorage: { length: 0, getItem: () => null, setItem: () => {} }, recordCheck: () => {},
     fetch: async (url, options) => {
       requests.push({ url, method: options?.method })
-      assert.equal(url, '/_xlate/translate', 'browser bypassed configured routing')
+      assert.ok(['/_xlate/context', '/_xlate/translate'].includes(url), 'browser bypassed configured routing')
+      if (url === '/_xlate/context') return { ok: true, json: async () => ({ cacheNamespace: 'test-context', officialEnabled: false }) }
       return { ok: true, json: async () => ({ ok: false, error: 'No enabled provider', retryAt: Date.now() + 30000 }) }
     },
     sleepMs: async () => {},
@@ -135,5 +152,5 @@ it('keeps the original after Host failure without any direct browser request', a
   const result = await box.requestTranslate('Original sample.', 'zh-CN')
   assert.equal(result.ok, false)
   assert.equal(result.text, 'Original sample.')
-  assert.deepEqual(requests, [{ url: '/_xlate/translate', method: 'POST' }])
+  assert.deepEqual(requests, [{ url: '/_xlate/context', method: 'GET' }, { url: '/_xlate/translate', method: 'POST' }])
 })

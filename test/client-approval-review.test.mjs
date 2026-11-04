@@ -158,7 +158,7 @@ function loadPlugin(dom, timers, observers, preferences, translate) {
         ? { ok: true, text: translate ? translate(calls[calls.length - 1].body) : '译文', provider: 'test' }
         : { ok: true }
       return Promise.resolve({ ok: true, status: 200, json: function () {
-        return Promise.resolve(body.text).then(function (text) { return { ...body, text } })
+        return Promise.resolve(body.text).then(function (text) { return { ...body, text, cacheNamespace: 'test-context', officialEnabled: false } })
       } })
     },
     AbortController,
@@ -231,21 +231,21 @@ const ZH_HEADLINE = 'Auto review 拒绝了此调用：' + REASON
 const EN_HEADLINE = 'Auto review denied this call: ' + REASON
 const ZH_TRANSLATED = '删除会话创建范围之外的文件是不可逆的。'
 
-function pendingApproval() {
+async function pendingApproval() {
   const dom = buildDocument(), timers = [], observers = []
   const card = buildApprovalCard(ZH_HEADLINE)
   dom.body.appendChild(card.root)
   let resolve
   const result = new Promise(done => { resolve = done })
   const plugin = loadPlugin(dom, timers, observers, {}, body => body.target === 'en' ? REASON : result)
-  flush(timers)
+  await settle(timers, () => translateCalls(plugin.calls).length === 1)
   assert.equal(translateCalls(plugin.calls).length, 1, 'translation is in flight')
   return { dom, timers, observers, card, plugin, resolve }
 }
 
 describe('auto-review denial reason translation', function () {
   it('ignores an in-flight result after the user turns translation off', async function () {
-    const f = pendingApproval()
+    const f = await pendingApproval()
     f.plugin.changeSetting('翻译自动审查的拒绝原因', false)
     flush(f.timers)
     f.resolve(ZH_TRANSLATED)
@@ -254,7 +254,7 @@ describe('auto-review denial reason translation', function () {
   })
 
   it('invalidates a response even before the debounced DOM scan runs', async function () {
-    const f = pendingApproval()
+    const f = await pendingApproval()
     f.plugin.changeSetting('翻译自动审查的拒绝原因', false)
     f.resolve(ZH_TRANSLATED)
     await new Promise(resolve => setTimeout(resolve, 10))
@@ -262,7 +262,7 @@ describe('auto-review denial reason translation', function () {
   })
 
   it('ignores an old result when the target changes to the original language', async function () {
-    const f = pendingApproval()
+    const f = await pendingApproval()
     f.plugin.changeSetting('目标语言', 'en')
     flush(f.timers)
     f.resolve(ZH_TRANSLATED)
@@ -290,7 +290,7 @@ describe('auto-review denial reason translation', function () {
   }
 
   it('drops the first request when the setting is turned off and back on', async function () {
-    const f = pendingApproval()
+    const f = await pendingApproval()
     f.plugin.changeSetting('翻译自动审查的拒绝原因', false)
     flush(f.timers)
     f.plugin.changeSetting('翻译自动审查的拒绝原因', true)
@@ -304,7 +304,7 @@ describe('auto-review denial reason translation', function () {
 
   it('ignores an in-flight result after the card is detached or disposed', async function () {
     for (const dispose of [false, true]) {
-      const f = pendingApproval()
+      const f = await pendingApproval()
       if (dispose) for (const cleanup of f.plugin.disposers) cleanup()
       else f.dom.body.removeChild(f.card.root)
       f.resolve(ZH_TRANSLATED)
@@ -314,7 +314,7 @@ describe('auto-review denial reason translation', function () {
   })
 
   it('does not append an old reason after the headline changes before the observer runs', async function () {
-    const f = pendingApproval()
+    const f = await pendingApproval()
     f.card.headline.textContent = 'The sandbox blocked this command: workspace access required.'
     f.resolve(ZH_TRANSLATED)
     await settle(f.timers, () => null)

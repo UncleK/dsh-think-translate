@@ -41,6 +41,9 @@
       "Custom endpoints support OpenAI-compatible `/v1/chat/completions` and the native Anthropic Messages API.",
       "Discovery reads the current DSH profile and overrides. Rescan and add discovered providers to the translation chain.",
       "An `apiKeyEnv` key is resolved at request time; resolved credentials are never written back to plugin configuration.",
+      "Manually entered keys are saved through DSH credentials; plugin configuration stores references only. Legacy literal keys migrate when that service is available. Unavailable storage rejects new literal-key saves; a failed migration retains the previous configuration.",
+      "Configuration responses never contain saved key values. Leave an edited key field blank to retain it; explicitly select “Remove saved key” to delete it. DSH owns credential-file access protection; this is not OS-keychain encryption.",
+      "Successful translations persist in the current browser, separated by provider, model and translation configuration. Configuration changes invalidate old results, including requests already in flight. Cache-version upgrades retain preferences.",
       "Failures cool down in host memory for 30 seconds, then subsequent translation requests can retry. Clearly wrong-language results try the next provider.",
       "Language detection skips text already recognized as the target language; explicit provider tests still make a real request."
     ],
@@ -74,7 +77,7 @@
     "memoryFoot": "Idle timing applies from the next use. Ollama tracks the selected model; global environment variables are unchanged. Missing software or models are installed or downloaded only after you click the preparation button, with progress shown.",
     "languagesHeading": "Language settings that follow you",
     "languagesIntro": "Nine target languages, settings translations and task labels, including Portuguese. Your selection survives a page refresh.",
-    "comparisonNotice": "Enable either this plugin or the official reasoning translator. Both take over the reasoning interface.",
+    "comparisonNotice": "Enable either this plugin or the official reasoning translator. Both take over the reasoning interface. While the official plugin is enabled, this plugin yields its translation views and displays a conflict notice. It resumes when the official plugin is disabled, without changing the official plugin's configuration.",
     "faqHeading": "Answers to common questions",
     "faqs": [
       [
@@ -96,6 +99,7 @@
     ],
     "changesTitle": "Recent changes and compatibility",
     "changes": [
+      "**1.2.19** adds per-language glossaries, DSH-managed credentials, configuration-aware caches, official-plugin mutual exclusion, stronger technical-text protection and Windows/Linux CI.",
       "**1.2.18** adds a persistent sidebar entry for the translation controls (toggle in settings or the translation page, saved per browser) and redesigns the translation page and settings dialog into card-based sections with a responsive single-column layout in narrow windows.",
       "**1.2.17** fixes idle-policy changes for already loaded Ollama models, allows up to 120 seconds for local inference, and displays the server idle countdown. Addresses reproducible parts of issue #17; long-term memory growth remains under investigation.",
       "**1.2.16** adds Portuguese throughout the translation target and UI, refreshes all nine READMEs and localized comparison images, and declares three marketplace images.",
@@ -108,13 +112,19 @@
       "`lib/client.js`: settings, display-layer translation, streaming batches and browser cache.",
       "`lib/config.json`: runtime configuration, excluded from Git and npm.",
       "No extra build step: source files are the deliverable. Restart DSH after changing host code.",
-      "Run checks with `npm test`. Discovery and credential handling are documented in the [maintenance notes](docs/maintenance-notes.md)."
+      "Run checks with `npm test`. Discovery and credential handling are documented in the [maintenance notes](docs/maintenance-notes.md).",
+      "Push/PR CI runs `npm ci --ignore-scripts` and `npm test` on Windows/Linux with Node 20/22/24/26. Node 20 checks the declared compatibility floor; required merge checks need separate repository settings.",
+      "Protection covers Markdown code, recognizable paths, URLs, filenames and common command fragments. Quote paths containing spaces; use backticks or fenced blocks for complex commands and ambiguous technical text."
     ],
     "footer": [
       "Report an issue",
       "Releases",
       "MIT License"
-    ]
+    ],
+    "glossaryHeading": "Glossary: consistent terms",
+    "glossaryIntro": "Each target language has its own glossary in settings and the sidebar translation page. Enter one source => translation pair per line and save. Using the same text on both sides preserves a product name.",
+    "glossaryExample": "DeepSeek => DeepSeek\n智能体 => AI agent\n思考过程 => reasoning",
+    "glossaryFoot": "English matches whole words without case sensitivity; longer terms take precedence. Code, paths and commands remain intact. Up to 128 entries per language. Saving invalidates old translations; disabling the glossary keeps your entries. Terms apply to prose actually submitted for translation, without rewriting the original."
   },
   "ja": {
     "introTitle": "DeepSeek Harness の表示レイヤー翻訳。",
@@ -213,6 +223,7 @@
     ],
     "changesTitle": "最近の更新と互換性",
     "changes": [
+      "**1.2.19**：言語別用語集、DSH 資格情報によるキー保管、設定別キャッシュ、公式プラグインとの排他制御、技術文の保護強化、Windows/Linux CI を追加。",
       "**1.2.18**：翻訳操作の常駐サイドバーエントリを追加（設定ダイアログまたは翻訳ページで切替、ブラウザごとに保存）。翻訳ページと設定ダイアログをカード型セクションへ刷新し、狭いウィンドウではレスポンシブな単一列レイアウトに切り替わります。",
       "**1.2.17**：ロード済み Ollama モデルにも保存した待機時間を適用。ローカル推論は最大120秒待機し、残り時間を表示します。issue #17 の再現可能な問題を修正し、長時間のメモリ増加は引き続き調査します。",
       "**1.2.16**：翻訳先と UI にポルトガル語を追加。9言語の README と比較画像を更新し、市場向け画像を3枚に拡充。",
@@ -231,7 +242,11 @@
       "問題を報告",
       "リリース",
       "MIT License"
-    ]
+    ],
+    "glossaryHeading": "用語集：訳語を統一",
+    "glossaryIntro": "設定とサイドバーの翻訳ページで、対象言語ごとの用語集を編集できます。1 行に 原語 => 訳語 を入力して保存します。両側を同じ表記にすると製品名を保持できます。",
+    "glossaryExample": "DeepSeek => DeepSeek\nagent => エージェント\nreasoning => 推論",
+    "glossaryFoot": "英単語は大文字小文字を区別せず単語全体に一致し、長い用語を優先します。コード、パス、コマンドは変更しません。各言語 128 件まで。保存すると旧訳のキャッシュが無効になり、無効化しても用語は残ります。翻訳する本文だけに適用し、原文は書き換えません。"
   },
   "ko": {
     "introTitle": "DeepSeek Harness를 위한 표시 계층 번역.",
@@ -330,6 +345,7 @@
     ],
     "changesTitle": "최근 변경 및 호환성",
     "changes": [
+      "**1.2.19**: 언어별 용어집, DSH 자격 증명 저장소, 설정별 캐시, 공식 플러그인과의 상호 배제, 기술 텍스트 보호 강화 및 Windows/Linux CI를 추가했습니다.",
       "**1.2.18**: 번역 컨트롤을 위한 상시 사이드바 항목을 추가했습니다(설정 대화상자나 번역 페이지에서 전환, 브라우저별 저장). 번역 페이지와 설정 대화상자를 카드형 섹션으로 개편하고 좁은 창에서는 반응형 단일 열 레이아웃으로 전환됩니다.",
       "**1.2.17**: 로드된 Ollama 모델에도 저장한 유휴 시간을 적용하고, 로컬 추론을 최대 120초 기다리며 남은 시간을 표시합니다. issue #17의 재현 가능한 문제를 수정했으며 장시간 메모리 증가는 조사 중입니다.",
       "**1.2.16**: 포르투갈어 번역 대상과 UI 추가. 9개 언어 README와 비교 이미지 갱신, 마켓 이미지 3장 선언.",
@@ -348,7 +364,11 @@
       "문제 제보",
       "릴리스",
       "MIT License"
-    ]
+    ],
+    "glossaryHeading": "용어집: 일관된 번역",
+    "glossaryIntro": "설정과 사이드바 번역 페이지에서 대상 언어별 용어집을 편집할 수 있습니다. 한 줄에 원문 => 번역을 입력하고 저장하세요. 양쪽을 같게 입력하면 제품명을 유지합니다.",
+    "glossaryExample": "DeepSeek => DeepSeek\nagent => 에이전트\nreasoning => 추론",
+    "glossaryFoot": "영어는 대소문자 구분 없이 단어 전체를 일치시키며 긴 용어를 우선합니다. 코드, 경로, 명령은 유지됩니다. 언어별 최대 128개이며 저장 시 이전 번역 캐시가 무효화됩니다. 비활성화해도 용어는 보존됩니다. 실제 번역 본문에만 적용하며 원문을 수정하지 않습니다."
   },
   "es": {
     "introTitle": "Traducción de la capa visual para DeepSeek Harness.",
@@ -447,6 +467,7 @@
     ],
     "changesTitle": "Cambios recientes y compatibilidad",
     "changes": [
+      "**1.2.19** añade glosarios por idioma, credenciales de DSH, cachés por configuración, exclusión con el complemento oficial, mayor protección técnica y CI de Windows/Linux.",
       "**1.2.18** añade una entrada persistente en la barra lateral para los controles de traducción (se activa en los ajustes o en la página de traducción y se guarda por navegador) y rediseña la página de traducción y el diálogo de ajustes en secciones tipo tarjeta con un diseño adaptable de una sola columna en ventanas estrechas.",
       "**1.2.17** corrige el cambio del plazo de inactividad en modelos Ollama ya cargados, permite hasta 120 segundos de inferencia local y muestra el tiempo restante. Resuelve los problemas reproducibles del issue #17; el aumento de memoria a largo plazo sigue en investigación.",
       "**1.2.16** añade portugués al destino y la interfaz, renueva los nueve README e imágenes localizadas y declara tres imágenes para el mercado.",
@@ -465,7 +486,11 @@
       "Informar de un problema",
       "Versiones",
       "Licencia MIT"
-    ]
+    ],
+    "glossaryHeading": "Glosario: términos coherentes",
+    "glossaryIntro": "Cada idioma de destino tiene su propio glosario en ajustes y en la página lateral de traducción. Introduce un original => traducción por línea y guarda. Usar el mismo texto a ambos lados conserva un nombre de producto.",
+    "glossaryExample": "DeepSeek => DeepSeek\nagent => agente\nreasoning => razonamiento",
+    "glossaryFoot": "Las palabras inglesas se comparan completas sin distinguir mayúsculas; los términos largos tienen prioridad. Código, rutas y comandos se conservan. Máximo 128 entradas por idioma. Guardar invalida traducciones antiguas; desactivar conserva las entradas. Se aplica al texto enviado a traducir, sin modificar el original."
   },
   "fr": {
     "introTitle": "Traduction de la couche d’affichage de DeepSeek Harness.",
@@ -564,6 +589,7 @@
     ],
     "changesTitle": "Mises à jour et compatibilité",
     "changes": [
+      "**1.2.19** ajoute les glossaires par langue, les identifiants DSH, le cache par configuration, l’exclusion du plugin officiel, la protection technique renforcée et la CI Windows/Linux.",
       "**1.2.18** ajoute une entrée persistante dans la barre latérale pour les contrôles de traduction (activable dans les paramètres ou sur la page de traduction, enregistrée par navigateur) et repense la page de traduction et la boîte de dialogue des paramètres en sections sous forme de cartes, avec une disposition adaptative sur une seule colonne dans les fenêtres étroites.",
       "**1.2.17** applique le délai enregistré aux modèles Ollama déjà chargés, attend jusqu’à 120 secondes pour l’inférence locale et affiche le temps restant. Corrige les problèmes reproductibles du ticket #17 ; la hausse de mémoire à long terme reste à étudier.",
       "**1.2.16** ajoute le portugais comme cible et langue d’interface, renouvelle les neuf README et images localisées, et déclare trois images pour le marché.",
@@ -582,7 +608,11 @@
       "Signaler un problème",
       "Versions",
       "Licence MIT"
-    ]
+    ],
+    "glossaryHeading": "Glossaire : des termes cohérents",
+    "glossaryIntro": "Chaque langue cible possède son glossaire dans les réglages et la page latérale de traduction. Saisissez un original => traduction par ligne puis enregistrez. Le même texte des deux côtés conserve un nom de produit.",
+    "glossaryExample": "DeepSeek => DeepSeek\nagent => agent\nreasoning => raisonnement",
+    "glossaryFoot": "Les mots anglais correspondent en entier sans tenir compte de la casse ; les termes longs sont prioritaires. Code, chemins et commandes restent intacts. 128 entrées par langue. Enregistrer invalide les anciennes traductions ; désactiver conserve les entrées. Seul le texte soumis à la traduction est traité, sans modifier l’original."
   },
   "de": {
     "introTitle": "Übersetzung der Anzeigeebene für DeepSeek Harness.",
@@ -681,6 +711,7 @@
     ],
     "changesTitle": "Änderungen und Kompatibilität",
     "changes": [
+      "**1.2.19** ergänzt sprachbezogene Glossare, DSH-Zugangsdaten, konfigurationsbezogene Caches, die gegenseitige Ausschließung mit dem offiziellen Plugin, stärkeren Schutz technischer Texte und Windows/Linux-CI.",
       "**1.2.18** fügt einen dauerhaften Seitenleisten-Eintrag für die Übersetzungssteuerung hinzu (umschaltbar in den Einstellungen oder auf der Übersetzungsseite, pro Browser gespeichert) und gestaltet die Übersetzungsseite und den Einstellungsdialog als kartenbasierte Abschnitte mit responsivem einspaltigem Layout in schmalen Fenstern neu.",
       "**1.2.17** übernimmt gespeicherte Leerlaufzeiten für bereits geladene Ollama-Modelle, wartet bis zu 120 Sekunden auf lokale Inferenz und zeigt die Restzeit an. Behebt reproduzierbare Teile von Issue #17; langfristiger Speicheranstieg wird weiter untersucht.",
       "**1.2.16** ergänzt Portugiesisch als Ziel- und Oberflächensprache, erneuert alle neun READMEs und Vergleichsbilder und erklärt drei Marktplatzbilder.",
@@ -699,7 +730,11 @@
       "Problem melden",
       "Versionen",
       "MIT-Lizenz"
-    ]
+    ],
+    "glossaryHeading": "Glossar: einheitliche Begriffe",
+    "glossaryIntro": "Jede Zielsprache hat ein eigenes Glossar in den Einstellungen und auf der Übersetzungsseite. Pro Zeile Original => Übersetzung eingeben und speichern. Derselbe Text auf beiden Seiten behält einen Produktnamen bei.",
+    "glossaryExample": "DeepSeek => DeepSeek\nagent => Agent\nreasoning => Schlussfolgern",
+    "glossaryFoot": "Englische Wörter werden vollständig ohne Beachtung der Großschreibung erkannt; längere Begriffe haben Vorrang. Code, Pfade und Befehle bleiben erhalten. Maximal 128 Einträge je Sprache. Speichern verwirft alte Übersetzungen; Deaktivieren behält die Einträge. Nur der zur Übersetzung gesendete Text wird verarbeitet, das Original bleibt unverändert."
   },
   "ru": {
     "introTitle": "Перевод слоя отображения для DeepSeek Harness.",
@@ -798,6 +833,7 @@
     ],
     "changesTitle": "Изменения и совместимость",
     "changes": [
+      "**1.2.19**: глоссарии по языкам, хранение ключей в DSH, кеш по настройкам, взаимное исключение с официальным плагином, усиленная защита технического текста и CI Windows/Linux.",
       "**1.2.18** добавляет постоянный элемент в боковой панели для управления переводом (переключается в настройках или на странице перевода, сохраняется для каждого браузера) и перерабатывает страницу перевода и диалог настроек в карточные разделы с адаптивной одноколоночной раскладкой в узких окнах.",
       "**1.2.17** применяет сохранённое время простоя к уже загруженным моделям Ollama, ожидает локальный перевод до 120 секунд и показывает оставшееся время. Исправлены воспроизводимые проблемы из issue #17; длительный рост памяти ещё исследуется.",
       "**1.2.16** добавляет португальский для перевода и интерфейса, обновляет все девять README и сравнительных изображений, объявляет три изображения для маркета.",
@@ -816,7 +852,11 @@
       "Сообщить о проблеме",
       "Версии",
       "Лицензия MIT"
-    ]
+    ],
+    "glossaryHeading": "Глоссарий: единые термины",
+    "glossaryIntro": "Для каждого языка перевода есть свой глоссарий в настройках и на боковой странице перевода. Введите оригинал => перевод, по одной паре на строку, и сохраните. Одинаковый текст с обеих сторон сохраняет название продукта.",
+    "glossaryExample": "DeepSeek => DeepSeek\nagent => агент\nreasoning => рассуждение",
+    "glossaryFoot": "Английские слова сопоставляются целиком без учёта регистра; длинные термины имеют приоритет. Код, пути и команды сохраняются. До 128 записей на язык. Сохранение сбрасывает старые переводы, отключение сохраняет записи. Обрабатывается только переводимый текст, оригинал не меняется."
   },
   "pt": {
     "introTitle": "Tradução da camada de exibição do DeepSeek Harness.",
@@ -915,6 +955,7 @@
     ],
     "changesTitle": "Atualizações e compatibilidade",
     "changes": [
+      "**1.2.19** adiciona glossários por idioma, credenciais gerenciadas pelo DSH, caches por configuração, exclusão com o plugin oficial, proteção técnica reforçada e CI Windows/Linux.",
       "**1.2.18** adiciona uma entrada persistente na barra lateral para os controles de tradução (ativada nas configurações ou na página de tradução, salva por navegador) e reformula a página de tradução e a caixa de diálogo de configurações em seções em cartão, com layout responsivo de coluna única em janelas estreitas.",
       "**1.2.17** aplica o prazo salvo a modelos Ollama já carregados, aguarda até 120 segundos pela inferência local e mostra o tempo restante. Corrige os problemas reproduzíveis do issue #17; o aumento de memória a longo prazo continua em investigação.",
       "**1.2.16** adiciona português ao destino e à interface, renova os nove README e imagens localizadas, e declara três imagens para o mercado.",
@@ -933,6 +974,10 @@
       "Relatar um problema",
       "Versões",
       "Licença MIT"
-    ]
+    ],
+    "glossaryHeading": "Glossário: termos consistentes",
+    "glossaryIntro": "Cada idioma de destino tem seu glossário nas configurações e na página lateral de tradução. Insira um original => tradução por linha e salve. O mesmo texto dos dois lados preserva um nome de produto.",
+    "glossaryExample": "DeepSeek => DeepSeek\nagent => agente\nreasoning => raciocínio",
+    "glossaryFoot": "Palavras inglesas correspondem inteiras sem distinguir maiúsculas; termos longos têm prioridade. Código, caminhos e comandos permanecem intactos. Até 128 entradas por idioma. Salvar invalida traduções antigas; desativar mantém as entradas. Aplica-se apenas ao texto enviado para tradução, sem alterar o original."
   }
 }

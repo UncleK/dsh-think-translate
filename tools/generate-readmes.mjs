@@ -102,6 +102,16 @@ ${c.chain}
 
 ${details(c.providerDetails, c.providerNotes.map(t => '- ' + t).join('\n'))}
 
+### ${c.glossaryHeading}
+
+${c.glossaryIntro}
+
+\`\`\`text
+${c.glossaryExample}
+\`\`\`
+
+${c.glossaryFoot}
+
 ### ${c.memoryHeading}
 
 | ${c.memoryHeaders.join(' | ')} |
