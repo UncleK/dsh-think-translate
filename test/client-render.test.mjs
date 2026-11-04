@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
 import { translateProtectedText } from '../lib/text.js'
+import { BUILTIN_GLOSSARY } from '../lib/glossary-presets.js'
 
 const SRC = readFileSync(fileURLToPath(new URL('../lib/client.js', import.meta.url)), 'utf8')
 const FRAGMENT = Symbol('fragment')
@@ -196,6 +197,7 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
   const disposers = []
   const runtime = createRuntime()
   const captured = {}
+  const windowListeners = new Map()
   const sandbox = {
     console,
     setTimeout, clearTimeout, setInterval: function (fn, ms) { const timer = setInterval(fn, ms); timer.unref(); return timer }, clearInterval, URL,
@@ -215,7 +217,7 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
         const update = body
         if (update.glossary) served.glossary = { ...(served.glossary || { enabled: true, entries: {} }), ...update.glossary,
           entries: { ...(served.glossary?.entries || {}), ...(update.glossary.entries || {}) } }
-        body = { ...configWith(body.providers || served.providers || {}, body.chain || served.chain || []), glossary: served.glossary }
+        body = { ...configWith(body.providers || served.providers || {}, body.chain || served.chain || []), glossary: served.glossary, glossaryPreset: served.glossaryPreset }
       } else if (url === '/_xlate/config') {
         body = served
       } else if (url === '/_xlate/dsh-scan') {
@@ -233,7 +235,8 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
       }
       return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve(body).then(value => ({ ...value, cacheNamespace: served.cacheNamespace || 'test-context', officialEnabled: served.officialEnabled === true })) } })
     },
-    window: {},
+    window: { addEventListener: (type, listener) => windowListeners.set(type, listener),
+      removeEventListener: (type, listener) => { if (windowListeners.get(type) === listener) windowListeners.delete(type) } },
   }
   sandbox.window.__ModuleLoader__ = { load: function (spec) { captured.spec = spec } }
   vm.createContext(sandbox)
@@ -289,7 +292,7 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
 
   const tree = await runtime.mount(registered.section)
   return {
-    tree, calls, runtime, specs, entries, officialTodo, preferences: savedPreferences,
+    tree, calls, runtime, specs, entries, officialTodo, preferences: savedPreferences, windowListeners,
     refreshContext: () => sandbox.__contextTest.refresh(),
     dispose: function () { disposers.splice(0).reverse().forEach(function (dispose) { dispose() }) },
     renderView: function (name, key, props) {
@@ -376,6 +379,50 @@ describe('exclusive translation and masked credential controls', function () {
 describe('glossary editor', function () {
   function editor(tree) { return flatten(tree).find(node => node.type === 'textarea') }
   function targetLanguage(tree) { return flatten(tree).find(node => node.type === 'select' && ['zh-CN', 'en'].includes(node.props.value)) }
+  function checkbox(tree, text) {
+    const row = flatten(tree).find(node => node.type === 'label' && textOf(node) === text)
+    assert.ok(row, 'visible checkbox: ' + text)
+    return flatten(row).find(node => node.type === 'input' && node.props.type === 'checkbox')
+  }
+
+  it('enables the built-in glossary with one click and preserves unsaved custom drafts', async () => {
+    const cfg = { ...configWith({}, []), glossaryPreset: BUILTIN_GLOSSARY, glossary: { enabled: false, builtin: false, entries: { ja: [{ source: 'agent', target: 'エージェント' }] } } }
+    const panel = await mountPanel(cfg)
+    assert.match(textOf(panel.tree), /查看内置词条（60 条）/)
+    editor(panel.tree).props.onChange({ target: { value: 'agent => 私人译法' } })
+    let tree = await panel.runtime.mount(panel.registered)
+    checkbox(tree, '启用内置词表').props.onChange({ target: { checked: true } })
+    tree = await panel.runtime.mount(panel.registered)
+    const posts = panel.calls.filter(call => call.url === '/_xlate/config' && call.init?.method === 'POST')
+    assert.equal(posts.length, 1)
+    assert.deepEqual(JSON.parse(posts[0].init.body), { glossary: { builtin: true } })
+    assert.equal(cfg.glossary.enabled, false)
+    assert.equal(editor(tree).props.value, 'agent => 私人译法')
+    assert.equal(cfg.glossary.entries.ja[0].target, 'エージェント')
+    assert.match(textOf(tree), /内置词表已启用，立即生效/)
+    assert.equal(checkbox(tree, '启用内置词表').props.checked, true)
+    assert.match(textOf(tree), /有未保存的修改/)
+    click(button(tree, '保存术语表'))
+    tree = await panel.runtime.mount(panel.registered)
+    assert.equal(cfg.glossary.builtin, true)
+    assert.equal(cfg.glossary.entries['zh-CN'][0].target, '私人译法')
+    checkbox(tree, '启用自定义词条').props.onChange({ target: { checked: true } })
+    tree = await panel.runtime.mount(panel.registered)
+    assert.equal(cfg.glossary.builtin, true)
+    checkbox(tree, '启用内置词表').props.onChange({ target: { checked: false } })
+    tree = await panel.runtime.mount(panel.registered)
+    assert.equal(cfg.glossary.builtin, false)
+    assert.equal(cfg.glossary.enabled, true)
+    assert.equal(cfg.glossary.entries['zh-CN'][0].target, '私人译法')
+    assert.match(textOf(tree), /自定义词条保留/)
+    panel.dispose()
+  })
+
+  it('does not offer activation against an older Host without built-in preset metadata', async () => {
+    const panel = await mountPanel(configWith({}, []))
+    assert.equal(checkbox(panel.tree, '启用内置词表').props.disabled, true)
+    panel.dispose()
+  })
 
   it('saves only the selected language and keeps the other languages and provider chain', async () => {
     const cfg = { ...configWith({}, []), glossary: { enabled: true, entries: { ja: [{ source: 'agent', target: 'エージェント' }] } } }
@@ -385,7 +432,7 @@ describe('glossary editor', function () {
     click(button(tree, '保存术语表'))
     tree = await panel.runtime.mount(panel.registered)
     const patch = JSON.parse(panel.calls.find(call => call.url === '/_xlate/config' && call.init?.method === 'POST').init.body)
-    assert.deepEqual(patch, { glossary: { enabled: true, entries: { 'zh-CN': [{ source: 'DeepSeek', target: 'DeepSeek' }, { source: 'agent', target: '智能体' }] } } })
+    assert.deepEqual(patch, { glossary: { entries: { 'zh-CN': [{ source: 'DeepSeek', target: 'DeepSeek' }, { source: 'agent', target: '智能体' }] } } })
     assert.equal(cfg.glossary.entries.ja[0].target, 'エージェント')
     assert.match(textOf(tree), /术语表已保存/)
     panel.dispose()
@@ -410,6 +457,7 @@ describe('glossary editor', function () {
     targetLanguage(tree).props.onChange({ target: { value: 'en' } })
     tree = await panel.remount()
     assert.equal(editor(tree).props.value, '智能体 => AI agent')
+    assert.match(textOf(tree), /Unsaved entries in 1 other languages/)
     editor(tree).props.onChange({ target: { value: '智能体 => agent' } })
     tree = await panel.runtime.mount(panel.registered)
     targetLanguage(tree).props.onChange({ target: { value: 'zh-CN' } })
@@ -424,7 +472,7 @@ describe('glossary editor', function () {
     const panel = await mountPanel(cfg)
     editor(panel.tree).props.onChange({ target: { value: '' } })
     let tree = await panel.runtime.mount(panel.registered)
-    const label = flatten(tree).find(node => node.type === 'label' && textOf(node) === '启用术语表（全部目标语言）')
+    const label = flatten(tree).find(node => node.type === 'label' && textOf(node) === '启用自定义词条')
     flatten(label).find(node => node.type === 'input').props.onChange({ target: { checked: false } })
     tree = await panel.runtime.mount(panel.registered)
     click(button(tree, '保存术语表'))
@@ -432,6 +480,32 @@ describe('glossary editor', function () {
     assert.equal(cfg.glossary.enabled, false)
     assert.deepEqual(cfg.glossary.entries['zh-CN'], [])
     assert.equal(cfg.glossary.entries.ja[0].target, 'エージェント')
+    panel.dispose()
+  })
+
+  it('shows an unsaved reminder and highlights Save until the draft is saved or reverted', async () => {
+    const panel = await mountPanel(configWith({}, []))
+    assert.equal(button(panel.tree, '保存术语表').props.disabled, true)
+    editor(panel.tree).props.onChange({ target: { value: 'agent => 自定义' } })
+    let tree = await panel.runtime.mount(panel.registered)
+    assert.match(textOf(tree), /有未保存的修改，请点击/)
+    assert.match(button(tree, '保存术语表').props.className, /xl-save-pending/)
+    let prevented = false
+    const event = { preventDefault: () => { prevented = true } }
+    panel.windowListeners.get('beforeunload')(event)
+    assert.equal(prevented, true)
+    assert.equal(event.returnValue, '')
+    editor(tree).props.onChange({ target: { value: '' } })
+    tree = await panel.runtime.mount(panel.registered)
+    assert.doesNotMatch(textOf(tree), /有未保存的修改/)
+    assert.equal(button(tree, '保存术语表').props.disabled, true)
+    assert.equal(panel.windowListeners.has('beforeunload'), false)
+    editor(tree).props.onChange({ target: { value: 'agent => 自定义' } })
+    tree = await panel.runtime.mount(panel.registered)
+    click(button(tree, '保存术语表'))
+    tree = await panel.runtime.mount(panel.registered)
+    assert.doesNotMatch(textOf(tree), /有未保存的修改/)
+    assert.equal(button(tree, '保存术语表').props.disabled, true)
     panel.dispose()
   })
 })

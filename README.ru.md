@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.ru.png?v=1.2.19" alt="dsh-think-translate — Мысли ИИ — на вашем языке" width="100%" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.ru.png?v=1.2.20" alt="dsh-think-translate — Мысли ИИ — на вашем языке" width="100%" />
 </p>
 
 <p align="center">
@@ -8,9 +8,9 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.ru.svg?v=1.2.19" alt="Лицензия MIT" />
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.ru.svg?v=1.2.19" alt="Локальный Ollama" />
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.ru.svg?v=1.2.19" alt="Оригиналы сохранены" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.ru.svg?v=1.2.20" alt="Лицензия MIT" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.ru.svg?v=1.2.20" alt="Локальный Ollama" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.ru.svg?v=1.2.20" alt="Оригиналы сохранены" />
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.ru.svg?v=1.2.19" alt="Установка" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.ru.svg?v=1.2.19" alt="Демонстрации" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.ru.svg?v=1.2.19" alt="Возможности" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.ru.svg?v=1.2.19" alt="Сравнение" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.ru.svg?v=1.2.19" alt="Вопросы" height="24" /></a>
+  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.ru.svg?v=1.2.20" alt="Установка" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.ru.svg?v=1.2.20" alt="Демонстрации" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.ru.svg?v=1.2.20" alt="Возможности" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.ru.svg?v=1.2.20" alt="Сравнение" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.ru.svg?v=1.2.20" alt="Вопросы" height="24" /></a>
 </p>
 
 ---
@@ -29,10 +29,10 @@
 <table>
 <tr>
 <td width="50%" align="center" valign="bottom">
-<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.19" alt="Демо 1 · Рассуждения и ответы" width="100%" />
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.20" alt="Демо 1 · Рассуждения и ответы" width="100%" />
 </td>
 <td width="50%" align="center" valign="bottom">
-<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.19" alt="Демо 2 · Другие операции" width="100%" />
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.20" alt="Демо 2 · Другие операции" width="100%" />
 </td>
 </tr>
 <tr>
@@ -45,7 +45,7 @@
 ## Сравнение с официальным плагином перевода
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.ru.png?v=1.2.19" alt="Сравнение с официальным плагином перевода" width="100%" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.ru.png?v=1.2.20" alt="Сравнение с официальным плагином перевода" width="100%" />
 </p>
 
 Включайте этот плагин или официальный переводчик рассуждений. Оба управляют интерфейсом рассуждений.
@@ -137,6 +137,8 @@ dsh plugin --profile web add dsh-think-translate@latest
 
 ### Глоссарий: единые термины
 
+Встроенный глоссарий и свои записи имеют независимые флажки в соответствующих разделах и применяются сразу. Отключение не удаляет текст. Необязательный список содержит 60 английских терминов ИИ, программирования и продуктов для девяти языков. Активные свои записи приоритетны и имеют ещё 128 мест. Несохранённые изменения выделяют кнопку сохранения и напоминают о черновиках других языков. Широкий экран использует соседние панели и горизонтальный статус; узкий и диалоги — одну колонку.
+
 Для каждого языка перевода есть свой глоссарий в настройках и на боковой странице перевода. Введите оригинал => перевод, по одной паре на строку, и сохраните. Одинаковый текст с обеих сторон сохраняет название продукта.
 
 ```text
@@ -199,6 +201,8 @@ reasoning => рассуждение
 
 <details>
 <summary><b>Изменения и совместимость</b></summary>
+
+**1.2.20** добавляет включаемый одним нажатием технический глоссарий из 60 терминов и названий продуктов для девяти языков. Ваши записи приоритетны и имеют отдельный лимит; просмотр и отключение их не удаляют.
 
 **1.2.19**: глоссарии по языкам, хранение ключей в DSH, кеш по настройкам, взаимное исключение с официальным плагином, усиленная защита технического текста и CI Windows/Linux.
 

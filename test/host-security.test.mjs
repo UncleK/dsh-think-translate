@@ -194,10 +194,45 @@ it('rejects malformed glossary updates with 400 and retains configuration and cr
   const h = await host(t, config())
   await h.request('/_xlate/config')
   const before = await h.disk()
-  for (const glossary of [{ enabled: 'true' }, { entries: { unknown: [] } }, { entries: { 'zh-CN': [{ source: 'agent', target: 'x' }, { source: 'AGENT', target: 'y' }] } }]) {
+  for (const glossary of [{ enabled: 'true' }, { builtin: 'true' }, { entries: { unknown: [] } }, { entries: { 'zh-CN': [{ source: 'agent', target: 'x' }, { source: 'AGENT', target: 'y' }] } }]) {
     assert.equal((await h.request('/_xlate/config', { glossary })).status, 400)
     assert.deepEqual(await h.disk(), before)
   }
+  assert.deepEqual([...h.keys.values()], ['fixture-private-key'])
+})
+
+it('enables presets without copying entries, invalidates cached results and retains user overrides on disable', async t => {
+  const h = await host(t, config())
+  let calls = 0
+  h.plugin.ADAPTERS.openai = async value => {
+    calls++
+    return value.replace('Please inspect', '请检查').replace('context window', '上下文范围').replace(/\bagent\b/g, '代理').replace(/\bthe\b/g, '').replace(/\band\b/g, '与')
+  }
+  const before = (await h.request('/_xlate/config')).body
+  assert.equal(before.glossary.builtin, false)
+  assert.ok(before.glossaryPreset.entries['zh-CN'].length >= 50)
+  const input = { text: 'Please inspect the context window and agent.', target: 'zh-CN' }
+  assert.ok((await h.request('/_xlate/translate', input)).body.text.includes('上下文范围'))
+  const enabled = (await h.request('/_xlate/config', { glossary: { builtin: true, enabled: true } })).body
+  assert.notEqual(enabled.cacheNamespace, before.cacheNamespace)
+  const translated = (await h.request('/_xlate/translate', input)).body
+  assert.ok(translated.text.includes('上下文窗口') && translated.text.includes('智能体'))
+  await h.request('/_xlate/translate', input)
+  assert.equal(calls, 2)
+  assert.deepEqual((await h.disk()).glossary.entries, {})
+  assert.equal((await h.disk()).glossaryPreset, undefined)
+  await h.request('/_xlate/config', { glossary: { entries: { 'zh-CN': [{ source: 'AGENT', target: '自定义译法' }] } } })
+  assert.ok((await h.request('/_xlate/translate', input)).body.text.includes('自定义译法'))
+  await h.request('/_xlate/config', { glossary: { enabled: false } })
+  const builtinOnly = (await h.request('/_xlate/translate', input)).body
+  assert.ok(builtinOnly.text.includes('上下文窗口') && builtinOnly.text.includes('智能体'))
+  assert.equal(builtinOnly.text.includes('自定义译法'), false)
+  assert.equal((await h.disk()).glossary.builtin, true)
+  await h.request('/_xlate/config', { glossary: { enabled: true } })
+  await h.request('/_xlate/config', { glossary: { builtin: false } })
+  const disabled = (await h.request('/_xlate/translate', input)).body
+  assert.ok(disabled.text.includes('上下文范围') && disabled.text.includes('自定义译法'))
+  assert.equal((await h.disk()).glossary.entries['zh-CN'].length, 1)
   assert.deepEqual([...h.keys.values()], ['fixture-private-key'])
 })
 

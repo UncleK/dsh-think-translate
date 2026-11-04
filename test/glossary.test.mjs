@@ -2,7 +2,8 @@ import { it } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
-import { parseGlossaryText, serializeGlossary, normalizeGlossaryPatch, glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText } from '../lib/glossary.js'
+import { GLOSSARY_LANGUAGES, validateGlossaryEntries, parseGlossaryText, serializeGlossary, normalizeGlossaryPatch, glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText } from '../lib/glossary.js'
+import { BUILTIN_GLOSSARY } from '../lib/glossary-presets.js'
 import { ADAPTERS, runChainFor, translateViaChain, translationLanguageError } from '../lib/index.js'
 import { translationNamespace } from '../lib/runtime-state.js'
 
@@ -147,4 +148,55 @@ it('keeps the standalone client parser and validation behavior in parity with th
   assert.deepEqual(JSON.parse(JSON.stringify(box.parseGlossaryText(text))), parseGlossaryText(text))
   assert.equal(box.serializeGlossary(entries), serializeGlossary(entries))
   assert.throws(() => box.parseGlossaryText('agent => x\nAGENT => y'), error => error.code === 'GLOSSARY_DUPLICATE' && error.line === 2)
+  assert.deepEqual(JSON.parse(JSON.stringify(box.normalizeGlossaryPatch({ builtin: true }))), normalizeGlossaryPatch({ builtin: true }))
+  assert.throws(() => box.normalizeGlossaryPatch({ builtin: 'yes' }), error => error.code === 'GLOSSARY_FORMAT')
+})
+
+it('ships complete, valid, immutable presets for all nine target languages', () => {
+  assert.equal(BUILTIN_GLOSSARY.version, 'technical-v1')
+  assert.deepEqual(Object.keys(BUILTIN_GLOSSARY.entries).sort(), [...GLOSSARY_LANGUAGES].sort())
+  const sources = BUILTIN_GLOSSARY.entries.en.map(entry => entry.source)
+  assert.ok(sources.length >= 50 && sources.length <= 128)
+  for (const language of GLOSSARY_LANGUAGES) {
+    const entries = BUILTIN_GLOSSARY.entries[language]
+    assert.deepEqual(validateGlossaryEntries(entries), entries)
+    assert.deepEqual(entries.map(entry => entry.source), sources)
+    assert.equal(entries.find(entry => entry.source === 'DeepSeek').target, 'DeepSeek')
+    assert.equal(entries.find(entry => entry.source === 'TypeScript').target, 'TypeScript')
+    assert.throws(() => { entries[0].target = 'changed' }, TypeError)
+  }
+})
+
+it('keeps presets opt-in and independent of the custom switch, with target language aliases', () => {
+  for (const glossary of [{}, { builtin: false }]) assert.deepEqual(glossaryEntriesForTarget(glossary, 'zh-CN'), [])
+  const disabledCustom = { builtin: true, enabled: false, entries: { 'zh-CN': [{ source: 'agent', target: '自定义' }] } }
+  assert.equal(glossaryEntriesForTarget(disabledCustom, 'zh-CN').find(entry => entry.source === 'agent').target, '智能体')
+  assert.deepEqual(glossaryEntriesForTarget({ ...disabledCustom, builtin: false }, 'zh-CN'), [])
+  assert.deepEqual(glossaryEntriesForTarget({ builtin: true }, 'zh-Hant'), [])
+  assert.equal(glossaryEntriesForTarget({ builtin: true }, 'zh_Hans_CN').find(entry => entry.source === 'context window').target, '上下文窗口')
+  assert.equal(glossaryEntriesForTarget({ builtin: true }, 'ja-JP').find(entry => entry.source === 'agent').target, 'エージェント')
+  assert.throws(() => normalizeGlossaryPatch({ builtin: 'true' }), { code: 'GLOSSARY_FORMAT' })
+})
+
+it('lets case-insensitive custom entries override presets without consuming the custom entry limit', () => {
+  const custom = [{ source: 'AGENT', target: '用户指定译法' }, ...Array.from({ length: 127 }, (_, i) => ({ source: 'private term ' + i, target: '自定义' + i }))]
+  const combined = glossaryEntriesForTarget({ builtin: true, entries: { 'zh-CN': custom } }, 'zh-CN')
+  assert.ok(combined.length > 128)
+  assert.equal(combined.filter(entry => entry.source.toLowerCase() === 'agent').length, 1)
+  assert.equal(combined.find(entry => entry.source === 'AGENT').target, '用户指定译法')
+  assert.equal(BUILTIN_GLOSSARY.entries['zh-CN'].find(entry => entry.source === 'agent').target, '智能体')
+  assert.equal(glossaryEntriesForTarget({ builtin: false, entries: { 'zh-CN': custom } }, 'zh-CN').length, 128)
+})
+
+it('applies built-in terms through the actual chain and keeps code, paths and longer matches intact', async t => {
+  ADAPTERS['builtin-test'] = async value => value.replace('Please inspect', '请检查').replace('using', '使用')
+  t.after(() => { delete ADAPTERS['builtin-test'] })
+  const cfg = { chain: ['test'], glossary: { builtin: true }, providers: { test: { enabled: true, type: 'builtin-test' } } }
+  const original = 'Please inspect the context window using an AI agent, DeepSeek and `agent`.\nE:\\agent\\context.json\nhttps://example.test/agent\n'
+  const result = await runChainFor(['test'], original, 'zh-CN', cfg)
+  assert.equal(result.ok, true)
+  assert.ok(result.text.includes('上下文窗口') && result.text.includes('AI 智能体') && result.text.includes('DeepSeek'))
+  for (const literal of ['`agent`', 'E:\\agent\\context.json', 'https://example.test/agent']) assert.ok(result.text.includes(literal))
+  assert.equal(result.text.includes('ZXQ'), false)
+  assert.notEqual(translationNamespace(cfg), translationNamespace({ ...cfg, glossary: { builtin: false } }))
 })
