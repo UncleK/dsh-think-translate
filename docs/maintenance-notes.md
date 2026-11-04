@@ -10,7 +10,7 @@
 
 术语表加入 Host 与浏览器的缓存命名空间，修改后旧译文不能复用；浏览器持久缓存升级为 v6。真实本机 Web 的表单保存、刷新持久化、Google 固定译名、改词后同文重译、代码/路径/URL 保留通过。仅使用合成测试文本，测试词条已清空，原提供方链与密钥配置保留。独立页面将术语表放在偏好与运行状态之间。
 
-新增独立的 push / pull_request 测试 workflow，GitHub 托管 Windows/Linux runner × Node 20/22/24/26，固定 Actions 提交并使用只读权限；保留既有 Codex 转发 workflow。`npm test` 使用 Node 自动发现测试，兼容 Node 20 的 Windows 命令行。远端 workflow 尚未触发，也未设置必需合并检查。
+新增独立的 push / pull_request 测试 workflow，GitHub 托管 Windows/Linux runner × Node 20/22/24/26，固定 Actions 提交并使用只读权限；保留既有 Codex 转发 workflow。`npm test` 使用 Node 自动发现测试，兼容 Node 20 的 Windows 命令行。[首次远端矩阵](https://github.com/UncleK/dsh-think-translate/actions/runs/41805015978) 8 组全部通过，每组均执行 475 项测试、0 失败；未设置必需合并检查。
 
 手动密钥通过 `ctx.credentials.set/resolve/describe/unset` 保存和解析，插件配置仅保存随机引用，配置响应只返回是否配置。旧明文在凭据服务可用时迁移；迁移或写入失败保留原配置，配置原子替换，配置修改串行处理。输入框留空保留原密钥，显式移除才删除，取消表单清除输入草稿。该实现使用 DSH 的宿主凭据保护，不声称 OS 钥匙串加密。
 
@@ -25,6 +25,8 @@ Windows 本地 Node 24.22.2 与 Node 20.20.2 各通过 443 项测试，0 失败�
 本机 Web profile 已从 1.2.17 更新为含本轮优化的 1.2.18 本地包，重启后在 `http://127.0.0.1:3088/` 验收。实机发现插件 apply 时凭据服务尚未 ACTIVE，已改为每次操作查询服务，并增加“服务延迟激活后迁移已缓存旧配置”的回归。现已识别 DSH 凭据服务，配置响应无明文密钥，Google UI 连通及真实中文翻译通过，路径、命令和围栏代码保持原样。原配置 SHA-256 未变化，其他 profile 依赖未修改；独立翻译页面可见二选一说明，无横向溢出，密钥输入为 password/new-password。
 
 术语表候选全套 475 项测试在本机 Node 24.22.2 与 Node 20.20.2 通过。正式包包含新增模块，排除配置、凭据、测试与临时目录。1.2.19 Web 安装前备份在 `.local/backups/glossary-20261104`，验收回执及截图在 `.local/notes/glossary-20261104-*`。启动脚本固定使用绝对 browse-picker overlay 路径，避免重启后相对路径随工作目录变化。远端 CI、GitHub Release 与 npm registry 的状态分别按各平台实际回执核对；未进行官方插件译质 A/B。
+
+发布回执：源码提交 `3cf54f9eed96cb07f87a1730b2e841120d674f13`、标签 `v1.2.19` 已推送；[GitHub Release](https://github.com/UncleK/dsh-think-translate/releases/tag/v1.2.19) 含 tarball 与 SHA-256。npm `1.2.19` 已发布且 `latest` 指向该版本，registry SHA-512 与本机验收包一致。本机 Web 依赖指向 `.local/packages/glossary-1.2.19-final/dsh-think-translate-1.2.19.tgz`，包 SHA-256 为 `329b8d88d6dc4adc61a72ba9106b72aabbb9c9e8844fa6c12a8acef5bffeff58`；详细回执在 `.local/notes/release-1.2.19.json`。原 Web profile 的其他依赖保留，已有翻译链、模型设置未改变；DSH 自动发现的提供方按当前宿主配置刷新。单段操作、流式翻译和官方共存模式未加入。
 
 ## 1.2.18（2026-11-03）— 常驻侧边栏入口与卡片式设置页
 
