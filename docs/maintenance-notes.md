@@ -4,7 +4,7 @@
 
 ---
 
-## 1.2.20 本地候选（2026-11-04）— 内置术语、独立勾选与宽屏布局
+## 1.2.20（2026-11-04）— 内置术语、独立勾选与宽屏布局
 
 新增 60 条常用英文 AI/编程术语及产品名，九种目标语言提供完整对应表；只在翻译的散文部分应用，产品名、代码、路径和命令保留既有保护。内置表单独存放在 `lib/glossary-presets.js`，不复制到用户配置，也不占用每种语言 128 条自定义额度；已启用的自定义同名词条忽略大小写优先覆盖。内置表的内容指纹与独立开关语义版本进入缓存命名空间，配置及预设变化使旧译文失效。
 
@@ -14,7 +14,9 @@
 
 验证：483 项测试通过，本机 Node 24.22.2 和 Node 20.20.2 均完成全套检查。覆盖九语言预设完整性、自定义覆盖和额度、两开关独立生效、Host 保存及缓存失效、草稿提醒/还原/保存、刷新确认监听及原代码保护。真实 Google 翻译固定输出“智能体、上下文窗口、API 密钥、速率限制”；自定义覆盖，以及自定义关闭而内置继续翻译均通过。临时测试词条已移除，原提供方、模型、密钥配置和其他 profile 依赖保留。
 
-本机 Web 已安装 `.local/packages/builtin-glossary-1.2.20-reviewed/dsh-think-translate-1.2.20.tgz`，在 `http://127.0.0.1:3088/` 运行；包 SHA-256 为 `584b0383fee08fc805f47ba2b7c222625b539fbf486e91cc23529f51fc6551bc`。更新前备份位于 `.local/backups/builtin-glossary-20261104`，运行回执与截图位于 `.local/notes/builtin-glossary-20261104-*`。本轮仅为本地候选，未发布 GitHub Release 或 npm，也未更新 Desktop profile；公开 1.2.19 的发布状态不变。
+本机 Web 已安装 `.local/packages/builtin-glossary-1.2.20-reviewed/dsh-think-translate-1.2.20.tgz`，在 `http://127.0.0.1:3088/` 运行；包 SHA-256 为 `584b0383fee08fc805f47ba2b7c222625b539fbf486e91cc23529f51fc6551bc`。更新前备份位于 `.local/backups/builtin-glossary-20261104`，运行回执与截图位于 `.local/notes/builtin-glossary-20261104-*`。未更新 Desktop profile。
+
+用户确认界面后，源码提交 `c367f898081bb839259ba4919e0a7bf09a605a4b` 已推送至 `main`；[远端 CI](https://github.com/UncleK/dsh-think-translate/actions/runs/41814871454) 的 Windows/Linux × Node 20/22/24/26 八组全部通过，每组 483 项、0 失败，之后才创建 `v1.2.20` 并正式发布。[GitHub Release](https://github.com/UncleK/dsh-think-translate/releases/tag/v1.2.20) 附 tarball 和校验文件，npm `latest` 已指向 `1.2.20`；registry SHA-512、实际下载包 SHA-256 与本机验收包及 GitHub 附件一致。npm 发布请求成功后曾短暂处于后台处理状态，等待版本及 `latest` 实际可查询后才确认完成。最终回执位于 `.local/notes/release-1.2.20.json`。
 
 ## 1.2.19（2026-11-04）— 术语表、CI、密钥、缓存与翻译互斥
 
