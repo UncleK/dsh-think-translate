@@ -170,6 +170,104 @@ it('keeps the indent of the very first line so its child stays code at the Host'
   assert.ok(first.shown.startsWith(' ') && first.shown.includes('    - name: secret-key\n'))
 })
 
+// A tab runs to the next tab stop of 4 columns, so each of these is 8 columns deep.
+const eightColumns = ['        ', '\t\t', '\t    ', '    \t', '     \t', '\t \t']
+const tabCode = '- name: secret-key\n'
+async function assertStaysCode(text, codes) {
+  const parts = protectedTextParts(text)
+  assert.deepEqual(parts.filter(part => part.code).map(part => part.text), codes, JSON.stringify(text))
+  assert.deepEqual(JSON.parse(JSON.stringify(client.protectedTextParts(text))), parts)
+  for (let size = 1; size <= text.length; size++) {
+    const run = await runThinkRow(text, size)
+    assert.ok(run.seen.every(prose => !prose.includes('secret')), JSON.stringify(text) + ' at batch size ' + size)
+    for (const code of codes) assert.ok(run.shown.includes(code), JSON.stringify(code) + ' changed at batch size ' + size)
+  }
+}
+
+for (const [label, opening, parentCode] of [
+  // A space before a tab leaves a line out of the code check, so nothing found it to be a list item.
+  ['a space and a tab', 'Plan:\n \t- Update the config\n', []],
+  ['two spaces and a tab', 'Plan:\n  \t- Update the config\n', []],
+  ['three spaces and a tab', 'Plan:\n   \t- Update the config\n', []],
+  ['a space and a tab under an item', '- Top level\n \t- Update the config\n', []],
+  ['two spaces and a tab under an item', '- Top level\n  \t- Update the config\n', []],
+  // A line that opens with a tab is code when no list item holds it, and so is the line under it.
+  ['a tab', 'Plan:\n\t- Update the config\n', ['\t- Update the config\n']],
+  ['a tab and two spaces', 'Plan:\n\t  - Update the config\n', ['\t  - Update the config\n']],
+  ['a tab and two spaces too deep for its item', '- Top level\n\t  - Update the config\n', ['\t  - Update the config\n']],
+  // Behind the marker a tab runs to column 4 too, so the content starts there and code at column 8.
+  ['a tab behind the marker', 'Plan:\n-\tUpdate the config\n', []],
+  ['a space and a tab behind the marker', 'Plan:\n- \tUpdate the config\n', []],
+  ['two spaces and a tab behind the marker', 'Plan:\n-  \tUpdate the config\n', []],
+  ['a tab behind an indented marker', 'Plan:\n  -\tUpdate the config\n', []],
+  ['a tab behind an ordered marker', 'Plan:\n1.\tUpdate the config\n', []],
+  ['a tab behind a long ordered marker', 'Plan:\n10.\tUpdate the config\n', []],
+]) {
+  it('keeps code 8 columns deep under a parent with ' + label, async () => {
+    for (const child of eightColumns) await assertStaysCode(opening + child + tabCode + 'Done.\n', [...parentCode, child + tabCode])
+  })
+}
+
+it('keeps shallower code under a parent with a space before its tab', async () => {
+  for (const parent of [' \t', '  \t', '   \t']) {
+    for (const child of ['    ', '\t', '     ', '\t ', '      ', '\t  ', '       ', '\t   ']) {
+      await assertStaysCode('A first line long enough for its own batch.\n' + parent + '- Update the config\n' + child + tabCode + 'Done.\n', [child + tabCode])
+    }
+  }
+})
+
+it('keeps code past the content of a real item whose indent has a tab', async () => {
+  // The parent content starts at column 6, so code starts at column 10.
+  for (const child of ['          ', '\t\t  ', '     \t  ', '            ', '\t\t\t']) {
+    await assertStaysCode('- Top level\n\t- Update the config\n' + child + tabCode + 'Done.\n', [child + tabCode])
+    await assertStaysCode('- Top level\n    - Update the config\n' + child + tabCode + 'Done.\n', [child + tabCode])
+  }
+  // A line that is not list-shaped stays code under any parent.
+  await assertStaysCode('Plan:\n \t- Update the config\n\tconst secret = 1;\nDone.\n', ['\tconst secret = 1;\n'])
+})
+
+for (const [label, text] of [
+  ['tabs on three levels', '- First\n\t- Second\n\t\t- Third\n'],
+  ['a tab and two spaces on the third level', '- First\n    - Second\n\t  - Third\n'],
+  ['eight spaces under a real second level', '- First\n\t- Second\n        - Third\n'],
+  ['a tab behind the parent marker', 'Plan:\n-\tFirst\n      - Second\n'],
+  ['a tab off its stop, 8 columns under content at column 5', 'Plan:\n   - First\n\t \t- Second\n'],
+  ['five spaces and a tab, 8 columns under content at column 5', 'Plan:\n   - First\n     \t- Second\n'],
+  ['a space and a tab, as on base', 'Plan:\n- First\n \t- Second\n \t- Third\n'],
+  ['a space and two tabs, as on base', 'Plan:\n \t\t- Second\n'],
+]) {
+  it('translates a real list line: ' + label, async () => {
+    assert.deepEqual(protectedTextParts(text).filter(part => part.code), [])
+    assert.deepEqual(JSON.parse(JSON.stringify(client.protectedTextParts(text))), protectedTextParts(text))
+    const run = await runThinkRow(text, 900)
+    assert.equal(run.seen.join('\n').split('\n').length, text.trimEnd().split('\n').length)
+  })
+}
+
+it('keeps the indent when a batch opens on a line with a space before its tab', async () => {
+  // Without that indent the Host would trust the line as a parent and send the code under it.
+  const first = 'A first line long enough for its own batch.\n'
+  const rest = ' \t- Update the config\n    - name: secret-key\n'
+  const run = await runThinkRow(first + rest, first.length)
+  assert.deepEqual(run.batches.map(batch => batch.text), [first, rest])
+  assert.deepEqual(run.seen, [first.trimEnd(), '- Update the config'])
+  assert.equal(run.shown, '[T]' + first + ' \t[T]- Update the config\n    - name: secret-key\n')
+})
+
+it('keeps tab-indented code from the provider while streaming', async () => {
+  let text = ''
+  for (const parent of [' \t- ', '  \t- ', '\t- ', '\t  - ', '-\t', '- \t', '1.\t']) {
+    for (const child of eightColumns) text += 'Plan:\n' + parent + 'Update the config\n' + child + tabCode + 'Done.\n'
+  }
+  text += 'Some more plain prose for the stream margin to pass over.\n'.repeat(5)
+  for (const size of [24, 40, 80, 900]) {
+    for (const step of [7, 20, 40, 80, 200]) {
+      const run = await runThinkRow(text, size, step)
+      assert.ok(run.seen.every(prose => !prose.includes('secret')), 'batch size ' + size + ', step ' + step)
+    }
+  }
+})
+
 // A batch can open behind a sentence end or inline code. The Host reads what follows as a
 // line start, so the tail must not share a batch with the indented line under it.
 const defaultBatchChars = Number(/var XL_BATCH_CHARS = (\d+);/.exec(source)[1])
