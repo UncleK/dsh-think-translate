@@ -260,6 +260,13 @@ const NOT_SAME_ORIGIN = [
   { origin: 'null' },
   { origin: 'not a url' },
   { 'sec-fetch-site': 'cross-site' },
+  { origin: 'ftp://127.0.0.1:3080' },
+  { origin: 'custom://127.0.0.1:3080' },
+  { origin: 'https://undefined', host: undefined },
+  { origin: 'http://127.0.0.1:3080', host: '' },
+  { origin: 'http://127.0.0.1:3080', host: '127.0.0.1:3080/path' },
+  { origin: 'http://127.0.0.1:3080', host: 'user@127.0.0.1:3080' },
+  { origin: 'http://127.0.0.1:3080', host: '127.0.0.1\t:3080' },
 ]
 
 for (const [path, body] of Object.entries(POST_BODIES)) {
@@ -288,6 +295,8 @@ it('still accepts POST requests with no Origin or a same-origin Origin', async t
   h.plugin.ADAPTERS.openai = async () => '第一段译文'
   for (const headers of [
     {},
+    { host: undefined },
+    { origin: 'http://[::1]:3080', host: '[::1]:3080' },
     { origin: 'http://127.0.0.1:3080' },
     { origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' },
     { origin: 'https://dsh.example', host: 'dsh.example' },
