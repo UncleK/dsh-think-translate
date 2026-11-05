@@ -362,6 +362,95 @@ it('keeps code under a wide marker gap from the provider while streaming', async
   }
 })
 
+// A list line measures from the content of the item that holds it. With no such item it is 4
+// columns deep at the top level, which is an indented code block once no paragraph is open.
+const heldCode = '    ' + tabCode
+for (const [label, text, codes] of [
+  ['left of the content of three spaces and a marker', 'Plan:\n\n   - Update the config\n\n' + heldCode, [heldCode]],
+  ['left of the content of a three-digit marker', 'Plan:\n\n100. Update the config\n\n' + heldCode, [heldCode]],
+  ['left of the content of an indented number', 'Plan:\n\n  1. Update the config\n\n' + heldCode, [heldCode]],
+  ['left of the content behind a tab and a space', 'Plan:\n\n-\t Update the config\n\n' + heldCode, [heldCode]],
+  ['a tab left of the content', 'Plan:\n\n   - Update the config\n\n\t' + tabCode, ['\t' + tabCode]],
+  ['left of a nested item and of the item above it', 'Plan:\n\n   - First\n       - Second\n\n' + heldCode, [heldCode]],
+  ['the same with no blank line', 'Plan:\n\n   - First\n       - Second\n' + heldCode, [heldCode]],
+  ['outside two open items, with a wide gap above', '-\tFirst\n   - \t\tSecond\n\t    * Third\n\t' + tabCode, ['\t' + tabCode]],
+  // Only a 1 can open an ordered list under a paragraph, so these numbers are paragraph text.
+  ['under a 2 right below a paragraph', 'Plan:\n2. Update the config\n\n' + heldCode, [heldCode]],
+  ['under a 10) right below a paragraph', 'Plan:\n10) Update the config\n\n' + heldCode, [heldCode]],
+  ['under an indented 3 right below a paragraph', 'Plan:\n 3. Update the config\n\n' + heldCode, [heldCode]],
+  ['under a wide 2 right below a paragraph', 'Plan:\n2.     Update the config\n\n' + heldCode, [heldCode]],
+  ['under a 2 right below the text of an item', '- Top level\n  2. Update the config\n\n      ' + tabCode, ['      ' + tabCode]],
+  ['under a number too long for a marker', 'Plan:\n1234567890. Update the config\n\n' + heldCode, [heldCode]],
+  ['under lines that only continue a paragraph', 'Plan:\n2. First\n    - Second\n    - Third\n\n' + heldCode, ['    - Second\n', '    - Third\n', heldCode]],
+  // A list line left of an open item ends it, so the next number is under plain text again.
+  ['under a 10 below text, behind a line left of two open items', 'Plan:\n\n  100. First\n         * Second\n    - Third\nMore text\n10. Fourth\n\n' + heldCode, ['    - Third\n', heldCode]],
+  // A thematic break is no list item, whatever it looks like.
+  ['under a break of dashes', 'Plan:\n\n- - -\n\n' + heldCode, [heldCode]],
+  ['under a break of stars', 'Plan:\n\n* * *\n' + heldCode, [heldCode]],
+  // Fails closed where a paragraph could continue, as on base.
+  ['continuing a paragraph under a 2', 'Plan:\n2. Update the config\n' + heldCode, [heldCode]],
+  ['continuing a paragraph left of the content', 'Plan:\n\n   - Update the config\n' + heldCode, [heldCode]],
+]) {
+  it('keeps a list line ' + label, async () => {
+    await assertStaysCode(text + 'Done.\n', codes)
+  })
+}
+
+for (const [label, text] of [
+  ['a sibling behind a blank line', '- First\n\n    - Second\n\n    - Third\n'],
+  ['a child behind a blank line', '1. First\n\n    - Second\n'],
+  ['a child at the column of the content', '10. First\n\n    - Second\n'],
+  ['a number that goes on with a list', '1. First\n2. Second\n\n    - Third\n'],
+  ['a number behind a blank line', 'Plan:\n\n2. First\n\n    - Second\n'],
+  ['a number below a heading', '## Steps\n2. First\n\n    - Second\n'],
+  ['a number below a quote', '> Quote\n2. First\n\n    - Second\n'],
+  ['a number below a fence', '```sh\necho one\n```\n2. First\n\n    - Second\n'],
+  ['a level deeper and back', '- First\n\n    - Second\n\n        - Third\n\n    - Fourth\n'],
+  ['a line left of a nested item, inside the item above it', '1. First\n   - Second\n    - Third\n'],
+  ['a list below a break', '---\n\n- First\n    - Second\n'],
+  // The text of a wide item is code, so there is no paragraph for the number to continue.
+  ['a number under a wide item', '-     First\n  2. Second\n\n      - Third\n'],
+]) {
+  it('translates a real list line: ' + label, async () => {
+    const parts = protectedTextParts(text)
+    assert.deepEqual(JSON.parse(JSON.stringify(client.protectedTextParts(text))), parts)
+    const code = parts.filter(part => part.code).map(part => part.text).join('')
+    assert.ok(!text.split('\n').some(line => /^(?: {4}|\t)/.test(line) && code.includes(line)), JSON.stringify(code))
+    const run = await runThinkRow(text, 900)
+    const sent = run.seen.join('\n')
+    for (const line of text.split('\n').filter(line => /^ +- /.test(line))) assert.ok(sent.includes(line.trim()), line)
+  })
+}
+
+it('ends a batch before a line the Host would free under a number', async () => {
+  const first = 'A first line long enough for its own batch.\n'
+  const run = await runThinkRow(first + '2. Update the config\n\n' + heldCode + 'Done.\n', first.length)
+  assert.deepEqual(run.batches.map(batch => batch.text), [first, '2. Update the config\n\n', heldCode + 'Done.\n'])
+  assert.deepEqual(run.seen, [first.trimEnd(), '2. Update the config', 'Done.'])
+  assert.equal(run.shown, '[T]' + first + '[T]2. Update the config\n\n' + heldCode + '[T]Done.\n')
+})
+
+it('ends a batch before a line the Host would free under a parent without its indent', async () => {
+  const first = '- A first line long enough for its own batch.\n'
+  const run = await runThinkRow(first + ' -   Update the config\n' + heldCode + 'Done.\n', first.length)
+  assert.deepEqual(run.batches.map(batch => batch.text), [first, '-   Update the config\n', heldCode + 'Done.\n'])
+  assert.ok(run.seen.every(prose => !prose.includes('secret')))
+  assert.equal(run.shown, '[T]' + first + ' [T]-   Update the config\n' + heldCode + '[T]Done.\n')
+})
+
+it('keeps code behind a blank line from the provider while streaming', async () => {
+  let text = ''
+  for (const parent of ['   - ', '100. ', '  1. ', '-\t ']) text += 'Plan:\n\n' + parent + 'Update the config\n\n' + heldCode + 'Done.\n\n'
+  for (const parent of ['2. ', '10) ', ' 3. ']) text += 'Plan:\n' + parent + 'Update the config\n\n' + heldCode + 'Done.\n\n'
+  text += 'Some more plain prose for the stream margin to pass over.\n'.repeat(5)
+  for (const size of [24, 40, 80, 900]) {
+    for (const step of [7, 20, 40, 80, 200]) {
+      const run = await runThinkRow(text, size, step)
+      assert.ok(run.seen.every(prose => !prose.includes('secret')), 'batch size ' + size + ', step ' + step)
+    }
+  }
+})
+
 // A batch can open behind a sentence end or inline code. The Host reads what follows as a
 // line start, so the tail must not share a batch with the indented line under it.
 const defaultBatchChars = Number(/var XL_BATCH_CHARS = (\d+);/.exec(source)[1])
