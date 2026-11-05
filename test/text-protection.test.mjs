@@ -123,20 +123,32 @@ it('holds a streaming quoted path while its line is still open', () => {
 })
 
 // Replays the shipped ThinkRow loop. The browser parses the whole text, the Host one batch.
-async function runThinkRow(text, batchChars = 1) {
+// With a step the text grows by that many characters per loop pass, as it does while streaming.
+async function runThinkRow(text, batchChars = 1, step = 0) {
   const row = source.slice(source.indexOf('function ThinkRow('))
   const start = row.indexOf('var alive = true;'), end = row.indexOf('return function () { alive = false;')
-  const seen = []
+  const seen = [], batches = []
   const tRef = { current: { segIdx: 0, transText: '', done: false, failed: false, busy: false } }
+  const stateRef = { current: null }
+  let length = 0
+  const advance = () => {
+    length = step ? length + step : text.length
+    stateRef.current = { text: text.slice(0, length), running: length < text.length }
+  }
+  advance()
   Object.assign(client, {
-    tRef, stateRef: { current: { text, running: false } }, lang: 'zh-CN',
+    tRef, stateRef, lang: 'zh-CN',
     XL_STREAM_MARGIN: 120, XL_STREAM_MIN_BATCH: 24, XL_BATCH_CHARS: batchChars,
     mutate: fn => { tRef.current = fn(tRef.current) },
-    sleepMs: async () => {},
-    requestTranslate: async batch => ({ ok: true, text: await translateProtectedText(batch, async prose => { seen.push(prose); return '[T]' + prose }) }),
+    sleepMs: async () => { advance() },
+    requestTranslate: async batch => {
+      batches.push({ text: batch, running: stateRef.current.running })
+      advance()
+      return { ok: true, text: await translateProtectedText(batch, async prose => { seen.push(prose); return '[T]' + prose }) }
+    },
   })
   await vm.runInContext(row.slice(start, end), client)
-  return { seen, shown: tRef.current.transText }
+  return { seen, batches, shown: tRef.current.transText }
 }
 
 it('translates a nested list line that opens a batch', async () => {
@@ -156,6 +168,81 @@ it('keeps the indent of the very first line so its child stays code at the Host'
   const first = await runThinkRow(' - First step\n    - name: secret-key\nDone.\n', 900)
   assert.ok(first.seen.length > 0 && first.seen.every(prose => !prose.includes('secret')))
   assert.ok(first.shown.startsWith(' ') && first.shown.includes('    - name: secret-key\n'))
+})
+
+// A batch can open behind a sentence end or inline code. The Host reads what follows as a
+// line start, so the tail must not share a batch with the indented line under it.
+const defaultBatchChars = Number(/var XL_BATCH_CHARS = (\d+);/.exec(source)[1])
+const filler = 'Word '.repeat(defaultBatchChars / 5).trimEnd()
+const yamlLines = '    - name: secret-key\n      run: secret-deploy\n'
+for (const [cut, tail] of [
+  [';', '- then the config'],
+  [';', '* then the config'],
+  [';', '+ then the config'],
+  [';', '1. then the config'],
+  [';', '2) then the config'],
+  ['!', '- then the config'],
+  ['?', '- then the config'],
+  ['。', '- then the config'],
+  ['！', '- then the config'],
+  ['？', '- then the config'],
+  ['`x()`', '- then the config'],
+  ['`x()`', '1. then the config'],
+  [';', ' - then the config'],
+  [';', '\t- then the config'],
+  ['`x()`', '.- then the config'],
+]) {
+  it('keeps a sentence tail apart from the indented code under it: ' + JSON.stringify(cut + tail.replace(' the config', '')), async () => {
+    const text = filler + cut + tail + '\n' + yamlLines + 'Done.\n' + filler + ';and more prose\nNext line.\n'
+    const run = await runThinkRow(text, defaultBatchChars)
+    assert.ok(run.seen.every(prose => !prose.includes('secret')))
+    assert.deepEqual(run.batches.map(batch => batch.text), [
+      filler + cut, tail + '\n', yamlLines + 'Done.\n' + filler + ';', 'and more prose\nNext line.\n',
+    ])
+    assert.ok(run.shown.includes('\n' + yamlLines))
+  })
+}
+
+const tailShapes = 'Read the notes;- then the config\n    - name: secret-a\n      run: secret-b\n'
+  + 'Read the notes.- then the config\n    - name: secret-c\n'
+  + 'Read the notes; - then the config\n    - name: secret-d\n'
+  + 'Read `x()`- then the config\n\n    + const secret = neu;\n'
+  + 'Read the notes?1. then the config\n\t- name: secret-e\n'
+  + 'Done.\n'
+
+it('keeps indented code from the provider at every batch size', async () => {
+  for (let size = 1; size <= tailShapes.length; size++) {
+    const run = await runThinkRow(tailShapes, size)
+    assert.ok(run.seen.every(prose => !prose.includes('secret')), 'batch size ' + size)
+  }
+})
+
+it('keeps indented code from the provider while streaming', async () => {
+  const text = tailShapes + 'Some more plain prose for the stream margin to pass over.\n'.repeat(5)
+  for (const size of [24, 40, 80, 900]) {
+    for (const step of [1, 7, 20, 40, 80, 200]) {
+      const run = await runThinkRow(text, size, step)
+      assert.ok(run.seen.every(prose => !prose.includes('secret')), 'batch size ' + size + ', step ' + step)
+    }
+  }
+})
+
+it('sends a short tail on its own while streaming instead of waiting for the end', async () => {
+  const text = 'A long enough opening sentence for its own batch;- then\n    - name: secret-key\n'
+    + 'Some more plain prose for the stream margin to pass over.\n'.repeat(8)
+  const run = await runThinkRow(text, 40, 1)
+  const tail = run.batches.find(batch => batch.text === '- then\n')
+  assert.ok(tail && tail.running)
+})
+
+it('translates a nested line when the previous batch ended on inline code that closes its parent', async () => {
+  const parent = '- Read `x()`'
+  const run = await runThinkRow(parent + '\n    - Then compare the results\n', parent.length)
+  assert.deepEqual(run.seen, ['- Read', '- Then compare the results'])
+  assert.equal(run.shown, '[T]- Read `x()`\n    [T]- Then compare the results\n')
+  // The real first line of a text is no tail: its nested line stays in the same batch.
+  const first = await runThinkRow('- First step\n    - Read the notes\n', 900)
+  assert.deepEqual(first.batches.map(batch => batch.text), ['- First step\n    - Read the notes\n'])
 })
 
 it('protects mixed code when an enabled provider fails and the next provider succeeds', async t => {
