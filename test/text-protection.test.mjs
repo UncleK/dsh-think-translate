@@ -27,10 +27,29 @@ const samples = [
   ['indented fence', 'Before.\n  ```sh\n  echo secret\n  ```\nAfter.', ['  ```sh\n  echo secret\n  ```\n']],
   ['quoted fence', 'Before.\n> ```sh\n> echo secret\n> ```\nAfter.', ['> ```sh\n> echo secret\n> ```\n']],
   ['indented code', 'Before.\n    const key = "secret";\nAfter.', ['    const key = "secret";\n']],
+  ['four-space nested list', 'Plan:\n1. First step\n    - Read the configuration carefully\n    - Then compare the results\n2. Second step\n', []],
+  ['tab nested list', 'Plan:\n- First step\n\t- Read the configuration carefully\n- Second step\n', []],
+  ['CRLF nested list', 'Plan:\r\n- First step\r\n    - Read the configuration carefully\r\n- Second step\r\n', []],
+  ['deeply nested list', '- First\n    - Second\n        - Third\n            - Fourth\n    1. Fifth\n', []],
+  ['loose nested list', '1. First step\n\n    - Read the configuration carefully\n', []],
+  ['nested list under a line with inline code', '- Read `secret()` first\n    - Then compare the results\n', ['`secret()`']],
+  ['code inside a nested list item', '- Read the notes\n    - Open ./secret/app.json now\n', ['./secret/app.json']],
+  ['indented YAML is not a nested list', 'Config:\n\n    - name: secret-key\n      run: deploy\n\nDone.\n', ['    - name: secret-key\n', '      run: deploy\n']],
+  ['indented diff is not a nested list', 'Patch:\n\n    - const secret = old;\n    + const secret = neu;\n\nDone.\n', ['    - const secret = old;\n', '    + const secret = neu;\n']],
+  ['indented YAML split by blank lines', 'Config:\n\n    - name: secret-a\n\n    - name: secret-b\n\nDone.\n', ['    - name: secret-a\n', '    - name: secret-b\n']],
+  ['indented code after a list item', '- First step\n    const secret = 1;\nDone.\n', ['    const secret = 1;\n']],
+  ['indented first line is not trusted as a parent', ' - First step\n    - name: secret-key\nDone.\n', ['    - name: secret-key\n']],
+  ['code block indented past its list item', '1. Update the config:\n\n        - name: secret-key\n          run: deploy\n\nDone.\n', ['        - name: secret-key\n', '          run: deploy\n']],
   ['unfinished fence', 'Before.\n```js\nconst key = "secret"', ['```js\nconst key = "secret"']],
   ['unfinished inline', 'Before `const key = "secret"', ['`const key = "secret"']],
   ['bare Windows path', 'Open E:\\VP\\project\\config.json and continue.', ['E:\\VP\\project\\config.json']],
   ['quoted path with spaces', 'Open "C:\\Program Files\\App\\config.json" now.', ['"C:\\Program Files\\App\\config.json"']],
+  ['closing quote at the end of its line', 'Open "./a b/c"\nThen continue.', ['"./a b/c"']],
+  ['unclosed quote before a path', "Check the './foo directory first.\n\nThen read the next paragraph.", ['./foo']],
+  ['quote closing only in a later paragraph', 'I think "./foo is the right place.\n\nThe docs say "hello" here.', ['./foo']],
+  ['apostrophe on a later line', "The path '/etc/app is wrong.\nIt doesn't exist here.", ['/etc/app']],
+  ['mismatched curly quote', '路径是“./foo/bar" 然后继续。\n\n第二段也要翻译。', ['./foo/bar']],
+  ['unclosed quote before a Windows path', 'The value "C:\\Users\\me is what we picked.\n\nNext paragraph.', ['C:\\Users\\me']],
   ['UNC path', 'Read \\\\server\\share\\data.json now.', ['\\\\server\\share\\data.json']],
   ['POSIX and relative paths', 'Open /workspace/app/config.json, then ./src/main.ts.', ['/workspace/app/config.json', './src/main.ts']],
   ['URL with Markdown delimiter', 'Read [the guide](https://example.test/docs?q=1&x=2).', ['https://example.test/docs?q=1&x=2']],
@@ -94,6 +113,49 @@ it('holds an unfinished streaming code span until its closing delimiter arrives'
   assert.equal(finished.complete, true)
   assert.equal(unfinished.start, finished.start)
   assert.equal(finished.text, '```js\nconst value = 1;\n```\n')
+})
+
+it('holds a streaming quoted path while its line is still open', () => {
+  const codes = text => JSON.parse(JSON.stringify(client.splitSentences(text))).filter(part => part.code).map(part => part.text)
+  assert.deepEqual(codes('Open "C:\\Program Files\\Ap'), ['"C:\\Program Files\\Ap'])
+  assert.deepEqual(codes('Open "C:\\Program Files\\App\\config.json" now.'), ['"C:\\Program Files\\App\\config.json"'])
+  assert.deepEqual(codes('Open "C:\\Program Files\\Ap\nNext line.'), ['C:\\Program'])
+})
+
+// Replays the shipped ThinkRow loop. The browser parses the whole text, the Host one batch.
+async function runThinkRow(text, batchChars = 1) {
+  const row = source.slice(source.indexOf('function ThinkRow('))
+  const start = row.indexOf('var alive = true;'), end = row.indexOf('return function () { alive = false;')
+  const seen = []
+  const tRef = { current: { segIdx: 0, transText: '', done: false, failed: false, busy: false } }
+  Object.assign(client, {
+    tRef, stateRef: { current: { text, running: false } }, lang: 'zh-CN',
+    XL_STREAM_MARGIN: 120, XL_STREAM_MIN_BATCH: 24, XL_BATCH_CHARS: batchChars,
+    mutate: fn => { tRef.current = fn(tRef.current) },
+    sleepMs: async () => {},
+    requestTranslate: async batch => ({ ok: true, text: await translateProtectedText(batch, async prose => { seen.push(prose); return '[T]' + prose }) }),
+  })
+  await vm.runInContext(row.slice(start, end), client)
+  return { seen, shown: tRef.current.transText }
+}
+
+it('translates a nested list line that opens a batch', async () => {
+  const nested = await runThinkRow('1. First step\n    - Read the notes\n    - Compare the results\n2. Second step\n')
+  assert.deepEqual(nested.seen, ['1. First step', '- Read the notes', '- Compare the results', '2. Second step'])
+  assert.equal(nested.shown, '[T]1. First step\n    [T]- Read the notes\n    [T]- Compare the results\n[T]2. Second step\n')
+})
+
+it('does not send indented code when a batch opens on it or in the middle of a line', async () => {
+  const yaml = await runThinkRow('Config:\n\n    - name: secret-key\n    - name: secret-other\n\nDone.\n')
+  assert.ok(yaml.seen.every(prose => !prose.includes('secret')))
+  const midLine = await runThinkRow('A long enough sentence for its own batch; - then the config\n    - name: secret-key\nDone.\n', 40)
+  assert.ok(midLine.seen.every(prose => !prose.includes('secret')))
+})
+
+it('keeps the indent of the very first line so its child stays code at the Host', async () => {
+  const first = await runThinkRow(' - First step\n    - name: secret-key\nDone.\n', 900)
+  assert.ok(first.seen.length > 0 && first.seen.every(prose => !prose.includes('secret')))
+  assert.ok(first.shown.startsWith(' ') && first.shown.includes('    - name: secret-key\n'))
 })
 
 it('protects mixed code when an enabled provider fails and the next provider succeeds', async t => {
