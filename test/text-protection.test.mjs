@@ -268,6 +268,100 @@ it('keeps tab-indented code from the provider while streaming', async () => {
   }
 })
 
+// More than 4 columns behind the marker make the text a code block inside the item, so the
+// content starts one column behind the marker, whichever way those columns are written.
+for (const [label, parent, first] of [
+  ['five spaces behind the marker', '-     Update the config\n', 6],
+  ['eight spaces behind the marker', '-        Update the config\n', 6],
+  ['two tabs behind the marker', '-\t\tUpdate the config\n', 6],
+  ['a space and two tabs behind the marker', '- \t\tUpdate the config\n', 6],
+  ['four spaces and a tab behind the marker', '-    \tUpdate the config\n', 6],
+  ['a tab and two spaces behind the marker', '-\t  Update the config\n', 6],
+  ['five spaces behind an ordered marker', '1.     Update the config\n', 7],
+  ['two tabs behind a long ordered marker', '10.\t\tUpdate the config\n', 8],
+  ['five spaces behind an indented marker', '  -     Update the config\n', 8],
+]) {
+  it('keeps code past the first column of a code block under a parent with ' + label, async () => {
+    const opening = 'Plan:\n' + parent
+    for (const child of eightColumns) await assertStaysCode(opening + child + tabCode + 'Done.\n', [child + tabCode])
+    await assertStaysCode(opening + ' '.repeat(first) + tabCode + 'Done.\n', [' '.repeat(first) + tabCode])
+  })
+}
+
+it('keeps a nested line with a wide gap behind its marker, and the line under it', async () => {
+  // Its own text is a code block inside the nested item, so it is no parent either.
+  for (const nested of ['    -     name: secret-a\n', '\t-\t\tname: secret-a\n', '    - \t\tname: secret-a\n', '     1.     name: secret-a\n']) {
+    await assertStaysCode('- Top level\n' + nested + 'Done.\n', [nested])
+    await assertStaysCode('- Top level\n' + nested + '        ' + tabCode + 'Done.\n', [nested, '        ' + tabCode])
+  }
+})
+
+it('keeps a line left of the content of a parent with a wide gap', async () => {
+  // Nothing above it can continue a paragraph, so that line is an indented code block.
+  for (const parent of ['100.     Update the config\n', '   -     Update the config\n', '  1.     Update the config\n', '100.\t Update the config\n']) {
+    await assertStaysCode('Plan:\n' + parent + '    ' + tabCode + 'Done.\n', ['    ' + tabCode])
+  }
+})
+
+for (const [label, text] of [
+  ['exactly four spaces behind the marker', 'Plan:\n-    First\n        - Second\n'],
+  ['a tab and a space behind the marker, 4 columns', 'Plan:\n-\t First\n        - Second\n'],
+  ['exactly four spaces behind an ordered marker', 'Plan:\n1.    First\n         - Second\n'],
+  ['a normal parent and three more levels', '1. First\n    - Second\n        - Third\n            - Fourth\n    - Fifth\n'],
+  ['a tab behind a normal marker', 'Plan:\n-\tFirst\n\t- Second\n'],
+  ['a list line inside the first columns under five spaces', 'Plan:\n-     First\n    - Second\n     - Third\n'],
+  ['a list line inside the first columns under two tabs', 'Plan:\n-\t\tFirst\n     - Second\n'],
+  ['a nested line with 4 columns behind its marker', '- Top level\n    -    Second\n    -\tThird\n'],
+]) {
+  it('translates a real list line: ' + label, async () => {
+    assert.deepEqual(protectedTextParts(text).filter(part => part.code), [])
+    assert.deepEqual(JSON.parse(JSON.stringify(client.protectedTextParts(text))), protectedTextParts(text))
+    const run = await runThinkRow(text, 900)
+    assert.equal(run.seen.join('\n').split('\n').length, text.trimEnd().split('\n').length)
+  })
+}
+
+for (const [label, parent, child] of [
+  // 2 columns off a tab stop the gap of 6 columns shrinks to 3, which would move the code column.
+  ['a tab behind the marker', ' -  \tUpdate the config\n', '       '],
+  ['a tab and a space behind the marker', ' 1. \t Update the config\n', '        '],
+  // Without its indent the marker ends further left, so the code column moves left with it.
+  ['five spaces behind the marker', '   -     Update the config\n', '    '],
+]) {
+  it('keeps the indent when a batch opens on a line with ' + label, async () => {
+    const opening = 'A first line long enough for its own batch.\n'
+    const rest = parent + child + tabCode
+    const run = await runThinkRow(opening + rest, opening.length)
+    assert.deepEqual(run.batches.map(batch => batch.text), [opening, rest])
+    assert.ok(run.seen.every(prose => !prose.includes('secret')))
+    assert.equal(run.seen.length, 2)
+    assert.ok(run.shown.endsWith('\n' + child + tabCode))
+    assert.ok(run.shown.includes('\n' + parent.match(/^ +/)[0] + '[T]'))
+  })
+}
+
+it('still takes the indent off a nested line with up to 4 spaces behind its marker', async () => {
+  const opening = '- A first line long enough for its own batch.\n'
+  const run = await runThinkRow(opening + '    -    Read the notes\n', opening.length)
+  assert.deepEqual(run.batches.map(batch => batch.text), [opening, '-    Read the notes\n'])
+  assert.deepEqual(run.seen, [opening.trimEnd(), '-    Read the notes'])
+  assert.equal(run.shown, '[T]' + opening + '    [T]-    Read the notes\n')
+})
+
+it('keeps code under a wide marker gap from the provider while streaming', async () => {
+  let text = ''
+  for (const parent of ['-     ', '-\t\t', '- \t\t', '-    \t', '1.     ', '  -     ', ' -  \t']) {
+    for (const child of eightColumns) text += 'Plan:\n' + parent + 'Update the config\n' + child + tabCode + 'Done.\n'
+  }
+  text += 'Some more plain prose for the stream margin to pass over.\n'.repeat(5)
+  for (const size of [24, 40, 80, 900]) {
+    for (const step of [7, 20, 40, 80, 200]) {
+      const run = await runThinkRow(text, size, step)
+      assert.ok(run.seen.every(prose => !prose.includes('secret')), 'batch size ' + size + ', step ' + step)
+    }
+  }
+})
+
 // A batch can open behind a sentence end or inline code. The Host reads what follows as a
 // line start, so the tail must not share a batch with the indented line under it.
 const defaultBatchChars = Number(/var XL_BATCH_CHARS = (\d+);/.exec(source)[1])
