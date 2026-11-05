@@ -38,9 +38,10 @@ async function host(t, config, { failStorage = false, lateCredentials = false } 
     webServer: { register: route => { routes.set(route.path, route.handler); return () => routes.delete(route.path) } } }
   let credentialsReady = !lateCredentials
   plugin.apply({ get: key => key === 'credentials' && !credentialsReady ? undefined : services[key], on: (_event, callback) => { callbacks.push(callback) }, effect: factory => factory() })
-  async function request(path, body) {
-    const req = Readable.from(body === undefined ? [] : [Buffer.from(JSON.stringify(body))])
+  async function request(path, body, headers = {}) {
+    const req = Readable.from(body === undefined ? [] : [Buffer.from(typeof body === 'string' ? body : JSON.stringify(body))])
     req.method = body === undefined ? 'GET' : 'POST'
+    req.headers = { host: '127.0.0.1:3080', ...headers }
     return new Promise((resolve, reject) => {
       const res = { statusCode: 200, setHeader() {}, writeHead(code) { this.statusCode = code }, end: data => resolve({ status: res.statusCode, body: JSON.parse(data) }) }
       Promise.resolve(routes.get(path)(req, res)).catch(reject)
@@ -244,4 +245,56 @@ it('still contacts an explicitly tested provider when a glossary covers the enti
   const result = (await h.request('/_xlate/translate', { text: 'agent', target: 'zh-CN', provider: 'custom' })).body
   assert.equal(result.text, '智能体')
   assert.equal(calls, 1)
+})
+
+const POST_BODIES = {
+  '/_xlate/config': { providers: { custom: { model: 'second' } } },
+  '/_xlate/translate': { text: 'Read the build output.', target: 'zh-CN' },
+  '/_xlate/model/pull': { model: 'fixture-model' },
+  '/_xlate/local/prepare': {},
+  '/_xlate/local/release': {},
+}
+const NOT_SAME_ORIGIN = [
+  { origin: 'https://other.invalid' },
+  { origin: 'http://127.0.0.1:3081' },
+  { origin: 'null' },
+  { origin: 'not a url' },
+  { 'sec-fetch-site': 'cross-site' },
+]
+
+for (const [path, body] of Object.entries(POST_BODIES)) {
+  it('answers 403 on POST ' + path + ' unless the request is same-origin, before reading the body', async t => {
+    // No route below may reach a real local model endpoint, even when this test runs against code without the check.
+    const fixture = config()
+    fixture.providers.openai = { type: 'openai', enabled: false, model: 'first', baseURL: 'https://fixture.invalid/v1' }
+    const h = await host(t, fixture)
+    await h.request('/_xlate/config')
+    const before = await h.disk()
+    let calls = 0
+    h.plugin.ADAPTERS.openai = async () => { calls++; return '第一段译文' }
+    const fetches = t.mock.method(globalThis, 'fetch', async () => { throw new Error('offline fixture') })
+    for (const headers of NOT_SAME_ORIGIN) {
+      assert.equal((await h.request(path, body, headers)).status, 403, JSON.stringify(headers))
+      assert.equal((await h.request(path, '{not json', headers)).status, 403, 'malformed body ' + JSON.stringify(headers))
+      assert.deepEqual(await h.disk(), before)
+    }
+    assert.equal(calls, 0)
+    assert.equal(fetches.mock.callCount(), 0)
+  })
+}
+
+it('still accepts POST requests with no Origin or a same-origin Origin', async t => {
+  const h = await host(t, config())
+  h.plugin.ADAPTERS.openai = async () => '第一段译文'
+  for (const headers of [
+    {},
+    { origin: 'http://127.0.0.1:3080' },
+    { origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' },
+    { origin: 'https://dsh.example', host: 'dsh.example' },
+    { origin: 'https://dsh.example', host: 'dsh.example:443' },
+  ]) {
+    assert.equal((await h.request('/_xlate/config', POST_BODIES['/_xlate/config'], headers)).status, 200, JSON.stringify(headers))
+    assert.equal((await h.request('/_xlate/translate', POST_BODIES['/_xlate/translate'], headers)).body.ok, true, JSON.stringify(headers))
+  }
+  assert.equal((await h.disk()).providers.custom.model, 'second')
 })
