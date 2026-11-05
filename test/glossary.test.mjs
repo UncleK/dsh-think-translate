@@ -73,7 +73,7 @@ it('applies the built-in agent term when AI agent fails its leading boundary', a
   assert.equal((await translateWithGlossary('the Gemini agent here', builtin, async value => value)).text, 'the Gemini 智能体 here')
 })
 
-it('keeps word boundaries only at term ends that are ASCII word characters', async () => {
+it('keeps word boundaries only at term ends that are word characters', async () => {
   const terms = [
     { source: '任务卡', target: 'L' }, { source: '任务', target: 'S' },
     { source: 'API 密钥', target: 'K' }, { source: '密钥 API', target: 'R' }, { source: 'C++', target: 'CPP' },
@@ -88,6 +88,28 @@ it('keeps word boundaries only at term ends that are ASCII word characters', asy
     ['C++x', 'CPPx'],
     ['xC++', 'xC++'],
   ]) assert.equal((await translateWithGlossary(text, terms, async value => value)).text, expected)
+})
+
+it('treats long s and the Kelvin sign beside a term like the s and k they fold to', async () => {
+  for (const [text, expected] of [
+    ['task\u017f', 'task\u017f'],
+    ['\u212atask', '\u212atask'],
+    ['agent\u212atask', 'agent\u212atask'],
+    ['task card\u212a', '任务 card\u212a'],
+    ['ta\u017f\u212a here', '任务 here'],
+  ]) assert.equal((await translateWithGlossary(text, entries, async value => value)).text, expected)
+})
+
+it('keeps word boundaries at term ends that are long s or the Kelvin sign', async () => {
+  for (const [source, text, expected] of [
+    ['300\u212a', '300kg and 300k', '300kg and T'],
+    ['300\u212a', '300\u212ag', '300\u212ag'],
+    ['\u212aelvin', 'xkelvin kelvin', 'xkelvin T'],
+    ['cla\u017f\u017f', 'classes and class', 'classes and T'],
+    ['\u017f', 'the desks', 'the desks'],
+    ['\u212a', 'task k', 'task T'],
+    ['任务\u212a', 'abc任务kx abc任务k', 'abc任务kx abcT'],
+  ]) assert.equal((await translateWithGlossary(text, [{ source, target: 'T' }], async value => value)).text, expected)
 })
 
 it('reorders tokens with translated grammar and restores repeated terms without leaking tokens', async () => {
