@@ -53,6 +53,43 @@ it('matches longest terms first, ignores case and avoids English word interiors'
   assert.deepEqual(result.targets, ['智能体', '任务卡片', '任务'])
 })
 
+for (const [text, expected] of [
+  ['the task cards here', 'the 任务 cards here'],
+  ['the task cards and task here', 'the 任务 cards and 任务 here'],
+  ['the task cards and task card and task here', 'the 任务 cards and 任务卡片 and 任务 here'],
+]) it('falls back to the shorter term when the longer one fails its word boundary: ' + text, async () => {
+  assert.equal((await translateWithGlossary(text, entries, async value => value)).text, expected)
+})
+
+it('finds a shorter term inside a longer one that fails its word boundary', async () => {
+  const terms = [{ source: 'bar', target: 'B1' }, { source: 'foo bar baz', target: 'L1' }]
+  assert.equal((await translateWithGlossary('foo bar bazzy foo bar baz', terms, async value => value)).text, 'foo B1 bazzy L1')
+  assert.equal((await translateWithGlossary('xfoo bar baz', terms, async value => value)).text, 'xfoo B1 baz')
+})
+
+it('applies the built-in agent term when AI agent fails its leading boundary', async () => {
+  const builtin = glossaryEntriesForTarget({ builtin: true }, 'zh-CN')
+  assert.equal((await translateWithGlossary('the xAI agent here', builtin, async value => value)).text, 'the xAI 智能体 here')
+  assert.equal((await translateWithGlossary('the Gemini agent here', builtin, async value => value)).text, 'the Gemini 智能体 here')
+})
+
+it('keeps word boundaries only at term ends that are ASCII word characters', async () => {
+  const terms = [
+    { source: '任务卡', target: 'L' }, { source: '任务', target: 'S' },
+    { source: 'API 密钥', target: 'K' }, { source: '密钥 API', target: 'R' }, { source: 'C++', target: 'CPP' },
+  ]
+  for (const [text, expected] of [
+    ['这个任务卡片和任务书', '这个L片和S书'],
+    ['abc任务def', 'abcSdef'],
+    ['API 密钥abc', 'Kabc'],
+    ['xAPI 密钥', 'xAPI 密钥'],
+    ['abc密钥 API', 'abcR'],
+    ['密钥 APIx', '密钥 APIx'],
+    ['C++x', 'CPPx'],
+    ['xC++', 'xC++'],
+  ]) assert.equal((await translateWithGlossary(text, terms, async value => value)).text, expected)
+})
+
 it('reorders tokens with translated grammar and restores repeated terms without leaking tokens', async () => {
   const result = await translateWithGlossary('agent meets agent', entries, async value => {
     const tokens = value.match(/ZXQ\w+?QXZ/g)
@@ -130,6 +167,14 @@ it('does not split a matched phrase at a long-input boundary', () => {
   assert.equal(chunks.join(''), text)
   assert.ok(chunks.every(chunk => chunk.length <= 1200))
   assert.ok(chunks.some(chunk => chunk.includes('task card')))
+})
+
+it('does not split a fallback term at a long-input boundary', () => {
+  const text = '中'.repeat(1198) + 'task cards ' + 'B'.repeat(1300)
+  const chunks = splitGlossaryText(text, entries, value => [value])
+  assert.equal(chunks.join(''), text)
+  assert.ok(chunks.every(chunk => chunk.length <= 1200))
+  assert.ok(chunks.some(chunk => chunk.startsWith('task cards')))
 })
 
 it('keeps chunk limits at paragraph edges and does not split Unicode surrogate pairs', () => {
