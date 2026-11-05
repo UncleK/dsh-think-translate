@@ -265,6 +265,9 @@ const NOT_SAME_ORIGIN = [
   { origin: 'https://undefined', host: undefined },
   { origin: 'http://127.0.0.1:3080', host: '' },
   { origin: 'http://127.0.0.1:3080', host: '127.0.0.1:3080/path' },
+  { origin: 'http://127.0.0.1:3080', host: '127.0.0.1:3080\\path' },
+  { origin: 'http://127.0.0.1:3080', host: '127.0.0.1:3080?query' },
+  { origin: 'http://127.0.0.1:3080', host: '127.0.0.1:3080#fragment' },
   { origin: 'http://127.0.0.1:3080', host: 'user@127.0.0.1:3080' },
   { origin: 'http://127.0.0.1:3080', host: '127.0.0.1\t:3080' },
 ]
