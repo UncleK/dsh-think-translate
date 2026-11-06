@@ -100,6 +100,7 @@
     ],
     "changesTitle": "Recent changes and compatibility",
     "changes": [
+      "**1.2.22** Stores translation settings under the DSH profile (#21) and fixes glossary fallback to shorter terms (#20). Follow the configuration copy step above when upgrading from an older version.",
       "**1.2.21** Fixes repeated translation requests during rapid task updates (#17). Task text is translated after 500 ms without changes.",
       "**1.2.20** adds an opt-in, one-click technical glossary with 60 terms and product names for all nine target languages. Custom entries override built-ins and retain their own allowance; preview and disable the preset without removing custom entries.",
       "**1.2.19** adds per-language glossaries, DSH-managed credentials, configuration-aware caches, official-plugin mutual exclusion, stronger technical-text protection and Windows/Linux CI.",
