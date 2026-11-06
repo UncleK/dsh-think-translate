@@ -7,7 +7,7 @@ import { Readable } from 'node:stream'
 import http from 'node:http'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
-async function host(t, config, { failStorage = false, lateCredentials = false } = {}) {
+async function host(t, config, { failStorage = false, lateCredentials = false, connection, bindHost, routes = new Map() } = {}) {
   const dir = await mkdtemp(join(root, '.test-host-'))
   const lib = join(dir, 'lib')
   await mkdir(lib)
@@ -26,7 +26,7 @@ async function host(t, config, { failStorage = false, lateCredentials = false } 
   const configPath = join(lib, 'config.json')
   await writeFile(configPath, JSON.stringify(config))
   const plugin = await import(pathToFileURL(join(lib, 'index.js')).href)
-  const routes = new Map(), keys = new Map(), callbacks = []
+  const keys = new Map(), callbacks = []
   let rows = []
   const credentials = {
     set: async (ref, value) => { if (failStorage) throw new Error('storage echoed ' + value); keys.set(ref, value); callbacks.forEach(callback => callback(ref)) },
@@ -34,8 +34,8 @@ async function host(t, config, { failStorage = false, lateCredentials = false } 
     resolve: async ref => keys.has(ref) ? { value: keys.get(ref), source: 'file' } : undefined,
     describe: async ref => ({ configured: keys.has(ref), writable: true }),
   }
-  const services = { credentials, loader: { entries: () => rows }, profileContext: { home: dir, dir, name: 'test', patchPath: join(dir, 'cordis.patch.yml'), overlays: [] },
-    webServer: { register: route => { routes.set(route.path, route.handler); return () => routes.delete(route.path) } } }
+  const services = { credentials, connection, loader: { entries: () => rows }, profileContext: { home: dir, dir, name: 'test', patchPath: join(dir, 'cordis.patch.yml'), overlays: [] },
+    webServer: { host: bindHost, register: route => { routes.set(route.path, route.handler); return () => routes.delete(route.path) } } }
   let credentialsReady = !lateCredentials
   plugin.apply({ get: key => key === 'credentials' && !credentialsReady ? undefined : services[key], on: (_event, callback) => { callbacks.push(callback) }, effect: factory => factory() })
   async function request(path, body, headers = {}) {
@@ -270,6 +270,12 @@ const NOT_SAME_ORIGIN = [
   { origin: 'http://127.0.0.1:3080', host: '127.0.0.1:3080#fragment' },
   { origin: 'http://127.0.0.1:3080', host: 'user@127.0.0.1:3080' },
   { origin: 'http://127.0.0.1:3080', host: '127.0.0.1\t:3080' },
+  { origin: 'http://review.invalid', host: 'review.invalid' },
+  { origin: 'http://127.0.0.1.review.invalid:3080', host: '127.0.0.1.review.invalid:3080' },
+  { host: 'review.invalid' },
+  { host: 'localhost.review.invalid:3080' },
+  { host: 'review.invalid@127.0.0.1:3080' },
+  { host: undefined },
 ]
 
 for (const [path, body] of Object.entries(POST_BODIES)) {
@@ -293,20 +299,103 @@ for (const [path, body] of Object.entries(POST_BODIES)) {
   })
 }
 
-it('still accepts POST requests with no Origin or a same-origin Origin', async t => {
+it('still accepts POST requests with no Origin or a same-origin Origin on a loopback Host', async t => {
   const h = await host(t, config())
   h.plugin.ADAPTERS.openai = async () => '第一段译文'
   for (const headers of [
     {},
-    { host: undefined },
     { origin: 'http://[::1]:3080', host: '[::1]:3080' },
+    { origin: 'http://localhost:3080', host: 'localhost:3080' },
+    { origin: 'http://127.1.2.3:3080', host: '127.1.2.3:3080' },
     { origin: 'http://127.0.0.1:3080' },
     { origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' },
-    { origin: 'https://dsh.example', host: 'dsh.example' },
-    { origin: 'https://dsh.example', host: 'dsh.example:443' },
   ]) {
     assert.equal((await h.request('/_xlate/config', POST_BODIES['/_xlate/config'], headers)).status, 200, JSON.stringify(headers))
     assert.equal((await h.request('/_xlate/translate', POST_BODIES['/_xlate/translate'], headers)).body.ok, true, JSON.stringify(headers))
   }
   assert.equal((await h.disk()).providers.custom.model, 'second')
+})
+
+it('accepts the listener bind address as a Host, and no other non-loopback one, when the host has no connection service', async t => {
+  for (const [bindHost, authority] of [['10.0.0.7', '10.0.0.7:3080'], ['fd00::7', '[fd00::7]:3080']]) {
+    const h = await host(t, config(), { bindHost })
+    h.plugin.ADAPTERS.openai = async () => '第一段译文'
+    for (const headers of [{ host: authority }, { origin: 'http://' + authority, host: authority }]) {
+      assert.equal((await h.request('/_xlate/translate', POST_BODIES['/_xlate/translate'], headers)).body.ok, true, JSON.stringify(headers))
+    }
+    assert.equal((await h.request('/_xlate/translate', POST_BODIES['/_xlate/translate'], { origin: 'http://10.0.0.8:3080', host: '10.0.0.8:3080' })).status, 403)
+  }
+})
+
+it('takes the Host decision from the connection service, without requiring its login cookie', async t => {
+  // Answers as the service does: 403 for a Host or Origin it does not accept, then 401 with no login cookie.
+  const connection = { requestRejection: req => {
+    const host = req.headers.host, origin = req.headers.origin
+    if (host !== '127.0.0.1:3080' && host !== 'dsh.example' && host !== 'dsh.example:443') return 403
+    if (origin !== undefined && new URL(origin).host !== new URL(new URL(origin).protocol + '//' + host).host) return 403
+    return req.headers.cookie === undefined ? 401 : undefined
+  } }
+  const h = await host(t, config(), { connection })
+  h.plugin.ADAPTERS.openai = async () => '第一段译文'
+  for (const headers of [
+    {},
+    { host: 'dsh.example' },
+    { origin: 'https://dsh.example', host: 'dsh.example' },
+    { origin: 'https://dsh.example', host: 'dsh.example:443' },
+    { origin: 'https://dsh.example', host: 'dsh.example', cookie: 'session=fixture' },
+  ]) {
+    assert.equal((await h.request('/_xlate/translate', POST_BODIES['/_xlate/translate'], headers)).body.ok, true, JSON.stringify(headers))
+    assert.equal((await h.request('/_xlate/dsh-scan', undefined, headers)).status, 200, JSON.stringify(headers))
+  }
+  for (const headers of [
+    { origin: 'http://review.invalid', host: 'review.invalid' },
+    { host: 'review.invalid' },
+    { host: '127.0.0.2:3080' },
+    { origin: 'https://other.invalid', host: 'dsh.example' },
+  ]) {
+    assert.equal((await h.request('/_xlate/translate', POST_BODIES['/_xlate/translate'], headers)).status, 403, JSON.stringify(headers))
+    assert.equal((await h.request('/_xlate/dsh-scan', undefined, headers)).status, 403, JSON.stringify(headers))
+  }
+})
+
+it('answers 403 on GET /_xlate/dsh-scan unless the request is same-origin, and then writes nothing', async t => {
+  const h = await host(t, config())
+  const before = await h.disk()
+  for (const headers of NOT_SAME_ORIGIN) {
+    assert.equal((await h.request('/_xlate/dsh-scan', undefined, headers)).status, 403, JSON.stringify(headers))
+    assert.deepEqual(await h.disk(), before, JSON.stringify(headers))
+    assert.equal(h.keys.size, 0, JSON.stringify(headers))
+  }
+  // An accepted scan of the same fixture saves the config and moves its key, so the checks above can fail.
+  assert.equal((await h.request('/_xlate/dsh-scan')).status, 200)
+  assert.notDeepEqual(await h.disk(), before)
+  assert.equal(h.keys.size, 1)
+})
+
+it('decides on the headers a real listener receives', async t => {
+  const routes = new Map()
+  const h = await host(t, config(), { routes })
+  h.plugin.ADAPTERS.openai = async () => '第一段译文'
+  const server = http.createServer((req, res) => routes.get(req.url)(req, res))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  t.after(() => { server.closeAllConnections(); server.close() })
+  const port = server.address().port
+  const body = JSON.stringify(POST_BODIES['/_xlate/translate'])
+
+  // What the desktop shell's forwarder does: it drops these headers and fetch fills in the target's Host.
+  const forwarded = new Headers({ origin: 'dsh-app://app', 'sec-fetch-site': 'same-origin', 'content-type': 'application/json' })
+  for (const name of ['host', 'origin', 'cookie', 'sec-fetch-site']) forwarded.delete(name)
+  forwarded.set('cookie', 'host=fixture')
+  const response = await fetch('http://127.0.0.1:' + port + '/_xlate/translate', { method: 'POST', headers: forwarded, body, redirect: 'manual' })
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).ok, true)
+
+  const status = headers => new Promise((resolve, reject) => {
+    const req = http.request({ host: '127.0.0.1', port, path: '/_xlate/translate', method: 'POST', headers }, res => { res.resume(); res.on('end', () => resolve(res.statusCode)) })
+    req.on('error', reject)
+    req.end(body)
+  })
+  assert.equal(await status({ Origin: 'http://127.0.0.1:' + port }), 200)
+  assert.equal(await status({ Host: 'review.invalid', Origin: 'http://review.invalid' }), 403)
+  assert.equal(await status({ Host: 'review.invalid' }), 403)
 })
