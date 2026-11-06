@@ -587,6 +587,7 @@ for (const [label, text, codes = [verbatim]] of [
 
 // A block that is closed gives way to a real list. Behind it the list line is prose again.
 const closedBlock = '<pre>\n- item\n' + verbatim + '</pre>\n'
+const hiddenOpening = '`a\n<pre>\nb`'
 for (const [label, text] of [
   ['right behind a closing tag on its own line', '- First\n    - Second\n'],
   ['behind a closing tag on its own line and a blank line', '\n- First\n    - Second\n'],
@@ -600,28 +601,62 @@ for (const [label, text] of [
   ['behind a declaration closed on its opening line', '<!DOCTYPE html>\n- First\n    - Second\n'],
   ['behind the blank line that ends a div', '<div>\nwords\n\n- First\n    - Second\n'],
   ['behind the blank line that ends a complete tag', '<span>\nwords\n\n- First\n    - Second\n'],
-  // A complete tag alone cannot interrupt a paragraph, so no block opens here.
-  ['under a complete tag below a paragraph', 'Intro\n<span>\n- First\n    - Second\n'],
   // None of these lines opens a block.
   ['under a tag with text behind it', '<span>words</span> more\n- First\n    - Second\n'],
   ['under a tag name that only starts like pre', '<prefix words\n- First\n    - Second\n'],
   ['under an autolink', '<user@example.test>\n- First\n    - Second\n'],
   ['under a less-than sign', 'a < b\n- First\n    - Second\n'],
-  // The end of an item is the end of the block it holds.
-  ['behind an item that held a pre', '- <pre>\n- First\n    - Second\n'],
-  ['behind an item that held a div', '- <div>\n- First\n    - Second\n'],
+  ['under a tag in the middle of a line', 'x <y> z\n- First\n    - Second\n'],
+  ['in an item with a less-than sign', '- a < b\n    - Second\n'],
+  ['in an item with a tag in the middle of its text', '- x <y> z\n    - Second\n'],
   ['in an item whose block ended at a blank line', '- <div>\n\n    - Second\n'],
   ['in an item whose pre closed on its opening line', '- <pre>words</pre>\n    - Second\n'],
   ['in an item whose comment closed on its opening line', '- <!-- note -->\n    - Second\n'],
 ]) {
   it('translates a real list line ' + label, async () => {
-    const whole = closedBlock + text
-    const parts = protectedTextParts(whole)
-    assert.deepEqual(codeOf(parts), [verbatim])
-    assert.deepEqual(JSON.parse(JSON.stringify(client.protectedTextParts(whole))), parts)
-    const run = await runThinkRow(whole, 900)
-    assert.ok(run.seen.every(prose => !prose.includes('secret')))
-    assert.ok(run.seen.join('\n').includes(text.includes('First') ? '- First\n    - Second' : '- Second'))
+    // The same behind a block that the walk through the blocks cannot see open.
+    for (const [block, codes] of [[closedBlock, [verbatim]], [hiddenOpening + '\n- item\n' + verbatim + '</pre>\n', [hiddenOpening, verbatim]]]) {
+      const whole = block + text
+      const parts = protectedTextParts(whole)
+      assert.deepEqual(codeOf(parts), codes)
+      assert.deepEqual(JSON.parse(JSON.stringify(client.protectedTextParts(whole))), parts)
+      const run = await runThinkRow(whole, 900)
+      assert.ok(run.seen.every(prose => !prose.includes('secret')))
+      assert.ok(run.seen.join('\n').includes(text.includes('First') ? '- First\n    - Second' : '- Second'))
+    }
+  })
+}
+
+// A code span, a fence or a tag taken for a block can hide the line that opens a real one.
+for (const [label, text, codes] of [
+  ['a code span over the opening line', hiddenOpening + '\n- item\n' + verbatim, [hiddenOpening, verbatim]],
+  ['a fence over the opening line', '- ```\nx\n<pre>\n```\n- item\n' + verbatim, ['- ```\nx\n<pre>\n```\n', verbatim]],
+  ['a tag below a quote over the opening line', '> q\n<span>\n<!-- note\n\n- item\n' + verbatim, [verbatim]],
+  ['a code span over a comment', '`a\n<!-- note\nb`\n- item\n\n' + verbatim + '-->\n', ['`a\n<!-- note\nb`', verbatim]],
+  ['a code span over a div', '`a\n<div>\nb`\n- item\n' + verbatim + '\n', ['`a\n<div>\nb`', verbatim]],
+  ['a code span over a div that a blank line ended', '`a\n<div>\nb`\n- item\n\n' + verbatim, ['`a\n<div>\nb`', verbatim]],
+  ['a code span over a pre closed on the line above', hiddenOpening + '\n- item</pre>\n' + verbatim, [hiddenOpening, verbatim]],
+  ['a fence over a comment', '- ```\nx\n<!-- note\n```\n- item\n' + verbatim, ['- ```\nx\n<!-- note\n```\n', verbatim]],
+  ['a tag below a quote over a pre', '> q\n<span>\n<pre>\n\n- item\n' + verbatim, [verbatim]],
+]) {
+  it('keeps a list line behind ' + label, async () => {
+    await assertStaysCode(text + 'Done.\n', codes)
+  })
+}
+
+// The scan knows no containers and no paragraphs, so it also counts blocks CommonMark ends earlier
+// or never opens. A list line there stays code, which is what base does with every indented line.
+for (const [label, text, codes = [verbatim]] of [
+  ['behind an item that held a pre', '- <pre>\n- First\n' + verbatim],
+  ['behind an item that held a div', '- <div>\n- First\n' + verbatim + '\n'],
+  ['behind a quote that held a pre', '> <pre>\n- First\n' + verbatim],
+  ['under a complete tag below a paragraph', 'Intro\n<span>\n- First\n' + verbatim + '\n'],
+  ['under a number below a paragraph that holds a pre', 'Intro\n2. <pre>\n- First\n' + verbatim],
+  ['behind a pre in a fence', '```\n<pre>\n```\n- First\n' + verbatim, ['```\n<pre>\n```\n', verbatim]],
+  ['behind an indented pre', '    <pre>\n\n- First\n' + verbatim, ['    <pre>\n', verbatim]],
+]) {
+  it('keeps a list line as on base ' + label, async () => {
+    await assertStaysCode(text + 'Done.\n', codes)
   })
 }
 
