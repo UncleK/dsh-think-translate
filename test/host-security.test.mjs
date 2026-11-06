@@ -1,7 +1,7 @@
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtemp, mkdir, readdir, copyFile, writeFile, readFile, unlink, rmdir } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Readable } from 'node:stream'
 import http from 'node:http'
@@ -10,6 +10,8 @@ const root = fileURLToPath(new URL('../', import.meta.url))
 async function host(t, config, { failStorage = false, lateCredentials = false } = {}) {
   const dir = await mkdtemp(join(root, '.test-host-'))
   const lib = join(dir, 'lib')
+  const profileConfigDir = join(dir, 'dsh-think-translate')
+  const profileConfig = join(profileConfigDir, 'config.json')
   await mkdir(lib)
   t.after(async () => {
     // The fixture owns only regular files it created; no recursive deletion.
@@ -18,6 +20,8 @@ async function host(t, config, { failStorage = false, lateCredentials = false } 
       await unlink(join(lib, entry.name))
     }
     await rmdir(lib)
+    await unlink(profileConfig).catch(error => { if (error.code !== 'ENOENT') throw error })
+    await rmdir(profileConfigDir).catch(error => { if (error.code !== 'ENOENT') throw error })
     await unlink(join(dir, 'package.json'))
     await rmdir(dir)
   })
@@ -46,13 +50,49 @@ async function host(t, config, { failStorage = false, lateCredentials = false } 
       Promise.resolve(routes.get(path)(req, res)).catch(reject)
     })
   }
-  return { request, plugin, keys, enableCredentials: () => { credentialsReady = true }, disk: async () => JSON.parse(await readFile(configPath, 'utf8')),
+  const disk = async () => {
+    try { return JSON.parse(await readFile(profileConfig, 'utf8')) }
+    catch (error) {
+      if (error.code !== 'ENOENT') throw error
+      return JSON.parse(await readFile(configPath, 'utf8'))
+    }
+  }
+  return { request, plugin, keys, enableCredentials: () => { credentialsReady = true }, disk, profileConfig, legacyConfig: configPath,
     official: enabled => { rows = [{ options: { name: '@deepseek-ai/dsh-experimental-client-ui-cot-translation' }, disabled: !enabled, fiber: { state: 2 } }] } }
 }
 function config(baseURL = 'https://fixture.invalid/v1') {
   return { chain: ['custom'], providers: { google: { enabled: false }, bing: { enabled: false }, openai: { enabled: false },
     custom: { type: 'openai', enabled: true, model: 'first', baseURL, apiKey: 'fixture-private-key' } } }
 }
+
+it('migrates package settings once and keeps profile settings ahead of stale package files', async t => {
+  const old = config('http://127.0.0.1:11434/v1')
+  delete old.providers.custom.apiKey
+  old.providers.custom.apiKeyRef = 'DSH_XLATE_' + 'A'.repeat(32)
+  old.glossary = { enabled: true, builtin: true, entries: { 'zh-CN': [{ source: 'task card', target: '任务卡片' }] } }
+  const h = await host(t, old)
+  h.keys.set(old.providers.custom.apiKeyRef, 'fixture-local-key')
+
+  const { body } = await h.request('/_xlate/config')
+  const migrated = JSON.parse(await readFile(h.profileConfig, 'utf8'))
+  assert.deepEqual(migrated.chain, ['custom'])
+  assert.equal(migrated.providers.google.enabled, false)
+  assert.equal(migrated.providers.bing.enabled, false)
+  assert.deepEqual(migrated.glossary, old.glossary)
+  assert.equal(migrated.providers.custom.apiKeyRef, old.providers.custom.apiKeyRef)
+  assert.equal(body.providers.custom.hasApiKey, true)
+  assert.deepEqual(JSON.parse(await readFile(h.legacyConfig, 'utf8')), old)
+
+  const upgraded = await host(t, { chain: ['google'] })
+  await mkdir(dirname(upgraded.profileConfig))
+  await copyFile(h.profileConfig, upgraded.profileConfig)
+  upgraded.keys.set(old.providers.custom.apiKeyRef, 'fixture-local-key')
+  const result = (await upgraded.request('/_xlate/config')).body
+  assert.deepEqual(result.chain, migrated.chain)
+  assert.deepEqual(result.glossary, migrated.glossary)
+  assert.equal(result.providers.custom.apiKeyRef, old.providers.custom.apiKeyRef)
+  assert.equal(result.providers.custom.hasApiKey, true)
+})
 
 it('migrates a legacy key, uses DSH resolution for a real local API call, and never returns the value', async t => {
   let authorization

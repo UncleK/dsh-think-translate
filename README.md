@@ -70,6 +70,8 @@ dsh plugin --profile web add github:UncleK/dsh-think-translate
 
 Update from npm:
 
+**On the first update from 1.2.21 or earlier**, stop DSH and, inside the active profile directory, copy `node_modules/dsh-think-translate/lib/config.json` to `dsh-think-translate/config.json` (create the directory if needed). Keep the destination if it already exists. The plugin market may uninstall the old package first, so copy the file before updating. The new version keeps providers, glossaries and DSH credential references under the profile.
+
 ```bash
 dsh plugin --profile web add dsh-think-translate@latest
 ```

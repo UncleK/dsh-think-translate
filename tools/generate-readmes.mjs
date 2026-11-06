@@ -81,7 +81,7 @@ dsh plugin --profile web add dsh-think-translate
 
 ${c.installIntro}
 
-${details(c.installDetails, `${c.fromGithub}\n\n\x60\x60\x60bash\ndsh plugin --profile web add github:UncleK/dsh-think-translate\n\x60\x60\x60\n\n${c.updateNpm}\n\n\x60\x60\x60bash\ndsh plugin --profile web add dsh-think-translate@latest\n\x60\x60\x60\n\n${c.restart}`)}
+${details(c.installDetails, `${c.fromGithub}\n\n\x60\x60\x60bash\ndsh plugin --profile web add github:UncleK/dsh-think-translate\n\x60\x60\x60\n\n${c.updateNpm}\n\n${c.configMigration ? c.configMigration + '\n\n' : ''}\x60\x60\x60bash\ndsh plugin --profile web add dsh-think-translate@latest\n\x60\x60\x60\n\n${c.restart}`)}
 
 <a id="features"></a>
 ## ${c.featuresHeading}

@@ -22,6 +22,7 @@
     "installDetails": "GitHub installation, updates and other methods",
     "fromGithub": "Install from GitHub:",
     "updateNpm": "Update from npm:",
+    "configMigration": "**On the first update from 1.2.21 or earlier**, stop DSH and, inside the active profile directory, copy `node_modules/dsh-think-translate/lib/config.json` to `dsh-think-translate/config.json` (create the directory if needed). Keep the destination if it already exists. The plugin market may uninstall the old package first, so copy the file before updating. The new version keeps providers, glossaries and DSH credential references under the profile.",
     "restart": "Fully restart DSH after installing or updating. For manual deployment, link the package into the profile and add its entry to `cordis.patch.yml`; the commands above are recommended for everyday use.",
     "featuresHeading": "More than reasoning to understand",
     "cardTitles": [
