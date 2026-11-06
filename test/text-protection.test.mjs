@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { protectedTextParts, translateProtectedText } from '../lib/text.js'
 import { ADAPTERS, runChainFor, translateViaChain, chunkText, needsTranslate } from '../lib/index.js'
+import { glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText } from '../lib/glossary.js'
+import { translationNamespace } from '../lib/runtime-state.js'
 
 const source = readFileSync(new URL('../lib/client.js', import.meta.url), 'utf8')
 function between(from, to) {
@@ -173,9 +175,11 @@ it('keeps the indent of the very first line so its child stays code at the Host'
 // A tab runs to the next tab stop of 4 columns, so each of these is 8 columns deep.
 const eightColumns = ['        ', '\t\t', '\t    ', '    \t', '     \t', '\t \t']
 const tabCode = '- name: secret-key\n'
+// The name in a closing tag reads as a path, as on base. That is not what these tests are about.
+const codeOf = parts => parts.filter(part => part.code && !/^\/\w+$/.test(part.text)).map(part => part.text)
 async function assertStaysCode(text, codes) {
   const parts = protectedTextParts(text)
-  assert.deepEqual(parts.filter(part => part.code).map(part => part.text), codes, JSON.stringify(text))
+  assert.deepEqual(codeOf(parts), codes, JSON.stringify(text))
   assert.deepEqual(JSON.parse(JSON.stringify(client.protectedTextParts(text))), parts)
   for (let size = 1; size <= text.length; size++) {
     const run = await runThinkRow(text, size)
@@ -524,6 +528,238 @@ it('translates a nested line when the previous batch ended on inline code that c
   // The real first line of a text is no tail: its nested line stays in the same batch.
   const first = await runThinkRow('- First step\n    - Read the notes\n', 900)
   assert.deepEqual(first.batches.map(batch => batch.text), ['- First step\n    - Read the notes\n'])
+})
+
+// The lines of a CommonMark HTML block are verbatim, so a list line there is no nested item.
+const verbatim = '    - name: secret-key\n'
+for (const [label, text, codes = [verbatim]] of [
+  // These end at their end condition alone, so a blank line changes nothing.
+  ['a pre', '<pre>\n- item\n' + verbatim + '</pre>\n'],
+  ['a pre with attributes', '<pre class="a">\n- item\n' + verbatim + '</pre>\n'],
+  ['an upper case pre', '<PRE>\n- item\n' + verbatim + '</PRE>\n'],
+  ['a pre whose tag runs on to the next line', '<pre\nclass="a">\n- item\n' + verbatim + '</pre>\n'],
+  ['a pre below a paragraph', 'Intro\n<pre>\n- item\n' + verbatim + '</pre>\n'],
+  ['a pre indented by 3 spaces', '   <pre>\n- item\n' + verbatim + '</pre>\n'],
+  ['a pre with a blank line inside', '<pre>\n- item\n\n' + verbatim + '</pre>\n'],
+  ['a pre with CRLF line ends', '<pre>\r\n- item\r\n    - name: secret-key\r\n</pre>\r\n', ['    - name: secret-key\r\n']],
+  ['a script', '<script>\n- item\n' + verbatim + '</script>\n'],
+  ['a style', '<style>\n- item\n' + verbatim + '</style>\n'],
+  ['a textarea', '<textarea>\n- item\n' + verbatim + '</textarea>\n'],
+  ['a comment', '<!--\n- item\n' + verbatim + '-->\n'],
+  ['a comment with a blank line inside', '<!-- note\n- item\n\n' + verbatim + '-->\n'],
+  ['a processing instruction', '<?php\n- item\n' + verbatim + '?>\n'],
+  ['a declaration', '<!DOCTYPE\n- item\n' + verbatim + '>\n'],
+  ['a CDATA section', '<![CDATA[\n- item\n' + verbatim + ']]>\n'],
+  // The closing line still belongs to the block, so nothing under it can lean on it.
+  ['the line that closes a pre', '<pre>\n- item</pre>\n' + verbatim],
+  ['the line that closes a comment', '<!--\n- item -->\n' + verbatim],
+  // These end at a blank line, and what follows it has no list item above it.
+  ['a div', '<div>\n- item\n' + verbatim + '\n'],
+  ['a div with attributes', '<DIV id="a">\n- item\n' + verbatim + '\n'],
+  ['a closing div', '</div>\n- item\n' + verbatim + '\n'],
+  ['a self-closing p', '<p/>\n- item\n' + verbatim + '\n'],
+  ['a table tag that runs on to the next line', '<table\n- item\n' + verbatim + '\n'],
+  ['a div below a paragraph', 'Intro\n<div>\n- item\n' + verbatim + '\n'],
+  ['behind the blank line that ends a div', '<div>\n- item\n\n' + verbatim],
+  ['any complete tag', '<span>\n- item\n' + verbatim + '\n'],
+  ['any complete closing tag', '</span>\n- item\n' + verbatim + '\n'],
+  ['a complete tag with attributes', '<custom-tag a=b c=\'d\' e="f" g>\n- item\n' + verbatim + '\n'],
+  ['a complete tag with spaces behind it', '<br/>  \n- item\n' + verbatim + '\n'],
+  ['behind the blank line that ends a complete tag', '<span>\n- item\n\n' + verbatim],
+  // A list item can hold a block, up to where the item ends.
+  ['a pre in an item', '- <pre>\n' + verbatim + '</pre>\n'],
+  ['a comment in an ordered item', '1. <!-- note\n' + verbatim + '-->\n'],
+  ['a div in an item', '- <div>\n' + verbatim + '\n'],
+  ['a complete tag in an item', '- <span>\n' + verbatim + '\n'],
+  ['a pre in an item of an item', '- - <pre>\n' + verbatim + '</pre>\n'],
+  ['a pre behind a tab', '-\t<pre>\n' + verbatim + '</pre>\n'],
+  ['a pre on its own line in an item', '- top\n    <pre>\n  - item\n' + verbatim + '    </pre>\n', ['    <pre>\n', verbatim, '    </pre>\n']],
+  // A nested line that opens a block is verbatim itself.
+  ['a nested line that opens a div', '- top\n    - <div class="secret">\n', ['    - <div class="secret">\n']],
+  ['a nested line that opens a pre', '- top\n    - <pre secret>\n', ['    - <pre secret>\n']],
+  ['a nested line that holds a comment', '- top\n    - <!-- secret -->\n', ['    - <!-- secret -->\n']],
+  ['a nested line that holds a complete tag', '- top\n    - <span title="secret">\n', ['    - <span title="secret">\n']],
+]) {
+  it('keeps a list line inside ' + label, async () => {
+    await assertStaysCode(text + 'Done.\n', codes)
+  })
+}
+
+// A block that is closed gives way to a real list. Behind it the list line is prose again.
+const closedBlock = '<pre>\n- item\n' + verbatim + '</pre>\n'
+for (const [label, text] of [
+  ['right behind a closing tag on its own line', '- First\n    - Second\n'],
+  ['behind a closing tag on its own line and a blank line', '\n- First\n    - Second\n'],
+  ['behind a pre closed by another end tag', '<pre>\nwords\n</script>\n- First\n    - Second\n'],
+  ['behind a pre closed on its opening line', '<pre>words</pre>\n- First\n    - Second\n'],
+  ['behind a comment closed on its opening line', '<!-- note -->\n- First\n    - Second\n'],
+  ['behind a closed comment', '<!--\n- item\n-->\n- First\n    - Second\n'],
+  ['behind a closed processing instruction', '<?x\nwords\n?>\n- First\n    - Second\n'],
+  ['behind a closed declaration', '<!X\nwords\n>\n- First\n    - Second\n'],
+  ['behind a closed CDATA section', '<![CDATA[\nwords\n]]>\n- First\n    - Second\n'],
+  ['behind a declaration closed on its opening line', '<!DOCTYPE html>\n- First\n    - Second\n'],
+  ['behind the blank line that ends a div', '<div>\nwords\n\n- First\n    - Second\n'],
+  ['behind the blank line that ends a complete tag', '<span>\nwords\n\n- First\n    - Second\n'],
+  // A complete tag alone cannot interrupt a paragraph, so no block opens here.
+  ['under a complete tag below a paragraph', 'Intro\n<span>\n- First\n    - Second\n'],
+  // None of these lines opens a block.
+  ['under a tag with text behind it', '<span>words</span> more\n- First\n    - Second\n'],
+  ['under a tag name that only starts like pre', '<prefix words\n- First\n    - Second\n'],
+  ['under an autolink', '<user@example.test>\n- First\n    - Second\n'],
+  ['under a less-than sign', 'a < b\n- First\n    - Second\n'],
+  // The end of an item is the end of the block it holds.
+  ['behind an item that held a pre', '- <pre>\n- First\n    - Second\n'],
+  ['behind an item that held a div', '- <div>\n- First\n    - Second\n'],
+  ['in an item whose block ended at a blank line', '- <div>\n\n    - Second\n'],
+  ['in an item whose pre closed on its opening line', '- <pre>words</pre>\n    - Second\n'],
+  ['in an item whose comment closed on its opening line', '- <!-- note -->\n    - Second\n'],
+]) {
+  it('translates a real list line ' + label, async () => {
+    const whole = closedBlock + text
+    const parts = protectedTextParts(whole)
+    assert.deepEqual(codeOf(parts), [verbatim])
+    assert.deepEqual(JSON.parse(JSON.stringify(client.protectedTextParts(whole))), parts)
+    const run = await runThinkRow(whole, 900)
+    assert.ok(run.seen.every(prose => !prose.includes('secret')))
+    assert.ok(run.seen.join('\n').includes(text.includes('First') ? '- First\n    - Second' : '- Second'))
+  })
+}
+
+it('still sends the prose lines of a pre, as on base', async () => {
+  const run = await runThinkRow('<pre>\nSome words to translate\n- item\n' + verbatim + '</pre>\nDone.\n', 900)
+  assert.deepEqual(run.seen, ['<pre>\nSome words to translate\n- item', '>\nDone.'])
+})
+
+it('ends a batch before a line the Host would free behind a cut through a pre', async () => {
+  const first = 'A first line long enough for its own batch.\n<pre>\n'
+  const run = await runThinkRow(first + '- item\n' + verbatim + '</pre>\nDone.\n', first.length)
+  assert.deepEqual(run.batches.map(batch => batch.text), [first, '- item\n', verbatim + '</pre>\nDone.\n'])
+  assert.deepEqual(run.seen, [first.trimEnd(), '- item', '>\nDone.'])
+})
+
+it('keeps the lines of an HTML block from the provider while streaming', async () => {
+  let text = ''
+  for (const open of ['<pre>', '<script>', '<!-- note', '<?php', '<!DOCTYPE', '<![CDATA[']) text += 'Plan:\n' + open + '\n- item\n\n' + verbatim + '</pre>\n-->\n?>\n>\n]]>\n\n'
+  for (const open of ['<div>', '</div>', '<span>']) text += open + '\n- item\n' + verbatim + '\n'
+  for (const open of ['- <div>', '- <span>', '- <pre>']) text += open + '\n' + verbatim + '\n'
+  text += 'Some more plain prose for the stream margin to pass over.\n'.repeat(5)
+  for (const size of [24, 40, 80, 900]) {
+    for (const step of [7, 20, 40, 80, 200]) {
+      const run = await runThinkRow(text, size, step)
+      assert.ok(run.seen.every(prose => !prose.includes('secret')), 'batch size ' + size + ', step ' + step)
+    }
+  }
+})
+
+// The real route handler and provider chain. Only a client that says so has nested list lines freed.
+const hostSource = readFileSync(new URL('../lib/index.js', import.meta.url), 'utf8')
+function hostRoute() {
+  const sent = []
+  const cfg = { chain: ['test'], providers: { test: { enabled: true, type: 'test' } } }
+  const context = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText,
+    structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0,
+    translationContext: config => ({ cacheNamespace: translationNamespace(config), officialEnabled: false }),
+    Date, Map, protectedTextParts, translateProtectedText, loadConfig: async () => cfg, ollamaOrigin: () => null,
+    ADAPTERS: { test: async prose => { sent.push(prose); return '这是译文。' } } })
+  const from = hostSource.indexOf('const cache = new Map()')
+  vm.runInContext(hostSource.slice(from, hostSource.indexOf('// ---------------------------------------------------------------- http glue', from)), context)
+  return { sent, handle: body => context.handleTranslate(body), namespace: translationNamespace(cfg) }
+}
+const nestedMessage = '- First step\n    - Read the notes\n'
+const oldClient = { target: 'zh-CN' }
+const newClient = { target: 'zh-CN', nestedLists: true }
+
+// A page from before the flag counts every indented line as code and cuts batches on size alone,
+// so a batch can run between any two of these offsets.
+function oldClientCuts(text) {
+  const cuts = new Set([0, text.length])
+  for (const part of protectedTextParts(text, false)) {
+    cuts.add(part.start)
+    cuts.add(part.end)
+    if (!part.code) for (const match of part.text.matchAll(/[。！？!?;\n]+/g)) cuts.add(part.start + match.index + match[0].length)
+  }
+  return [...cuts].sort((a, b) => a - b)
+}
+for (const [label, text] of [
+  ['a list parent cut out of a sentence', tailShapes],
+  ['a cut at the batch default', filler + ';- then the config\n' + yamlLines + 'Done.\n'],
+  ['a list parent right above, as in a whole message', '- then the config\n' + yamlLines],
+  ['a parent on a later line of the batch', 'Read the notes;- first\n- then the config\n' + yamlLines],
+  ['a number that only continues a paragraph', 'Plan:\n2. foo\n3. bar\n' + verbatim],
+  ['a cut through a pre', '<pre>\nwords\n- item\n' + verbatim + '</pre>\n'],
+  ['a cut through a div', '<div>\nwords\n- item\n' + verbatim + '\n'],
+]) {
+  it('old client, new Host: keeps indented lines from the provider with ' + label, async () => {
+    const host = hostRoute()
+    const cuts = oldClientCuts(text)
+    for (let from = 0; from < cuts.length; from++) {
+      for (let to = from + 1; to < cuts.length; to++) {
+        const batch = text.slice(cuts[from], cuts[to])
+        const result = await host.handle({ text: batch, ...oldClient })
+        assert.ok(host.sent.every(prose => !prose.includes('secret')), JSON.stringify(batch))
+        assert.ok(result.text.includes('secret') === batch.includes('secret'), JSON.stringify(batch))
+      }
+    }
+  })
+}
+
+it('old client, new Host: keeps a nested line from the provider on the provider test path too', async () => {
+  const host = hostRoute()
+  await host.handle({ text: '- then the config\n' + verbatim, ...oldClient, provider: 'test' })
+  assert.deepEqual(host.sent, ['- then the config'])
+})
+
+it('frees nested list lines only for a client that says it batches for them', async () => {
+  const oldPage = hostRoute()
+  const kept = await oldPage.handle({ text: nestedMessage, ...oldClient })
+  assert.deepEqual(oldPage.sent, ['- First step'])
+  assert.ok(kept.text.includes('    - Read the notes\n'))
+  // What the new client sends for a whole message that opens with a real list parent.
+  const newPage = hostRoute()
+  const freed = await newPage.handle({ text: nestedMessage, ...newClient })
+  assert.deepEqual(newPage.sent, [nestedMessage.trimEnd()])
+  assert.ok(!freed.text.includes('Read the notes'))
+})
+
+it('does not serve one client the cached answer of the other', async () => {
+  for (const order of [[oldClient, newClient], [newClient, oldClient]]) {
+    const host = hostRoute()
+    const answers = new Map()
+    for (const request of order) answers.set(request, await host.handle({ text: nestedMessage, ...request }))
+    assert.equal(host.sent.length, 2)
+    assert.ok(answers.get(oldClient).text.includes('    - Read the notes\n'))
+    assert.ok(!answers.get(newClient).text.includes('Read the notes'))
+  }
+})
+
+it('sends the flag from the real client and gets a whole message with a list parent translated', async () => {
+  const host = hostRoute()
+  const bodies = []
+  const box = vm.createContext({ Date, Map, Promise, needsTranslate: () => true, fnv: value => value, translationLanguageError: () => null,
+    localStorage: { length: 0, getItem: () => null, setItem: () => {} }, recordCheck: () => {}, sleepMs: async () => {},
+    fetch: async (url, options) => {
+      if (url === '/_xlate/context') return { ok: true, json: async () => ({ cacheNamespace: host.namespace, officialEnabled: false }) }
+      bodies.push(JSON.parse(options.body))
+      return { ok: true, json: async () => host.handle(bodies[bodies.length - 1]) }
+    },
+    fetchWithTimeout: async (...args) => box.fetch(...args),
+  })
+  vm.runInContext(between('var mem = new Map();', 'var providerChecks = {}'), box)
+  vm.runInContext(between('async function hostAttempt(', 'function useXlate('), box)
+  const result = await box.requestTranslate(nestedMessage, 'zh-CN')
+  assert.equal(result.ok, true)
+  assert.equal(bodies[0].nestedLists, true)
+  assert.deepEqual(host.sent, [nestedMessage.trimEnd()])
+})
+
+it('reads every indented line as code in both parser copies when nested lists are off', () => {
+  for (const text of [nestedMessage, 'Plan:\n1. First step\n    - Read the notes\n\t- Compare the results\n', '- First\n\n    - Second\n']) {
+    const parts = protectedTextParts(text, false)
+    assert.deepEqual(JSON.parse(JSON.stringify(client.protectedTextParts(text, false))), parts)
+    for (const line of text.split('\n').filter(line => /^(?: {4}|\t)/.test(line))) {
+      assert.ok(parts.some(part => part.code && part.text === line + '\n'), line)
+    }
+  }
 })
 
 it('protects mixed code when an enabled provider fails and the next provider succeeds', async t => {
