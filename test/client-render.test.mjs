@@ -133,7 +133,13 @@ function createRuntime() {
     // Drop every component instance, the way React does when a list-slot row gets a
     // new key. The shell keys settings rows by registration identity, and this plugin
     // re-registers its section on a language change, so a remount is a real event.
-    reset: function () { instances.length = 0; order = 0 },
+    reset: function () {
+      for (const instance of instances) {
+        for (const effect of Object.values(instance.ran)) effect.cleanup?.()
+      }
+      instances.length = 0
+      order = 0
+    },
   }
 }
 
@@ -186,7 +192,33 @@ function configWith(providers, chain) {
   }
 }
 
-async function mountPanel(config, scanConfig, officialTodoFirst = null, preferences = {}, localResponse = null, testResponse = null, primitives = null, memoryResponse = null) {
+function clientClock() {
+  let now = 0
+  let nextId = 0
+  const timers = new Map()
+  return {
+    setTimeout(callback, delay) {
+      const id = ++nextId
+      timers.set(id, { callback, at: now + delay })
+      return id
+    },
+    clearTimeout(id) { timers.delete(id) },
+    advance(ms) {
+      const until = now + ms
+      for (;;) {
+        const next = [...timers].filter(([, timer]) => timer.at <= until).sort((a, b) => a[1].at - b[1].at)[0]
+        if (!next) break
+        const [id, timer] = next
+        now = timer.at
+        timers.delete(id)
+        timer.callback()
+      }
+      now = until
+    },
+  }
+}
+
+async function mountPanel(config, scanConfig, officialTodoFirst = null, preferences = {}, localResponse = null, testResponse = null, primitives = null, memoryResponse = null, timers = null) {
   // The host already merges the harness's providers into GET /_xlate/config, so the
   // panel paints them without being asked; the scan route answers with the same shape
   // (a second argument models "the harness config changed since we loaded").
@@ -200,7 +232,8 @@ async function mountPanel(config, scanConfig, officialTodoFirst = null, preferen
   const windowListeners = new Map()
   const sandbox = {
     console,
-    setTimeout, clearTimeout, setInterval: function (fn, ms) { const timer = setInterval(fn, ms); timer.unref(); return timer }, clearInterval, URL,
+    setTimeout: timers?.setTimeout ?? setTimeout, clearTimeout: timers?.clearTimeout ?? clearTimeout,
+    setInterval: function (fn, ms) { const timer = setInterval(fn, ms); timer.unref(); return timer }, clearInterval, URL,
     localStorage: { getItem: function (key) {
       const pref = key.replace('dsh-think-translate:', '')
       return Object.hasOwn(savedPreferences, pref) ? String(savedPreferences[pref]) : null
@@ -736,30 +769,86 @@ describe('DSH 0.2 conversation component props', function () {
 
   for (const phase of ['preparing', 'start', 'result']) {
     it('renders the todo_write ' + phase + ' phase without changing tool arguments', async function () {
-      const panel = await mountPanel(configWith({}, []))
+      const clock = clientClock()
+      const panel = await mountPanel(configWith({}, []), null, null, {}, null, null, null, null, clock)
       const argsRaw = JSON.stringify({ todos: [{ content: 'Inspect the original data', status: 'in_progress' }] })
       const block = phase === 'result'
         ? { kind: 'tool-result', callId: 'test', call: { name: 'todo_write', argsRaw }, content: [], isError: false, subCalls: [] }
-        : { phase, name: 'todo_write', callId: 'test', turn: 1, step: 1, time: 1, subCalls: [], ...(phase === 'start' ? { argsRaw } : {}) }
+        : { phase, name: 'todo_write', callId: 'test', turn: 1, step: 1, time: 1, subCalls: [], argsRaw }
       const original = JSON.stringify(block)
-      const tree = await panel.renderView('tool.call.toolview', 'todo_write', { phase, block })
+      const props = { phase, block }
+      const tree = await panel.renderView('tool.call.toolview', 'todo_write', props)
       assert.ok(flatten(tree).some(function (n) { return cls(n) === 'xl-todo' }))
-      if (phase !== 'preparing') assert.match(textOf(tree), /已翻译的任务/)
+      click(flatten(tree).find(node => cls(node) === 'xl-row'))
+      const component = panel.entries.find(entry => entry.spec.key === 'todo_write').component
+      const opened = await panel.runtime.mount(component, props)
+      assert.ok(flatten(opened).some(node => cls(node) === 'xl-item'))
+      clock.advance(500)
+      const settled = await panel.runtime.mount(component, props)
+      const translations = panel.calls.filter(call => call.url === '/_xlate/translate')
+      if (phase === 'preparing') {
+        assert.equal(translations.length, 0, 'neither the summary nor its expanded item may translate while preparing')
+        assert.match(textOf(settled), /Inspect the original data/)
+        const started = { phase: 'start', block: { ...block, phase: 'start' } }
+        await panel.runtime.mount(component, started)
+        clock.advance(500)
+        assert.match(textOf(await panel.runtime.mount(component, started)), /已翻译的任务/)
+        assert.equal(panel.calls.filter(call => call.url === '/_xlate/translate').length, 1)
+      } else {
+        assert.equal(translations.length, 1, 'summary and item share the same request')
+        assert.match(textOf(settled), /已翻译的任务/)
+      }
       assert.equal(JSON.stringify(block), original)
+      panel.dispose()
     })
   }
 
   it('renders the translated composer todo dock from the todos projection', async function () {
-    const panel = await mountPanel(configWith({}, []))
+    const clock = clientClock()
+    const panel = await mountPanel(configWith({}, []), null, null, {}, null, null, null, null, clock)
     const todos = [{ content: 'Inspect the original data', status: 'in_progress' }]
     const original = JSON.stringify(todos)
     const props = { useProjection: function (key) { assert.equal(key, 'todos'); return todos }, t: function (key) { return key } }
     const tree = await panel.renderView('conversation.input.dock', 'todo', props)
     assert.ok(flatten(tree).some(function (n) { return n.props['data-testid'] === 'todo-panel' }))
     click(button(tree, 'todo.title'))
-    const opened = await panel.runtime.mount(panel.entries.find(function (entry) { return entry.spec.id === 'todo' }).component, props)
+    const component = panel.entries.find(entry => entry.spec.id === 'todo').component
+    await panel.runtime.mount(component, props)
+    clock.advance(500)
+    const opened = await panel.runtime.mount(component, props)
     assert.match(textOf(opened), /已翻译的任务/)
     assert.equal(JSON.stringify(todos), original)
+    panel.dispose()
+  })
+
+  it('coalesces 28 dock updates into one settled request and drops obsolete results and timers', async function () {
+    const clock = clientClock()
+    const panel = await mountPanel(configWith({}, []), null, null, {}, null, null, null, null, clock)
+    const item = { content: 'Inspect the initial source', status: 'in_progress' }
+    const props = { useProjection: () => [item], t: key => key }
+    const component = panel.entries.find(entry => entry.spec.id === 'todo').component
+    const translateCalls = () => panel.calls.filter(call => call.url === '/_xlate/translate')
+    click(button(await panel.renderView('conversation.input.dock', 'todo', props), 'todo.title'))
+    for (let i = 0; i < 28; i++) {
+      item.content = 'Inspect the streamed source version ' + i
+      await panel.runtime.mount(component, props)
+      if (i < 27) clock.advance(35)
+    }
+    clock.advance(499)
+    assert.equal(translateCalls().length, 0)
+    clock.advance(1)
+    assert.match(textOf(await panel.runtime.mount(component, props)), /已翻译的任务/)
+    assert.equal(translateCalls().length, 1)
+    assert.equal(JSON.parse(translateCalls()[0].init.body).text, item.content)
+
+    item.content = 'Inspect a different source'
+    const pending = await panel.runtime.mount(component, props)
+    assert.match(textOf(pending), /Inspect a different source/)
+    assert.doesNotMatch(textOf(pending), /已翻译的任务/)
+    panel.runtime.reset()
+    clock.advance(1000)
+    assert.equal(translateCalls().length, 1, 'unmount cancels the pending translation')
+    panel.dispose()
   })
 })
 

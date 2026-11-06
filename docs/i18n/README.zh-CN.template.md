@@ -74,6 +74,8 @@ dsh plugin --profile web add github:UncleK/dsh-think-translate
 
 升级 npm 版本：
 
+**首次从 1.2.21 或更早版本升级时**，先退出 DSH，在对应的 profile 目录内把 `node_modules/dsh-think-translate/lib/config.json` 复制到 `dsh-think-translate/config.json`（需要时先建目录）。目标已存在时保留目标文件。插件市场可能先卸载旧包，请在更新前复制；新版会在 profile 下保存提供方、术语表和 DSH 凭证引用。
+
 ```bash
 dsh plugin --profile web add dsh-think-translate@latest
 ```
@@ -212,6 +214,10 @@ reasoning => 思考过程
 
 <details>
 <summary><b>最近更新与兼容性</b></summary>
+
+**1.2.22** 把翻译配置移到 DSH profile 目录（#21），并修复术语表短词条漏匹配（#20）。首次从旧版升级前请按上面的步骤复制配置。
+
+**1.2.21** 修复 #17 中待办文本频繁更新时重复触发翻译的问题。参数生成期间显示原文，文本稳定 500 毫秒后翻译。
 
 **1.2.20** 增加 60 条常用技术术语的九语言内置词表，内置和自定义独立勾选；自定义词条优先、额度独立。新增未保存提醒，并改进宽屏布局。
 

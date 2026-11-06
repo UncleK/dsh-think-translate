@@ -22,6 +22,7 @@
     "installDetails": "GitHub installation, updates and other methods",
     "fromGithub": "Install from GitHub:",
     "updateNpm": "Update from npm:",
+    "configMigration": "**On the first update from 1.2.21 or earlier**, stop DSH and, inside the active profile directory, copy `node_modules/dsh-think-translate/lib/config.json` to `dsh-think-translate/config.json` (create the directory if needed). Keep the destination if it already exists. The plugin market may uninstall the old package first, so copy the file before updating. The new version keeps providers, glossaries and DSH credential references under the profile.",
     "restart": "Fully restart DSH after installing or updating. For manual deployment, link the package into the profile and add its entry to `cordis.patch.yml`; the commands above are recommended for everyday use.",
     "featuresHeading": "More than reasoning to understand",
     "cardTitles": [
@@ -99,6 +100,8 @@
     ],
     "changesTitle": "Recent changes and compatibility",
     "changes": [
+      "**1.2.22** Stores translation settings under the DSH profile (#21) and fixes glossary fallback to shorter terms (#20). Follow the configuration copy step above when upgrading from an older version.",
+      "**1.2.21** Fixes repeated translation requests during rapid task updates (#17). Task text is translated after 500 ms without changes.",
       "**1.2.20** adds an opt-in, one-click technical glossary with 60 terms and product names for all nine target languages. Custom entries override built-ins and retain their own allowance; preview and disable the preset without removing custom entries.",
       "**1.2.19** adds per-language glossaries, DSH-managed credentials, configuration-aware caches, official-plugin mutual exclusion, stronger technical-text protection and Windows/Linux CI.",
       "**1.2.18** adds a persistent sidebar entry for the translation controls (toggle in settings or the translation page, saved per browser) and redesigns the translation page and settings dialog into card-based sections with a responsive single-column layout in narrow windows.",
@@ -224,6 +227,7 @@
     ],
     "changesTitle": "最近の更新と互換性",
     "changes": [
+      "**1.2.21** タスクの連続更新で翻訳リクエストが増える問題を修正（#17）。500 ms 更新がなければ翻訳します。",
       "**1.2.20** 内蔵の技術用語集をワンクリックで有効化。60 件の用語と製品名を 9 言語に対応させ、カスタム訳を優先します。追加枠は独立し、一覧表示と無効化でもカスタム用語は保持されます。",
       "**1.2.19**：言語別用語集、DSH 資格情報によるキー保管、設定別キャッシュ、公式プラグインとの排他制御、技術文の保護強化、Windows/Linux CI を追加。",
       "**1.2.18**：翻訳操作の常駐サイドバーエントリを追加（設定ダイアログまたは翻訳ページで切替、ブラウザごとに保存）。翻訳ページと設定ダイアログをカード型セクションへ刷新し、狭いウィンドウではレスポンシブな単一列レイアウトに切り替わります。",
@@ -347,6 +351,7 @@
     ],
     "changesTitle": "최근 변경 및 호환성",
     "changes": [
+      "**1.2.21** 작업이 빠르게 갱신될 때 번역 요청이 반복되는 문제를 수정했습니다(#17). 텍스트가 500ms 동안 바뀌지 않으면 번역합니다.",
       "**1.2.20** 클릭 한 번으로 켜는 기술 용어집을 추가합니다. 60개 용어와 제품명을 9개 언어로 제공하며 사용자 용어가 우선합니다. 추가 한도는 별도이고 미리 보거나 꺼도 사용자 용어는 유지됩니다.",
       "**1.2.19**: 언어별 용어집, DSH 자격 증명 저장소, 설정별 캐시, 공식 플러그인과의 상호 배제, 기술 텍스트 보호 강화 및 Windows/Linux CI를 추가했습니다.",
       "**1.2.18**: 번역 컨트롤을 위한 상시 사이드바 항목을 추가했습니다(설정 대화상자나 번역 페이지에서 전환, 브라우저별 저장). 번역 페이지와 설정 대화상자를 카드형 섹션으로 개편하고 좁은 창에서는 반응형 단일 열 레이아웃으로 전환됩니다.",
@@ -470,6 +475,7 @@
     ],
     "changesTitle": "Cambios recientes y compatibilidad",
     "changes": [
+      "**1.2.21** Corrige las solicitudes repetidas de traducción al actualizar tareas rápidamente (#17). El texto se traduce tras 500 ms sin cambios.",
       "**1.2.20** añade un glosario técnico opcional de un clic con 60 términos y productos para los nueve idiomas. Las entradas propias tienen prioridad y límite independiente; permite consultar y desactivar sin borrarlas.",
       "**1.2.19** añade glosarios por idioma, credenciales de DSH, cachés por configuración, exclusión con el complemento oficial, mayor protección técnica y CI de Windows/Linux.",
       "**1.2.18** añade una entrada persistente en la barra lateral para los controles de traducción (se activa en los ajustes o en la página de traducción y se guarda por navegador) y rediseña la página de traducción y el diálogo de ajustes en secciones tipo tarjeta con un diseño adaptable de una sola columna en ventanas estrechas.",
@@ -593,6 +599,7 @@
     ],
     "changesTitle": "Mises à jour et compatibilité",
     "changes": [
+      "**1.2.21** Corrige les demandes de traduction répétées lors des mises à jour rapides des tâches (#17). Le texte est traduit après 500 ms sans changement.",
       "**1.2.20** ajoute un glossaire technique facultatif en un clic avec 60 termes et produits pour les neuf langues. Vos entrées sont prioritaires et gardent leur quota ; aperçu et désactivation sans les supprimer.",
       "**1.2.19** ajoute les glossaires par langue, les identifiants DSH, le cache par configuration, l’exclusion du plugin officiel, la protection technique renforcée et la CI Windows/Linux.",
       "**1.2.18** ajoute une entrée persistante dans la barre latérale pour les contrôles de traduction (activable dans les paramètres ou sur la page de traduction, enregistrée par navigateur) et repense la page de traduction et la boîte de dialogue des paramètres en sections sous forme de cartes, avec une disposition adaptative sur une seule colonne dans les fenêtres étroites.",
@@ -716,6 +723,7 @@
     ],
     "changesTitle": "Änderungen und Kompatibilität",
     "changes": [
+      "**1.2.21** Behebt wiederholte Übersetzungsanfragen bei schnellen Aufgabenänderungen (#17). Die Übersetzung beginnt nach 500 ms ohne Änderung.",
       "**1.2.20** ergänzt ein optionales technisches Glossar mit einem Klick und 60 Begriffen und Produktnamen für neun Zielsprachen. Eigene Einträge haben Vorrang und ein eigenes Kontingent; Vorschau und Deaktivieren erhalten sie.",
       "**1.2.19** ergänzt sprachbezogene Glossare, DSH-Zugangsdaten, konfigurationsbezogene Caches, die gegenseitige Ausschließung mit dem offiziellen Plugin, stärkeren Schutz technischer Texte und Windows/Linux-CI.",
       "**1.2.18** fügt einen dauerhaften Seitenleisten-Eintrag für die Übersetzungssteuerung hinzu (umschaltbar in den Einstellungen oder auf der Übersetzungsseite, pro Browser gespeichert) und gestaltet die Übersetzungsseite und den Einstellungsdialog als kartenbasierte Abschnitte mit responsivem einspaltigem Layout in schmalen Fenstern neu.",
@@ -839,6 +847,7 @@
     ],
     "changesTitle": "Изменения и совместимость",
     "changes": [
+      "**1.2.21** Исправляет повторные запросы перевода при быстрых обновлениях задач (#17). Перевод начинается после 500 мс без изменений.",
       "**1.2.20** добавляет включаемый одним нажатием технический глоссарий из 60 терминов и названий продуктов для девяти языков. Ваши записи приоритетны и имеют отдельный лимит; просмотр и отключение их не удаляют.",
       "**1.2.19**: глоссарии по языкам, хранение ключей в DSH, кеш по настройкам, взаимное исключение с официальным плагином, усиленная защита технического текста и CI Windows/Linux.",
       "**1.2.18** добавляет постоянный элемент в боковой панели для управления переводом (переключается в настройках или на странице перевода, сохраняется для каждого браузера) и перерабатывает страницу перевода и диалог настроек в карточные разделы с адаптивной одноколоночной раскладкой в узких окнах.",
@@ -962,6 +971,7 @@
     ],
     "changesTitle": "Atualizações e compatibilidade",
     "changes": [
+      "**1.2.21** Corrige solicitações repetidas de tradução quando as tarefas mudam rapidamente (#17). O texto é traduzido após 500 ms sem alterações.",
       "**1.2.20** adiciona um glossário técnico opcional de um clique com 60 termos e produtos nos nove idiomas. Suas entradas têm prioridade e limite independente; é possível consultar e desativar sem removê-las.",
       "**1.2.19** adiciona glossários por idioma, credenciais gerenciadas pelo DSH, caches por configuração, exclusão com o plugin oficial, proteção técnica reforçada e CI Windows/Linux.",
       "**1.2.18** adiciona uma entrada persistente na barra lateral para os controles de tradução (ativada nas configurações ou na página de tradução, salva por navegador) e reformula a página de tradução e a caixa de diálogo de configurações em seções em cartão, com layout responsivo de coluna única em janelas estreitas.",
