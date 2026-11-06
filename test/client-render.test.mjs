@@ -749,6 +749,22 @@ describe('DSH 0.2 conversation component props', function () {
     assert.equal(JSON.stringify(node), original)
   })
 
+  it('translates a reasoning block that starts blank before the stream settles or the row opens', async function (t) {
+    const clock = clientClock()
+    const panel = await mountPanel(configWith({}, []), null, null, { mode: 'eager' }, null, null, null, null, clock)
+    t.after(() => panel.dispose())
+    const later = { kind: 'reasoning', text: '' }
+    const node = { location: {}, data: { status: 'running', blocks: [{ kind: 'text', text: 'Visible answer.' }, later] } }
+    const props = { node, useTurnData: () => undefined, t: key => key }
+    const initial = await panel.renderView('conversation.chat.node', 'assistant-step', props)
+    assert.equal(flatten(initial).some(n => cls(n) === 'xl-think'), false)
+    const component = panel.entries.find(entry => entry.spec.key === 'assistant-step').component
+    later.text = 'Inspect the pending output and continue with the next check.\n'.repeat(12)
+    await panel.runtime.mount(component, props)
+    const calls = panel.calls.filter(call => call.url === '/_xlate/translate')
+    assert.ok(calls.some(call => JSON.parse(call.init.body).text.includes('Inspect the pending output')))
+  })
+
   it('renders assistant text and reasoning without changing the original blocks', async function () {
     const panel = await mountPanel(configWith({}, []))
     const node = { kind: 'assistant-step', location: { kind: 'step', turn: { status: 'closed' } }, data: {
@@ -820,6 +836,24 @@ describe('DSH 0.2 conversation component props', function () {
     assert.equal(JSON.stringify(todos), original)
     panel.dispose()
   })
+
+  for (const suffix of ['Regular', '14']) {
+    it('renders both todo dock arrows and the checklist icon with Outline' + suffix, async function () {
+      const primitives = Object.fromEntries(['Checklist', 'ChevronUp', 'ChevronDown'].map(icon => [
+        'Icon' + icon + 'Outline' + suffix,
+        () => ({ type: 'svg', props: { 'data-icon': icon } }),
+      ]))
+      const panel = await mountPanel(configWith({}, []), null, null, {}, null, null, primitives)
+      const props = { useProjection: () => [{ content: '检查进度', status: 'in_progress' }], t: key => key }
+      const icons = tree => flatten(tree).flatMap(node => node.props?.['data-icon'] || [])
+      const collapsed = await panel.renderView('conversation.input.dock', 'todo', props)
+      assert.deepEqual(icons(collapsed), ['Checklist', 'ChevronUp'])
+      click(button(collapsed, 'todo.title'))
+      const component = panel.entries.find(entry => entry.spec.id === 'todo').component
+      assert.deepEqual(icons(await panel.runtime.mount(component, props)), ['Checklist', 'ChevronDown'])
+      panel.dispose()
+    })
+  }
 
   it('coalesces 28 dock updates into one settled request and drops obsolete results and timers', async function () {
     const clock = clientClock()

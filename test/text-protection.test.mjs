@@ -40,6 +40,16 @@ const samples = [
   ['file name', 'Inspect runtime_config.json before continuing.', ['runtime_config.json']],
   ['standalone commands with arguments', 'Before.\nnpm install foo && npm test\nAfter.', ['npm install foo && npm test\n']],
   ['path adjacent to Chinese prose', '读取E:\\VP\\project\\config.json，然后检查结果。', ['E:\\VP\\project\\config.json']],
+  ['CJK input/output prose', '请检查输入/输出模块以及和/或条件。', []],
+  ['Japanese input/output prose', '入力/出力モジュールの動作を確認する。', []],
+  ['prose after a bare file path', '读取/workspace/app/config.json然后继续检查这个模块。', ['/workspace/app/config.json']],
+  ['prose after a Chinese Windows path', '读取E:\\项目\\配置.json然后继续检查这个模块。', ['E:\\项目\\配置.json']],
+  ['non-ASCII directory next to prose', '读取/工作区/配置.json，然后继续。', ['/工作区/配置.json']],
+  ['non-ASCII single-segment directory', '打开/工作区，然后继续。', ['/工作区']],
+  ['non-ASCII suffix in a filename', '读取/工作区/config.json备份，然后继续。', ['/工作区/config.json备份']],
+  ['non-ASCII URL slug', '参考https://example.test/wiki/翻译，然后继续。', ['https://example.test/wiki/翻译']],
+  ['delimited URL followed by CJK without spaces', '参考`https://example.test/docs`然后继续。', ['`https://example.test/docs`']],
+  ['ambiguous unmarked URL is preserved', '参考https://example.test/docs然后继续检查这个模块。', ['https://example.test/docs然后继续检查这个模块']],
 ]
 
 for (const [label, text, codes] of samples) {

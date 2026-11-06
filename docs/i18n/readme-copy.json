@@ -100,6 +100,7 @@
     ],
     "changesTitle": "Recent changes and compatibility",
     "changes": [
+      "**1.2.23** Restores translation for later reasoning blocks that start empty (#23), fixes todo dock icons (#24), and recognizes prose around common CJK slash expressions and file paths (#22).",
       "**1.2.22** Stores translation settings under the DSH profile (#21) and fixes glossary fallback to shorter terms (#20). Follow the configuration copy step above when upgrading from an older version.",
       "**1.2.21** Fixes repeated translation requests during rapid task updates (#17). Task text is translated after 500 ms without changes.",
       "**1.2.20** adds an opt-in, one-click technical glossary with 60 terms and product names for all nine target languages. Custom entries override built-ins and retain their own allowance; preview and disable the preset without removing custom entries.",
@@ -118,7 +119,7 @@
       "No extra build step: source files are the deliverable. Restart DSH after changing host code.",
       "Run checks with `npm test`. Discovery and credential handling are documented in the [maintenance notes](docs/maintenance-notes.md).",
       "Push/PR CI runs `npm ci --ignore-scripts` and `npm test` on Windows/Linux with Node 20/22/24/26. Node 20 checks the declared compatibility floor; required merge checks need separate repository settings.",
-      "Protection covers Markdown code, recognizable paths, URLs, filenames and common command fragments. Quote paths containing spaces; use backticks or fenced blocks for complex commands and ambiguous technical text."
+      "Protection covers Markdown code, recognizable paths, URLs, filenames and common command fragments. Quote paths containing spaces; use backticks or fenced blocks for complex commands and ambiguous technical text. Separate a bare URL from adjacent CJK prose with backticks, whitespace or full-width punctuation."
     ],
     "footer": [
       "Report an issue",
