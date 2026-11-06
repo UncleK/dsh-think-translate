@@ -367,15 +367,16 @@ it('accepts the listener bind address as a Host, and no other non-loopback one, 
   }
 })
 
-it('takes the Host decision from the connection service, without requiring its login cookie', async t => {
-  // Answers as the service does: 403 for a Host or Origin it does not accept, then 401 with no login cookie.
-  const connection = { requestRejection: req => {
-    const host = req.headers.host, origin = req.headers.origin
-    if (host !== '127.0.0.1:3080' && host !== 'dsh.example' && host !== 'dsh.example:443') return 403
-    if (origin !== undefined && new URL(origin).host !== new URL(new URL(origin).protocol + '//' + host).host) return 403
-    return req.headers.cookie === undefined ? 401 : undefined
-  } }
-  const h = await host(t, config(), { connection })
+// Answers as the service does: 403 for a Host or Origin it does not accept, then 401 unless the login cookie is the valid one.
+const connectionWithLogin = { requestRejection: req => {
+  const host = req.headers.host, origin = req.headers.origin
+  if (!/^127\.0\.0\.1(:\d+)?$/.test(host) && host !== 'dsh.example' && host !== 'dsh.example:443') return 403
+  if (origin !== undefined && new URL(origin).host !== new URL(new URL(origin).protocol + '//' + host).host) return 403
+  return req.headers.cookie === 'session=fixture' || req.headers.cookie === 'host=fixture' ? undefined : 401
+} }
+
+it('takes the Host decision from the connection service, and POST routes do not ask for its login cookie', async t => {
+  const h = await host(t, config(), { connection: connectionWithLogin })
   h.plugin.ADAPTERS.openai = async () => '第一段译文'
   for (const headers of [
     {},
@@ -385,17 +386,63 @@ it('takes the Host decision from the connection service, without requiring its l
     { origin: 'https://dsh.example', host: 'dsh.example', cookie: 'session=fixture' },
   ]) {
     assert.equal((await h.request('/_xlate/translate', POST_BODIES['/_xlate/translate'], headers)).body.ok, true, JSON.stringify(headers))
-    assert.equal((await h.request('/_xlate/dsh-scan', undefined, headers)).status, 200, JSON.stringify(headers))
   }
   for (const headers of [
     { origin: 'http://review.invalid', host: 'review.invalid' },
     { host: 'review.invalid' },
     { host: '127.0.0.2:3080' },
     { origin: 'https://other.invalid', host: 'dsh.example' },
+    { origin: 'https://other.invalid', host: 'dsh.example', cookie: 'session=fixture' },
+    { 'sec-fetch-site': 'cross-site', host: 'dsh.example', cookie: 'session=fixture' },
   ]) {
     assert.equal((await h.request('/_xlate/translate', POST_BODIES['/_xlate/translate'], headers)).status, 403, JSON.stringify(headers))
     assert.equal((await h.request('/_xlate/dsh-scan', undefined, headers)).status, 403, JSON.stringify(headers))
   }
+})
+
+it('asks GET /_xlate/dsh-scan for the host login, and writes nothing without it', async t => {
+  const h = await host(t, config(), { connection: connectionWithLogin })
+  const before = await h.disk()
+  for (const headers of [
+    // What a cross-site <img> sends over plain http: no Origin, no Fetch Metadata and, under SameSite=Strict, no cookie.
+    {},
+    { host: 'dsh.example' },
+    { host: 'dsh.example:443' },
+    { origin: 'https://dsh.example', host: 'dsh.example' },
+    { 'sec-fetch-site': 'same-origin', host: 'dsh.example' },
+    // A cookie another app on this host left behind is not the login.
+    { host: 'dsh.example', cookie: 'unrelated=1' },
+  ]) {
+    const response = await h.request('/_xlate/dsh-scan', undefined, headers)
+    assert.equal(response.status, 401, JSON.stringify(headers))
+    assert.equal(response.body.ok, false, JSON.stringify(headers))
+    assert.deepEqual(await h.disk(), before, JSON.stringify(headers))
+    assert.equal(h.keys.size, 0, JSON.stringify(headers))
+  }
+  // The same fixture with the login saves the config and moves its key, so the checks above can fail.
+  assert.equal((await h.request('/_xlate/dsh-scan', undefined, { host: 'dsh.example', cookie: 'session=fixture' })).status, 200)
+  assert.notDeepEqual(await h.disk(), before)
+  assert.equal(h.keys.size, 1)
+})
+
+it('lets the panel scan through the desktop shell forwarder, which attaches the host login', async t => {
+  const routes = new Map()
+  const h = await host(t, config(), { routes, connection: connectionWithLogin })
+  const server = http.createServer((req, res) => routes.get(req.url)(req, res))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  t.after(() => { server.closeAllConnections(); server.close() })
+  const url = 'http://127.0.0.1:' + server.address().port + '/_xlate/dsh-scan'
+  const before = await h.disk()
+
+  assert.equal((await fetch(url)).status, 401)
+  assert.deepEqual(await h.disk(), before)
+
+  // What the forwarder does: it drops these headers, attaches the login, and fetch fills in the target's Host.
+  const forwarded = new Headers({ origin: 'dsh-app://app', 'sec-fetch-site': 'same-origin' })
+  for (const name of ['host', 'origin', 'cookie', 'sec-fetch-site']) forwarded.delete(name)
+  forwarded.set('cookie', 'host=fixture')
+  assert.equal((await fetch(url, { headers: forwarded, redirect: 'manual' })).status, 200)
+  assert.notDeepEqual(await h.disk(), before)
 })
 
 it('answers 403 on GET /_xlate/dsh-scan unless the request is same-origin, and then writes nothing', async t => {

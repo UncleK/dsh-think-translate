@@ -1030,6 +1030,19 @@ describe('settings panel renders (real bundle, mini React)', function () {
     assert.deepEqual(chain, ['google', 'a-dsh', 'b-dsh'], 'both inherited providers join the chain, order preserved')
   })
 
+  it('shows why a rescan was refused, not a translation chain failure, and keeps the list', async function () {
+    const served = configWith({ google: { type: 'google', enabled: true }, 'a-dsh': DSH_PROVIDER }, ['google'])
+    const panel = await mountPanel(served, { ok: false, error: 'login required' })
+    click(button(panel.tree, '重新扫描 DSH 配置'))
+    const after = await panel.runtime.mount(panel.registered)
+    assert.ok(panel.calls.some(function (c) { return c.url === '/_xlate/dsh-scan' }), 'the click must rescan')
+    const text = textOf(after)
+    assert.match(text, /login required/)
+    assert.doesNotMatch(text, /bad scan response/)
+    assert.doesNotMatch(text, /链路失败/)
+    assert.match(text, /a-dsh/, 'the list the panel already had stays')
+  })
+
   it('adds one provider from the list with the compact + button', async function () {
     const panel = await mountPanel(configWith({ google: { type: 'google', enabled: true }, 'a-dsh': DSH_PROVIDER }, ['google']))
     const add = flatten(panel.tree).find(function (n) { return n.host && cls(n) === 'xl-btn xl-add-btn' })
