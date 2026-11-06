@@ -627,6 +627,32 @@ for (const [label, text] of [
   })
 }
 
+// A fence that holds gives way to a real list too, and a block opened inside it is plain text.
+for (const [label, fence, before = '', after = '- First\n    - Second\n'] of [
+  ['a pre in a closed fence', '```\n<pre>\n```\n'],
+  ['a comment in a closed fence', '~~~\n<!-- note\n~~~\n'],
+  ['a pre in a closed fence in an item', '  ```\n  <pre>\n  ```\n', '- top\n'],
+  ['a closed fence', '```\nwords\n```\n'],
+  ['a closed fence with an info string', '```bash\nwords\n```\n'],
+  ['a closed tilde fence', '~~~\nwords\n~~~\n'],
+  ['a fence closed by a longer line', '```\nwords\n`````\n'],
+  ['a fence with a blank line inside', '```\nwords\n\nmore\n```\n'],
+  ['a fence closed with an indent', '```\nwords\n  ```\n'],
+  ['a closed fence in an item', '  ```\n  words\n  ```\n', '- top\n'],
+  ['a closed fence under a number', '   ```\n   words\n   ```\n', '1. top\n', '2. First\n    - Second\n'],
+  ['a closed fence on the marker of an item', '- ```\n  words\n  ```\n'],
+  ['a closed fence on the marker of a 1', '1. ```\n   words\n   ```\n'],
+]) {
+  it('translates a real list line behind ' + label, async () => {
+    const text = before + fence + after
+    const parts = protectedTextParts(text)
+    assert.deepEqual(codeOf(parts), [fence])
+    assert.deepEqual(JSON.parse(JSON.stringify(client.protectedTextParts(text))), parts)
+    const run = await runThinkRow(text, 900)
+    assert.ok(run.seen.join('\n').includes('First\n    - Second'))
+  })
+}
+
 // A code span, a fence or a tag taken for a block can hide the line that opens a real one.
 for (const [label, text, codes] of [
   ['a code span over the opening line', hiddenOpening + '\n- item\n' + verbatim, [hiddenOpening, verbatim]],
@@ -644,6 +670,45 @@ for (const [label, text, codes] of [
   })
 }
 
+// A fence that CommonMark pairs differently from the parser leaves a real fence where the parser
+// sees none. A line left of an open fence can end the item that holds it, and the next fence line
+// then opens a new one. A fence in a quote ends with the quote, and so on.
+for (const [label, text, codes] of [
+  ['a list fence that ends with its item', '- ```\n```\n- item\n' + verbatim, ['- ```\n```\n', verbatim]],
+  ['an ordered list fence that ends with its item', '1. ~~~\n~~~\n- item\n' + verbatim, ['1. ~~~\n~~~\n', verbatim]],
+  ['a list fence with a line left of it', '- ```\nx\n```\n- item\n' + verbatim, ['- ```\nx\n```\n', verbatim]],
+  ['a nested list fence that ends with its item', '  - ```\n```\n- item\n' + verbatim, ['  - ```\n```\n', verbatim]],
+  ['an indented fence that ends with its item', '- a\n  ```\nb\n```\n- item\n' + verbatim, ['  ```\nb\n```\n', verbatim]],
+  ['a tab-indented fence that ends with its item', '- a\n\t```\nb\n```\n- item\n' + verbatim, ['\t```\nb\n```\n', verbatim]],
+  ['a quote fence that ends with its quote', '> ```\n```\n- item\n' + verbatim, ['> ```\n```\n', verbatim]],
+  ['a list fence in a quote', '> - ```\n```\n- item\n' + verbatim, ['> - ```\n```\n', verbatim]],
+  ['a quoted line that does not close a fence', '```\nx\n> ```\n- item\n' + verbatim, ['```\nx\n> ```\n', verbatim]],
+  ['a closing line indented too far', '```\nx\n    ```\n- item\n' + verbatim, ['```\nx\n    ```\n', verbatim]],
+  ['an info string with a backtick, which is no fence', '``` a`b\nx\n```\n- item\n' + verbatim, ['``` a`b\nx\n```\n', verbatim]],
+  ['a number that is paragraph text', 'Plan:\n2. ```\n   x\n   ```\n- item\n' + verbatim, ['2. ```\n   x\n   ```\n', verbatim]],
+  ['a zero that is paragraph text', 'Plan:\n0. ```\n   x\n   ```\n- item\n' + verbatim, ['0. ```\n   x\n   ```\n', verbatim]],
+  ['a code span over a fence', '`a\n```\nb`\n- item\n' + verbatim, ['`a\n```\nb`', verbatim]],
+  ['a code span over a tilde fence', '`a\n~~~\nb`\n- item\n' + verbatim, ['`a\n~~~\nb`', verbatim]],
+  ['a code span over a fence that closes further down', '`a\n```\nb`\n- item\n' + verbatim + '```\n', ['`a\n```\nb`', verbatim, '```\nDone.\n']],
+  ['a fence in a hidden pre', hiddenOpening + '\n```\n</pre>\n```\n- item\n' + verbatim, [hiddenOpening, '```\n</pre>\n```\n', verbatim]],
+]) {
+  it('keeps a list line behind ' + label, async () => {
+    await assertStaysCode(text + 'Done.\n', codes)
+  })
+}
+
+it('keeps list lines below a fence that says nothing from the provider while streaming', async () => {
+  let text = ''
+  for (const shape of ['- ```\n```\n', '> ```\n```\n', '- a\n  ```\nb\n```\n', '`a\n```\nb`\n']) text += shape + '- item\n' + verbatim + 'Done.\n\n'
+  text += 'Some more plain prose for the stream margin to pass over.\n'.repeat(5)
+  for (const size of [24, 40, 80, 900]) {
+    for (const step of [7, 20, 40, 80, 200]) {
+      const run = await runThinkRow(text, size, step)
+      assert.ok(run.seen.every(prose => !prose.includes('secret')), 'batch size ' + size + ', step ' + step)
+    }
+  }
+})
+
 // The scan knows no containers and no paragraphs, so it also counts blocks CommonMark ends earlier
 // or never opens. A list line there stays code, which is what base does with every indented line.
 for (const [label, text, codes = [verbatim]] of [
@@ -652,7 +717,10 @@ for (const [label, text, codes = [verbatim]] of [
   ['behind a quote that held a pre', '> <pre>\n- First\n' + verbatim],
   ['under a complete tag below a paragraph', 'Intro\n<span>\n- First\n' + verbatim + '\n'],
   ['under a number below a paragraph that holds a pre', 'Intro\n2. <pre>\n- First\n' + verbatim],
-  ['behind a pre in a fence', '```\n<pre>\n```\n- First\n' + verbatim, ['```\n<pre>\n```\n', verbatim]],
+  ['below a closed fence in a quote', '> ```\n> x\n> ```\n- First\n' + verbatim, ['> ```\n> x\n> ```\n', verbatim]],
+  ['below a closed fence behind a number', '2. ```\n   x\n   ```\n- First\n' + verbatim, ['2. ```\n   x\n   ```\n', verbatim]],
+  ['below a closed fence with a line left of it', ' ```\nx\n```\n- First\n' + verbatim, [' ```\nx\n```\n', verbatim]],
+  ['below a closed fence in a div', '<div>\n```\nx\n```\n\n- First\n' + verbatim, ['```\nx\n```\n', verbatim]],
   ['behind an indented pre', '    <pre>\n\n- First\n' + verbatim, ['    <pre>\n', verbatim]],
 ]) {
   it('keeps a list line as on base ' + label, async () => {
