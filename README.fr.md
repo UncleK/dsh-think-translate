@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.fr.png?v=1.2.20" alt="dsh-think-translate — La pensée de l’IA, dans votre langue" width="100%" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/hero.fr.png?v=1.2.21" alt="dsh-think-translate — La pensée de l’IA, dans votre langue" width="100%" />
 </p>
 
 <p align="center">
@@ -8,9 +8,9 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.fr.svg?v=1.2.20" alt="Licence MIT" />
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.fr.svg?v=1.2.20" alt="Ollama local" />
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.fr.svg?v=1.2.20" alt="Originaux conservés" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-mit.fr.svg?v=1.2.21" alt="Licence MIT" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-local.fr.svg?v=1.2.21" alt="Ollama local" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/badge-original.fr.svg?v=1.2.21" alt="Originaux conservés" />
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.fr.svg?v=1.2.20" alt="Installation" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.fr.svg?v=1.2.20" alt="Démonstrations" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.fr.svg?v=1.2.20" alt="Fonctions" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.fr.svg?v=1.2.20" alt="Comparaison" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.fr.svg?v=1.2.20" alt="Questions" height="24" /></a>
+  <a href="#quick-start"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-quick-start.fr.svg?v=1.2.21" alt="Installation" height="24" /></a> &nbsp;·&nbsp; <a href="#demo"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-demo.fr.svg?v=1.2.21" alt="Démonstrations" height="24" /></a> &nbsp;·&nbsp; <a href="#features"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-features.fr.svg?v=1.2.21" alt="Fonctions" height="24" /></a> &nbsp;·&nbsp; <a href="#comparison"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-comparison.fr.svg?v=1.2.21" alt="Comparaison" height="24" /></a> &nbsp;·&nbsp; <a href="#faq"><img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/nav-faq.fr.svg?v=1.2.21" alt="Questions" height="24" /></a>
 </p>
 
 ---
@@ -29,10 +29,10 @@
 <table>
 <tr>
 <td width="50%" align="center" valign="bottom">
-<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.20" alt="Démo 1 · Raisonnement et réponses" width="100%" />
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo.gif?v=1.2.21" alt="Démo 1 · Raisonnement et réponses" width="100%" />
 </td>
 <td width="50%" align="center" valign="bottom">
-<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.20" alt="Démo 2 · Autres opérations" width="100%" />
+<img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/demo/demo2.gif?v=1.2.21" alt="Démo 2 · Autres opérations" width="100%" />
 </td>
 </tr>
 <tr>
@@ -45,7 +45,7 @@
 ## Comparaison avec le plugin officiel de traduction
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.fr.png?v=1.2.20" alt="Comparaison avec le plugin officiel de traduction" width="100%" />
+  <img src="https://raw.githubusercontent.com/UncleK/dsh-think-translate/main/docs/assets/translation-comparison.fr.png?v=1.2.21" alt="Comparaison avec le plugin officiel de traduction" width="100%" />
 </p>
 
 Activez ce plugin ou le traducteur officiel du raisonnement. Tous deux prennent en charge l’affichage du raisonnement.
@@ -201,6 +201,8 @@ Si tous les fournisseurs actifs échouent, l’original reste visible. Testez ch
 
 <details>
 <summary><b>Mises à jour et compatibilité</b></summary>
+
+**1.2.21** Corrige les demandes de traduction répétées lors des mises à jour rapides des tâches (#17). Le texte est traduit après 500 ms sans changement.
 
 **1.2.20** ajoute un glossaire technique facultatif en un clic avec 60 termes et produits pour les neuf langues. Vos entrées sont prioritaires et gardent leur quota ; aperçu et désactivation sans les supprimer.
 
