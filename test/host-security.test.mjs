@@ -187,6 +187,32 @@ it('serializes concurrent configuration edits without losing a model change or s
   assert.equal(JSON.stringify(responses).includes('replacement-private-key'), false)
 })
 
+// A rescan rewrites the whole configuration. If it reads the file before a key
+// change is saved and writes it back after, the stale copy wins and the save of it
+// deletes the new key as one that was removed. The race depends on file timing, so
+// this starts the two requests at many offsets, in both orders.
+it('does not let a DSH rescan undo a key change saved at the same time', async t => {
+  const h = await host(t, config())
+  await h.request('/_xlate/config')
+  const failures = []
+  for (let offset = 0; offset < 40; offset++) {
+    for (const scanFirst of [true, false]) {
+      const model = 'model-' + offset + (scanFirst ? '-scan-first' : '-edit-first'), key = 'key-' + model
+      const edit = () => h.request('/_xlate/config', { providers: { custom: { model, apiKey: key } } })
+      const scan = () => h.request('/_xlate/dsh-scan')
+      const first = scanFirst ? scan() : edit()
+      for (let tick = 0; tick < offset; tick++) await new Promise(resolve => setImmediate(resolve))
+      const responses = await Promise.all([first, scanFirst ? edit() : scan()])
+      const scanned = responses[scanFirst ? 0 : 1].body
+      const saved = (await h.disk()).providers.custom
+      if (responses.some(response => response.status !== 200)) failures.push(model + ': status ' + responses.map(response => response.status).join('/'))
+      else if (saved.model !== model || h.keys.get(saved.apiKeyRef) !== key) failures.push(model + ': edit lost')
+      else if (!scanned.dshScan || scanned.providers.custom.hasApiKey !== true || JSON.stringify(responses).includes(key)) failures.push(model + ': scan answer')
+    }
+  }
+  assert.deepEqual(failures, [])
+})
+
 it('discovers credentials activated after plugin startup and migrates an already cached legacy configuration', async t => {
   const h = await host(t, config(), { lateCredentials: true })
   const before = await h.request('/_xlate/config')
