@@ -200,7 +200,7 @@ it('does not let a DSH rescan undo a key change saved at the same time', async t
     for (const scanFirst of [true, false]) {
       const model = 'model-' + offset + (scanFirst ? '-scan-first' : '-edit-first'), key = 'key-' + model
       const edit = () => h.request('/_xlate/config', { providers: { custom: { model, apiKey: key } } })
-      const scan = () => h.request('/_xlate/dsh-scan')
+      const scan = () => h.request('/_xlate/dsh-scan', {})
       const first = scanFirst ? scan() : edit()
       for (let tick = 0; tick < offset; tick++) await new Promise(resolve => setImmediate(resolve))
       const responses = await Promise.all([first, scanFirst ? edit() : scan()])
@@ -419,18 +419,18 @@ it('takes the Host decision from the connection service, and POST routes do not 
     { host: '127.0.0.2:3080' },
     { origin: 'https://other.invalid', host: 'dsh.example' },
     { origin: 'https://other.invalid', host: 'dsh.example', cookie: 'session=fixture' },
+    { origin: 'https://sibling.dsh.example', host: 'dsh.example', cookie: 'session=fixture', 'sec-fetch-site': 'same-site' },
     { 'sec-fetch-site': 'cross-site', host: 'dsh.example', cookie: 'session=fixture' },
   ]) {
     assert.equal((await h.request('/_xlate/translate', POST_BODIES['/_xlate/translate'], headers)).status, 403, JSON.stringify(headers))
-    assert.equal((await h.request('/_xlate/dsh-scan', undefined, headers)).status, 403, JSON.stringify(headers))
+    assert.equal((await h.request('/_xlate/dsh-scan', {}, headers)).status, 403, JSON.stringify(headers))
   }
 })
 
-it('asks GET /_xlate/dsh-scan for the host login, and writes nothing without it', async t => {
+it('asks POST /_xlate/dsh-scan for the host login, and writes nothing without it', async t => {
   const h = await host(t, config(), { connection: connectionWithLogin })
   const before = await h.disk()
   for (const headers of [
-    // What a cross-site <img> sends over plain http: no Origin, no Fetch Metadata and, under SameSite=Strict, no cookie.
     {},
     { host: 'dsh.example' },
     { host: 'dsh.example:443' },
@@ -439,14 +439,20 @@ it('asks GET /_xlate/dsh-scan for the host login, and writes nothing without it'
     // A cookie another app on this host left behind is not the login.
     { host: 'dsh.example', cookie: 'unrelated=1' },
   ]) {
-    const response = await h.request('/_xlate/dsh-scan', undefined, headers)
+    const response = await h.request('/_xlate/dsh-scan', {}, headers)
     assert.equal(response.status, 401, JSON.stringify(headers))
     assert.equal(response.body.ok, false, JSON.stringify(headers))
     assert.deepEqual(await h.disk(), before, JSON.stringify(headers))
     assert.equal(h.keys.size, 0, JSON.stringify(headers))
   }
+  // A same-site GET can carry the login cookie without sending Origin.
+  const get = await h.request('/_xlate/dsh-scan', undefined, { host: 'dsh.example', cookie: 'session=fixture', 'sec-fetch-site': 'same-site' })
+  assert.equal(get.status, 405)
+  assert.deepEqual(await h.disk(), before)
+  assert.equal(h.keys.size, 0)
+
   // The same fixture with the login saves the config and moves its key, so the checks above can fail.
-  assert.equal((await h.request('/_xlate/dsh-scan', undefined, { host: 'dsh.example', cookie: 'session=fixture' })).status, 200)
+  assert.equal((await h.request('/_xlate/dsh-scan', {}, { host: 'dsh.example', cookie: 'session=fixture' })).status, 200)
   assert.notDeepEqual(await h.disk(), before)
   assert.equal(h.keys.size, 1)
 })
@@ -460,27 +466,27 @@ it('lets the panel scan through the desktop shell forwarder, which attaches the 
   const url = 'http://127.0.0.1:' + server.address().port + '/_xlate/dsh-scan'
   const before = await h.disk()
 
-  assert.equal((await fetch(url)).status, 401)
+  assert.equal((await fetch(url, { method: 'POST' })).status, 401)
   assert.deepEqual(await h.disk(), before)
 
   // What the forwarder does: it drops these headers, attaches the login, and fetch fills in the target's Host.
   const forwarded = new Headers({ origin: 'dsh-app://app', 'sec-fetch-site': 'same-origin' })
   for (const name of ['host', 'origin', 'cookie', 'sec-fetch-site']) forwarded.delete(name)
   forwarded.set('cookie', 'host=fixture')
-  assert.equal((await fetch(url, { headers: forwarded, redirect: 'manual' })).status, 200)
+  assert.equal((await fetch(url, { method: 'POST', headers: forwarded, redirect: 'manual' })).status, 200)
   assert.notDeepEqual(await h.disk(), before)
 })
 
-it('answers 403 on GET /_xlate/dsh-scan unless the request is same-origin, and then writes nothing', async t => {
+it('answers 403 on POST /_xlate/dsh-scan unless the request is same-origin, and then writes nothing', async t => {
   const h = await host(t, config())
   const before = await h.disk()
   for (const headers of NOT_SAME_ORIGIN) {
-    assert.equal((await h.request('/_xlate/dsh-scan', undefined, headers)).status, 403, JSON.stringify(headers))
+    assert.equal((await h.request('/_xlate/dsh-scan', {}, headers)).status, 403, JSON.stringify(headers))
     assert.deepEqual(await h.disk(), before, JSON.stringify(headers))
     assert.equal(h.keys.size, 0, JSON.stringify(headers))
   }
   // An accepted scan of the same fixture saves the config and moves its key, so the checks above can fail.
-  assert.equal((await h.request('/_xlate/dsh-scan')).status, 200)
+  assert.equal((await h.request('/_xlate/dsh-scan', {})).status, 200)
   assert.notDeepEqual(await h.disk(), before)
   assert.equal(h.keys.size, 1)
 })

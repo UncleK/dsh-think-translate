@@ -1051,7 +1051,7 @@ describe('settings panel renders (real bundle, mini React)', function () {
     click(button(panel.tree, '重新扫描 DSH 配置'))
     const afterScan = await panel.runtime.mount(panel.registered)
 
-    assert.ok(panel.calls.some(function (c) { return c.url === '/_xlate/dsh-scan' }), 'the click must rescan')
+    assert.ok(panel.calls.some(function (c) { return c.url === '/_xlate/dsh-scan' && c.init?.method === 'POST' }), 'the click must rescan via POST')
     const text = textOf(afterScan)
     assert.match(text, /a-dsh/, 'the list shows the harness’s own provider ids')
     assert.match(text, /b-dsh/)
@@ -1069,7 +1069,7 @@ describe('settings panel renders (real bundle, mini React)', function () {
     const panel = await mountPanel(served, { ok: false, error: 'login required' })
     click(button(panel.tree, '重新扫描 DSH 配置'))
     const after = await panel.runtime.mount(panel.registered)
-    assert.ok(panel.calls.some(function (c) { return c.url === '/_xlate/dsh-scan' }), 'the click must rescan')
+    assert.ok(panel.calls.some(function (c) { return c.url === '/_xlate/dsh-scan' && c.init?.method === 'POST' }), 'the click must rescan via POST')
     const text = textOf(after)
     assert.match(text, /login required/)
     assert.doesNotMatch(text, /bad scan response/)

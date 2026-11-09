@@ -929,7 +929,7 @@ describe('stripResolvedKeys', function () {
     // with the live object, handing the browser a key read from .credentials.yaml.
     const src = readFileSync(fileURLToPath(new URL('../lib/index.js', import.meta.url)), 'utf8')
     // All three config answers go through the sanitizer: GET /_xlate/config,
-    // POST /_xlate/config and GET /_xlate/dsh-scan (which sanitizes into `out` so the
+    // POST /_xlate/config and POST /_xlate/dsh-scan (which sanitizes into `out` so the
     // scan diagnostic can ride along on the response copy).
     assert.match(src, /sendJson\(res, 200, await publicConfig\(await loadConfig\(\)\)\)/)
     assert.match(src, /sendJson\(res, 200, updated\)/)

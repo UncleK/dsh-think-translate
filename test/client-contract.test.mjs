@@ -295,7 +295,7 @@ describe('settings UI contracts', function () {
     // host merges settings.yaml/.credentials.yaml providers into the config it serves,
     // so they appear as read-only `source: 'dsh'` rows on their own. What needs a
     // click is the RE-READ (editing ~/.dsh/settings.yaml otherwise needs a restart).
-    assert.match(src, /fetch\("\/_xlate\/dsh-scan"\)\.then\(function \(r\) \{ return r\.json\(\); \}\)/)
+    assert.match(src, /fetch\("\/_xlate\/dsh-scan", \{ method: "POST" \}\)\.then\(function \(r\) \{ return r\.json\(\); \}\)/)
     assert.match(src, /var dshAvailable = dshAll\.filter\(function \(id\) \{ return chain\.indexOf\(id\) < 0; \}\);/)
     assert.match(src, /return provs\[id\] && provs\[id\]\.source === "dsh";/)
     assert.match(src, /onClick: rescanDsh/)
