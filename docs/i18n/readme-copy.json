@@ -100,6 +100,7 @@
     ],
     "changesTitle": "Recent changes and compatibility",
     "changes": [
+      "**1.2.26** Shows the DSH provider display name and configured model in translation settings, for example `OpenRouter · openrouter/free`.",
       "**1.2.25** Fixes Windows proxy detection for translation requests (#26).",
       "**1.2.24** Keeps API keys intact when DSH rescans and provider edits overlap (#25) and requires a same-origin POST to rescan (#18).",
       "**1.2.23** Restores translation for later reasoning blocks that start empty (#23), fixes todo dock icons (#24), and recognizes prose around common CJK slash expressions and file paths (#22).",

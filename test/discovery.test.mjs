@@ -17,6 +17,7 @@ const patch = `
     providers:
       desktop-hub:
         api: openai-completions
+        displayName: ' Desktop Hub '
         apiKeyEnv: DESKTOP_KEY
         baseURL: 'https://desktop.example/v1' # inline comment
         models:
@@ -51,6 +52,7 @@ describe('issue #11: profile-owned DSH provider discovery', () => {
   it('reads Desktop patch rows without any legacy settings.yaml', () => {
     const result = scan({ [patchPath]: patch, [join(home, '.credentials.yaml')]: 'version: 1\nrefs:\n  DESKTOP_KEY: "quoted key # intact"\n' })
     assert.equal(result.ok, true)
+    assert.equal(result.providers['desktop-hub'].displayName, 'Desktop Hub')
     assert.equal(result.providers['desktop-hub'].model, 'desktop-model')
     assert.equal(result.providers['desktop-hub'].apiKeyEnv, 'DESKTOP_KEY')
     assert.equal(result.refs.DESKTOP_KEY, 'quoted key # intact')

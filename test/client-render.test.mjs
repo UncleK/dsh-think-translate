@@ -1044,24 +1044,34 @@ describe('settings panel renders (real bundle, mini React)', function () {
     const scan = configWith({
       google: { type: 'google', enabled: true },
       'a-dsh': DSH_PROVIDER,
-      'b-dsh': { type: 'openai', source: 'dsh', baseURL: 'https://openrouter.ai/api/v1', model: 'openrouter/auto', apiKeyEnv: 'OPENROUTER_OX_API_KEY', enabled: false },
+      'openrouter-ox': { type: 'openai', source: 'dsh', displayName: 'OpenRouter', baseURL: 'https://openrouter.ai/api/v1', model: 'openrouter/free', apiKeyEnv: 'OPENROUTER_OX_API_KEY', enabled: false },
     }, ['google'])
 
-    const panel = await mountPanel(scan)
+    const initial = configWith({ google: scan.providers.google }, scan.chain)
+    const panel = await mountPanel(initial, scan)
     click(button(panel.tree, '重新扫描 DSH 配置'))
     const afterScan = await panel.runtime.mount(panel.registered)
 
     assert.ok(panel.calls.some(function (c) { return c.url === '/_xlate/dsh-scan' && c.init?.method === 'POST' }), 'the click must rescan via POST')
     const text = textOf(afterScan)
-    assert.match(text, /a-dsh/, 'the list shows the harness’s own provider ids')
-    assert.match(text, /b-dsh/)
+    assert.match(text, /a-dsh/, 'the list falls back to the provider ID when there is no display name')
+    assert.match(text, /OpenRouter · openrouter\/free/)
+    assert.doesNotMatch(text, /openrouter-ox/)
     assert.match(text, /全部加入/)
 
     click(button(afterScan, '全部加入'))
     const saved = panel.calls.filter(function (c) { return c.url === '/_xlate/config' && c.init && c.init.method === 'POST' })
     assert.equal(saved.length, 1, 'exactly one save is sent')
     const chain = JSON.parse(saved[0].init.body).chain
-    assert.deepEqual(chain, ['google', 'a-dsh', 'b-dsh'], 'both inherited providers join the chain, order preserved')
+    assert.deepEqual(chain, ['google', 'a-dsh', 'openrouter-ox'], 'both inherited providers join the chain by ID, order preserved')
+    const active = await mountPanel(configWith(scan.providers, chain), undefined, null, {}, null,
+      () => ({ ok: true, model: 'openrouter/free' }))
+    const row = flatten(active.tree).find(n => n.props?.['data-id'] === 'openrouter-ox')
+    assert.match(textOf(row), /OpenRouter · openrouter\/free/)
+    assert.doesNotMatch(textOf(row), /openrouter-ox/)
+    click(button(row, '测试'))
+    const checked = await active.runtime.mount(active.registered)
+    assert.equal(textOf(flatten(checked).find(n => cls(n) === 'xl-kv-value')), 'OpenRouter · openrouter/free')
   })
 
   it('shows why a rescan was refused, not a translation chain failure, and keeps the list', async function () {

@@ -185,7 +185,7 @@ describe('settings UI contracts', function () {
 
   it('hides the raw id on built-in rows and reports "in use" in the status block', function () {
     // The name cell stays as the flex filler so the controls line up across rows.
-    assert.match(src, /createElement\("span", \{ className: "xl-provider-name" \}, isBuiltin \? "" : id\)/)
+    assert.match(src, /var name = isBuiltin \? "" : providerName\(id, p\)/)
     assert.match(src, /createElement\("b", null, t\.currentInUse\)/)
     // The clear button belongs to the "当前使用" row itself (tail of that row),
     // not to a row of its own.
