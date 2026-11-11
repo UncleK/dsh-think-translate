@@ -19,6 +19,37 @@ function sourceBetween(source, from, to) {
   return source.slice(start, end)
 }
 
+it('prefers a Windows registry proxy even when its value names use lowercase', async () => {
+  const sandbox = vm.createContext({
+    process: { platform: 'win32', env: { HTTPS_PROXY: 'http://environment.test:8080' } },
+    runProgram: async () => '    proxyEnable    REG_DWORD    0x1\r\n    proxyServer    REG_SZ    127.0.0.1:7890\r\n',
+  })
+  vm.runInContext(sourceBetween(host, 'let proxyCache', '// curl remains necessary'), sandbox)
+  assert.equal(await sandbox.getProxy(), 'http://127.0.0.1:7890')
+})
+
+it('uses the Windows environment proxy when the registry is disabled, missing, or unreadable', async () => {
+  const httpsProxy = 'http://https-proxy.test:8080'
+  const httpProxy = 'http://http-proxy.test:8080'
+  for (const [registry, env, expected] of [
+    ['    ProxyEnable    REG_DWORD    0x0\r\n    ProxyServer    REG_SZ    127.0.0.1:7890', { HTTPS_PROXY: httpsProxy, HTTP_PROXY: httpProxy }, httpsProxy],
+    ['', { https_proxy: httpsProxy }, httpsProxy],
+    [null, { HTTP_PROXY: httpProxy }, httpProxy],
+    [null, { http_proxy: httpProxy }, httpProxy],
+    [null, {}, null],
+  ]) {
+    const sandbox = vm.createContext({
+      process: { platform: 'win32', env },
+      runProgram: async () => {
+        if (registry === null) throw new Error('registry unavailable')
+        return registry
+      },
+    })
+    vm.runInContext(sourceBetween(host, 'let proxyCache', '// curl remains necessary'), sandbox)
+    assert.equal(await sandbox.getProxy(), expected)
+  }
+})
+
 it('keeps installer curl arguments usable until the actual download step', async () => {
   let downloadReached = false
   const sandbox = vm.createContext({ glossaryEntriesForTarget, translateWithGlossary, splitGlossaryText, structuredCloneSafe: value => JSON.parse(JSON.stringify(value)), configGeneration: 0, translationContext: cfg => ({ cacheNamespace: translationNamespace(cfg), officialEnabled: false }),

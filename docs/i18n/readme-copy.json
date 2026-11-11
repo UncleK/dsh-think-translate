@@ -100,6 +100,7 @@
     ],
     "changesTitle": "Recent changes and compatibility",
     "changes": [
+      "**1.2.25** Fixes Windows proxy detection for translation requests (#26).",
       "**1.2.24** Keeps API keys intact when DSH rescans and provider edits overlap (#25) and requires a same-origin POST to rescan (#18).",
       "**1.2.23** Restores translation for later reasoning blocks that start empty (#23), fixes todo dock icons (#24), and recognizes prose around common CJK slash expressions and file paths (#22).",
       "**1.2.22** Stores translation settings under the DSH profile (#21) and fixes glossary fallback to shorter terms (#20). Follow the configuration copy step above when upgrading from an older version.",
